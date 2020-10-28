@@ -1,0 +1,13 @@
+handler: event_stream.send_events.handle
+environment:
+  STAGE: ${self:provider.stage}
+events:
+- http:
+    path: events/{dataset_id}/{version}/
+    method: post
+    cors: true
+    request:
+      parameters:
+        paths:
+          dataset_id: true
+          version: true

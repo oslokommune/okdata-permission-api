@@ -1,0 +1,14 @@
+handler: data_downloader.download.handle
+environment:
+  STAGE: ${self:provider.stage}
+events:
+- http:
+    path: data-downloader/{dataset}/{version}/{edition}
+    method: get
+    cors: true
+    request:
+      parameters:
+        paths:
+          dataset: true
+          version: true
+          edition: true

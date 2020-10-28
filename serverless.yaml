@@ -27,11 +27,20 @@ package:
   exclude:
     - '**/*'
   include:
-    - boilerplate/*.py
+    - data_downloader/*.py
+    - data_uploader/*.py
+    - event_stream/*.py
+    - metadata/*.py
 
 
 functions:
-  get_boilerplate: ${file(serverless/functions/get_boilerplate.yaml)}
+  download-data: ${file(serverless/functions/data_downloader/download.yml)}
+  upload-data: ${file(serverless/functions/data_uploader/upload.yml)}
+  create-event-stream: ${file(serverless/functions/event_stream/create_event_stream.yml)}
+  send-events: ${file(serverless/functions/event_stream/send_events.yml)}
+  create-dataset: ${file(serverless/functions/metadata/create_dataset.yml)}
+  get-dataset: ${file(serverless/functions/metadata/get_dataset.yml)}
+  update-dataset: ${file(serverless/functions/metadata/update_dataset.yml)}
 
 plugins:
   - serverless-python-requirements

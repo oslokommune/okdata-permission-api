@@ -1,0 +1,7 @@
+handler: data_uploader.upload.handler
+timeout: 30
+events:
+  - http:
+      path: data-uploader/
+      method: post
+      cors: true
