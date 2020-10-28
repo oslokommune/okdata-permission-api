@@ -5,3 +5,12 @@ events:
       path: data-uploader/
       method: post
       cors: true
+      documentation:
+        description: "Creates signed url for posting to s3-prefix"
+        requestBody:
+          description: "Metadata"
+        requestModels:
+          application/json: "UploadRequest"
+        methodResponses:
+          - statusCode: "200"
+          - statusCode: "400"

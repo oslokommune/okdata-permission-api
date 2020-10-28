@@ -1,0 +1,20 @@
+-
+  name: "Dataset"
+  contentType: "Application/json"
+  schema:
+    type: object
+    properties:
+      dataset_id:
+        type: string
+-
+  name: "UploadRequest"
+  contentType: "Application/json"
+  schema:
+    type: object
+    properties:
+      dataset_id:
+        type: string
+      version:
+        type: string
+      edition:
+        type: string

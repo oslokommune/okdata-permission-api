@@ -4,3 +4,16 @@ events:
       path: metadata/datasets
       method: post
       cors: true
+      documentation:
+        description: "Create a new dataset"
+        requestBody:
+          description: "Dataset metadata"
+        requestModels:
+          application/json: "Dataset"
+        methodResponses:
+          - statusCode: "201"
+            responseBody:
+              description: "Dataset metadata"
+            responseModels:
+              application/json: "Dataset"
+          - statusCode: "400"

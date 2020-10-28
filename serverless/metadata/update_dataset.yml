@@ -6,3 +6,10 @@ events:
       parameters:
         paths:
           dataset_id: true
+      documentation:
+        description: "Update dataset"
+        requestBody:
+          description: "Any json file"
+        methodResponses:
+          - statusCode: "201"
+          - statusCode: "400"

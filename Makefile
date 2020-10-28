@@ -40,6 +40,11 @@ deploy: init test login-dev
 	@echo "\nDeploying to stage: $${STAGE:-dev}\n"
 	sls deploy --stage $${STAGE:-dev} --aws-profile $(.DEV_PROFILE)
 
+.PHONY: download-doc
+download-doc:
+	@echo "\nDownloading documentation\n"
+	sls downloadDocumentation --outputFileName swagger.yaml --stage dev --aws-profile $(.DEV_PROFILE)
+
 .PHONY: deploy-prod
 deploy-prod: init format is-git-clean test login-prod
 	sls deploy --stage prod --aws-profile $(.PROD_PROFILE)

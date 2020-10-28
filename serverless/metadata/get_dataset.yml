@@ -6,3 +6,11 @@ events:
       parameters:
         paths:
           dataset_id: true
+      documentation:
+        description: "Create a new dataset"
+        methodResponses:
+          - statusCode: "201"
+            responseBody:
+              description: "Dataset metadata"
+            responseModels:
+              application/json: "Dataset"

@@ -34,19 +34,20 @@ package:
 
 
 functions:
-  download-data: ${file(serverless/functions/data_downloader/download.yml)}
-  upload-data: ${file(serverless/functions/data_uploader/upload.yml)}
-  create-event-stream: ${file(serverless/functions/event_stream/create_event_stream.yml)}
-  send-events: ${file(serverless/functions/event_stream/send_events.yml)}
-  create-dataset: ${file(serverless/functions/metadata/create_dataset.yml)}
-  get-dataset: ${file(serverless/functions/metadata/get_dataset.yml)}
-  update-dataset: ${file(serverless/functions/metadata/update_dataset.yml)}
+  download-data: ${file(serverless/data_downloader/download.yml)}
+  upload-data: ${file(serverless/data_uploader/upload.yml)}
+  create-event-stream: ${file(serverless/event_stream/create_event_stream.yml)}
+  send-events: ${file(serverless/event_stream/send_events.yml)}
+  create-dataset: ${file(serverless/metadata/create_dataset.yml)}
+  get-dataset: ${file(serverless/metadata/get_dataset.yml)}
+  update-dataset: ${file(serverless/metadata/update_dataset.yml)}
 
 plugins:
   - serverless-python-requirements
   - serverless-plugin-git-variables
   - serverless-pseudo-parameters
   - serverless-es-logs
+  - serverless-aws-documentation
 
 resources:
   Description: |
@@ -67,3 +68,9 @@ custom:
   deploymentBucket:
     prod: ok-origo-dataplatform-config-prod
     dev: ok-origo-dataplatform-config-dev
+  documentation:
+    info:
+      version: ${git:sha1}
+      title: 'policy-server-poc'
+      description: 'Harmless endpoints for testing policy-server-poc'
+    models: ${file(serverless/models.yml)}
