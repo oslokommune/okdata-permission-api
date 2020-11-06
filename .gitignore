@@ -30,3 +30,6 @@ node_modules/
 
 # Jetbrains
 .idea/
+
+# Secrets
+.keycloak_profile_*
