@@ -19,7 +19,7 @@ class ResourceScopes(Enum):
 class ResourceServer:
     keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
     keycloak_realm = os.environ["KEYCLOAK_REALM"]
-    resource_server_name = (os.environ["RESOURCE_SERVER_CLIENT_ID"],)
+    resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
     user_id = "janedoe"
     user_password = os.environ["JANEDOE_PW"]
@@ -40,9 +40,7 @@ class ResourceServer:
             realm_name=self.keycloak_realm,
             verify=True,
         )
-        self.resource_server_uuid = self.kc_admin.get_client_id(
-            self.resource_server_name
-        )
+        self.resource_server_uuid = self.kc_admin.get_client_id(self.resource_server_name)
         self.uma_well_known = get_well_known(
             self.keycloak_server_url, self.keycloak_realm
         )
@@ -119,8 +117,8 @@ class ResourceServer:
                     "name": resource_name,
                     "type": "ok:origo:dataset",
                     "owner": {
-                        "id": "***REMOVED***",
-                        "name": "poc-resource-server",
+                        "id": self.resource_server_uuid,
+                        "name": self.resource_server_name,
                     },
                     "ownerManagedAccess": True,
                     "_id": resource_id,
@@ -133,7 +131,7 @@ class ResourceServer:
             "userId": user_id,
             "entitlements": False,
         }
-        evaluate_path = "admin/realms/api-catalog/clients/***REMOVED***/authz/resource-server/policy/evaluate"
+        evaluate_path = f"admin/realms/api-catalog/clients/{self.resource_server_uuid}/authz/resource-server/policy/evaluate"
         print(f"POST {evaluate_path}")
         response = self.kc_admin.raw_post(
             path=evaluate_path, data=json.dumps(evaluate_body)
@@ -295,26 +293,3 @@ class ResourceServer:
         print(f"GET {get_permission_url}")
         resp = requests.get(get_permission_url, headers=headers)
         return resp.json()
-
-
-resource_server = ResourceServer()
-# pp.pprint(resource_server.create_dataset_resource("kebab-rating", "TEAM-Ingrids Team"))
-# pp.pprint(create_read_permission("my-first-dataset", "7be8c282-b664-4ce0-a9e2-a6b0781d46b9", "janedoe"))
-# pp.pprint(give_permission("37ffa59c-ccb9-4731-8161-4903f2eedd4b", "homersimpson"))
-# pp.pprint(delete_permission("885488bf-2176-4b5a-82fc-953c06feb8ce"))
-# pp.pprint(resource_server.get_permission("kebab-rating-read"))
-# print(delete_resource("7de0197b-185c-4124-a747-347d23e26d26"))
-# print(get_resource_id("badetemperatur"))
-
-# r = resource_server.evaluate("kebab-rating", ResourceScopes.read, "janedoe")
-# pp.pprint(r)
-# print(resource_server.resource_server_uuid)
-# print(kc_admin.connection.base_url)
-
-# pp.pprint(resource_server.sandbox("kebab-rating"))
-
-print(
-    resource_server.update_permission(
-        "kebab-rating", ResourceScopes.read, "janedoe", decicion_strategy="AFFIRMATIVE"
-    )
-)
