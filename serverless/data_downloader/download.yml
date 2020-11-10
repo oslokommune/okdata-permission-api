@@ -3,12 +3,13 @@ environment:
   STAGE: ${self:provider.stage}
 events:
 - http:
-    path: data-downloader/{dataset}/{version}/{edition}
+    path: data-downloader/{dataset_id}/{version}/{edition}
     method: get
     cors: true
     request:
       parameters:
         paths:
-          dataset: true
+          dataset_id: true
           version: true
           edition: true
+    authorizer: ${file(serverless/kc-authorizer.yaml)}

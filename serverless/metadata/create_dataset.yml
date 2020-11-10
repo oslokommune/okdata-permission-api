@@ -17,3 +17,4 @@ events:
             responseModels:
               application/json: "Dataset"
           - statusCode: "400"
+      authorizer: ${file(serverless/kc-authorizer.yaml)}

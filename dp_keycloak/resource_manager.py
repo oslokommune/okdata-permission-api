@@ -5,6 +5,7 @@ import json
 from pprint import PrettyPrinter
 from keycloak import KeycloakOpenID, KeycloakAdmin
 from dp_keycloak.uma_utils import get_well_known
+from dp_keycloak.ssm import get_secret
 
 pp = PrettyPrinter(indent=2)
 
@@ -21,26 +22,25 @@ class ResourceServer:
     keycloak_realm = os.environ["KEYCLOAK_REALM"]
     resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
-    user_id = "janedoe"
-    user_password = os.environ["JANEDOE_PW"]
-
     def __init__(self):
 
         self.resource_server_client = KeycloakOpenID(
             realm_name=self.keycloak_realm,
             server_url=f"{self.keycloak_server_url}/auth/",
             client_id=self.resource_server_name,
-            client_secret_key=os.environ["RESOURCE_SERVER_CLIENT_SECRET"],
+            client_secret_key=get_secret("/dataplatform/poc-policy-server/client_secret")#os.environ["RESOURCE_SERVER_CLIENT_SECRET"],
         )
-
         self.kc_admin = KeycloakAdmin(
             server_url=f"{self.keycloak_server_url}/auth/",
             username=os.environ["KC_ADMIN_USERNAME"],
-            password=os.environ["KC_ADMIN_PW"],
+            password=get_secret("/dataplatform/poc-policy-server/admin-pw"),#os.environ["KC_ADMIN_PW"],
             realm_name=self.keycloak_realm,
             verify=True,
         )
-        self.resource_server_uuid = self.kc_admin.get_client_id(self.resource_server_name)
+        self.resource_server_uuid = "***REMOVED***"
+        # self.kc_admin.get_client_id(
+        #     self.resource_server_name
+        # )
         self.uma_well_known = get_well_known(
             self.keycloak_server_url, self.keycloak_realm
         )
@@ -75,6 +75,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScopes.owner.value],
             groups=[owner],
+            decisionStrategy="UNANIMOUS",
         )
         read_permission = self.create_permission(
             permission_name=f"{dataset_id}-read",
@@ -82,6 +83,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScopes.read.value],
             groups=[owner],
+            decisionStrategy="AFFIRMATIVE",
         )
         write_permission = self.create_permission(
             permission_name=f"{dataset_id}-write",
@@ -89,6 +91,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScopes.write.value],
             groups=[owner],
+            decisionStrategy="AFFIRMATIVE",
         )
         update_permission = self.create_permission(
             permission_name=f"{dataset_id}-update",
@@ -96,6 +99,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScopes.update.value],
             groups=[owner],
+            decisionStrategy="AFFIRMATIVE",
         )
         return {
             "resource": dataset_resource,
@@ -137,7 +141,7 @@ class ResourceServer:
             path=evaluate_path, data=json.dumps(evaluate_body)
         )
         print(response.status_code)
-        return response.json()
+        return response.json()["status"] == "PERMIT"
 
     def create_permission(
         self,
@@ -145,6 +149,7 @@ class ResourceServer:
         description: str,
         resource_id: str,
         scopes: list,
+        decisionStrategy: str,
         logic="POSITIVE",
         groups: list = [],
         users: list = [],
@@ -160,7 +165,7 @@ class ResourceServer:
             "groups": groups,
             "users": users,
             "logic": logic,
-            "decisionStrategy": "UNANIMOUS",
+            "decisionStrategy": decisionStrategy,
         }
 
         create_permission_url = f"{self.uma_well_known.policy_endpoint}/{resource_id}"
@@ -293,3 +298,19 @@ class ResourceServer:
         print(f"GET {get_permission_url}")
         resp = requests.get(get_permission_url, headers=headers)
         return resp.json()
+
+
+# resource_server = ResourceServer()
+# pp.pprint(resource_server.create_dataset_resource("kebab-rating", "TEAM-Ingrids Team"))
+# pp.pprint(resource_server.get_permission("kebab-rating-read"))
+# print(resource_server.get_resource_id("badetemperatur"))
+
+# r = resource_server.evaluate("kebab-rating", ResourceScopes.read, "homersimpson")
+# r.pprint(r)
+# pp.pprint(resource_server.sandbox("kebab-rating"))
+
+# print(
+#     resource_server.update_permission(
+#         "kebab-rating", ResourceScopes.read, "janedoe", decicion_strategy="AFFIRMATIVE"
+#     )
+# )

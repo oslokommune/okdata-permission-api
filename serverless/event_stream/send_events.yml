@@ -11,3 +11,4 @@ events:
         paths:
           dataset_id: true
           version: true
+    authorizer: ${file(serverless/kc-authorizer.yaml)}

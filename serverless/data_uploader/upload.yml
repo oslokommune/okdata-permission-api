@@ -14,3 +14,4 @@ events:
         methodResponses:
           - statusCode: "200"
           - statusCode: "400"
+      authorizer: ${file(serverless/kc-authorizer.yaml)}

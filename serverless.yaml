@@ -13,6 +13,12 @@ provider:
     serverSideEncryption: AES256
   deploymentPrefix: deploy
   rolePermissionsBoundary: "arn:aws:iam::#{AWS::AccountId}:policy/oslokommune/oslokommune-boundary"
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'ssm:GetParameter'
+      Resource:
+        - "arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/dataplatform/poc-policy-server/*"
   iamManagedPolicies:
     - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
   tags:
@@ -23,6 +29,10 @@ provider:
     STAGE: ${self:provider.stage}
     VERSION: ${self:custom.version}
     SERVICE_NAME: ${self:service}
+    KEYCLOAK_REALM: api-catalog
+    KEYCLOAK_SERVER: ***REMOVED***
+    RESOURCE_SERVER_CLIENT_ID: poc-resource-server
+    KC_ADMIN_USERNAME: ***REMOVED***
 package:
   exclude:
     - '**/*'
@@ -31,6 +41,7 @@ package:
     - data_uploader/*.py
     - event_stream/*.py
     - metadata/*.py
+    - dp_keycloak/*.py
 
 
 functions:
@@ -74,3 +85,6 @@ custom:
       title: 'policy-server-poc'
       description: 'Harmless endpoints for testing policy-server-poc'
     models: ${file(serverless/models.yml)}
+  keycloakArn:
+    prod: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:keycloak-authorizer-prod-authenticate
+    dev: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:keycloak-authorizer-dev-authenticate
