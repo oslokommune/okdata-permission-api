@@ -6,7 +6,7 @@ auth_client = ResourceAuthorizer()
 
 
 def handle(event, context):
-    dataset_id = event["pathParameters"]["dataset-id"]
+    dataset_id = event["pathParameters"]["dataset_id"]
     version = event["pathParameters"]["version"]
     principal_id = event["requestContext"]["authorizer"]["principalId"]
     user_token = event["headers"]["Authorization"].split(" ")[-1]

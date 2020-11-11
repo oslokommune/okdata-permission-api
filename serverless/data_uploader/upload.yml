@@ -1,4 +1,4 @@
-handler: data_uploader.upload.handler
+handler: data_uploader.upload.handle
 timeout: 30
 events:
   - http:
