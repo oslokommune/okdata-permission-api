@@ -52,6 +52,7 @@ functions:
   create-dataset: ${file(serverless/metadata/create_dataset.yml)}
   get-dataset: ${file(serverless/metadata/get_dataset.yml)}
   update-dataset: ${file(serverless/metadata/update_dataset.yml)}
+  give-access: ${file(serverless/access/give_access.yml)}
 
 plugins:
   - serverless-python-requirements

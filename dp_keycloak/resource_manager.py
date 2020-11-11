@@ -1,16 +1,15 @@
 import requests
 import os
 from enum import Enum
-import json
 from pprint import PrettyPrinter
-from keycloak import KeycloakOpenID, KeycloakAdmin
+from keycloak import KeycloakOpenID
 from dp_keycloak.uma_utils import get_well_known
 from dp_keycloak.ssm import get_secret
 
 pp = PrettyPrinter(indent=2)
 
 
-class ResourceScopes(Enum):
+class ResourceScope(Enum):
     read = "ok:origo:dataset:read"
     write = "ok:origo:dataset:write"
     update = "ok:origo:dataset:update"
@@ -28,19 +27,11 @@ class ResourceServer:
             realm_name=self.keycloak_realm,
             server_url=f"{self.keycloak_server_url}/auth/",
             client_id=self.resource_server_name,
-            client_secret_key=get_secret("/dataplatform/poc-policy-server/client_secret")#os.environ["RESOURCE_SERVER_CLIENT_SECRET"],
+            client_secret_key=get_secret(
+                "/dataplatform/poc-policy-server/client_secret"
+            ),  # os.environ["RESOURCE_SERVER_CLIENT_SECRET"],
         )
-        self.kc_admin = KeycloakAdmin(
-            server_url=f"{self.keycloak_server_url}/auth/",
-            username=os.environ["KC_ADMIN_USERNAME"],
-            password=get_secret("/dataplatform/poc-policy-server/admin-pw"),#os.environ["KC_ADMIN_PW"],
-            realm_name=self.keycloak_realm,
-            verify=True,
-        )
-        self.resource_server_uuid = "***REMOVED***"
-        # self.kc_admin.get_client_id(
-        #     self.resource_server_name
-        # )
+
         self.uma_well_known = get_well_known(
             self.keycloak_server_url, self.keycloak_realm
         )
@@ -57,10 +48,10 @@ class ResourceServer:
             "name": dataset_id,
             "ownerManagedAccess": True,
             "scopes": [
-                ResourceScopes.read.value,
-                ResourceScopes.write.value,
-                ResourceScopes.update.value,
-                ResourceScopes.owner.value,
+                ResourceScope.read.value,
+                ResourceScope.write.value,
+                ResourceScope.update.value,
+                ResourceScope.owner.value,
             ],
         }
         dataset_resource = requests.post(
@@ -73,7 +64,7 @@ class ResourceServer:
             permission_name=f"{dataset_id}-owner",
             description=f"Allows for owner operations on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScopes.owner.value],
+            scopes=[ResourceScope.owner.value],
             groups=[owner],
             decisionStrategy="UNANIMOUS",
         )
@@ -81,7 +72,7 @@ class ResourceServer:
             permission_name=f"{dataset_id}-read",
             description=f"Allows for read on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScopes.read.value],
+            scopes=[ResourceScope.read.value],
             groups=[owner],
             decisionStrategy="AFFIRMATIVE",
         )
@@ -89,7 +80,7 @@ class ResourceServer:
             permission_name=f"{dataset_id}-write",
             description=f"Allows for write on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScopes.write.value],
+            scopes=[ResourceScope.write.value],
             groups=[owner],
             decisionStrategy="AFFIRMATIVE",
         )
@@ -97,7 +88,7 @@ class ResourceServer:
             permission_name=f"{dataset_id}-update",
             description=f"Allows for write on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScopes.update.value],
+            scopes=[ResourceScope.update.value],
             groups=[owner],
             decisionStrategy="AFFIRMATIVE",
         )
@@ -111,37 +102,6 @@ class ResourceServer:
                 update_permission,
             ],
         }
-
-    def evaluate(self, resource_name, scope: ResourceScopes, username):
-        resource_id = self.get_resource_id(resource_name)
-        user_id = self.kc_admin.get_user_id(username)
-        evaluate_body = {
-            "resources": [
-                {
-                    "name": resource_name,
-                    "type": "ok:origo:dataset",
-                    "owner": {
-                        "id": self.resource_server_uuid,
-                        "name": self.resource_server_name,
-                    },
-                    "ownerManagedAccess": True,
-                    "_id": resource_id,
-                    "uris": [],
-                    "scopes": [scope.value],
-                }
-            ],
-            "context": {"attributes": {}},
-            "roleIds": [],
-            "userId": user_id,
-            "entitlements": False,
-        }
-        evaluate_path = f"admin/realms/api-catalog/clients/{self.resource_server_uuid}/authz/resource-server/policy/evaluate"
-        print(f"POST {evaluate_path}")
-        response = self.kc_admin.raw_post(
-            path=evaluate_path, data=json.dumps(evaluate_body)
-        )
-        print(response.status_code)
-        return response.json()["status"] == "PERMIT"
 
     def create_permission(
         self,
@@ -177,17 +137,10 @@ class ResourceServer:
         self,
         resource_name,
         scope,
-        caller_user_id,
         user_to_add: str = None,
         group_to_add: str = None,
         decicion_strategy: str = None,
     ):
-
-        evaluation = self.evaluate(resource_name, ResourceScopes.owner, caller_user_id)
-        if evaluation["status"] != "PERMIT":
-            raise Exception(
-                f"{caller_user_id} not authorized for {ResourceScopes.owner.value} on {resource_name}"
-            )
 
         permission = self.get_permission(
             f"{resource_name}-{scope.value.split(':')[-1]}"
@@ -217,7 +170,8 @@ class ResourceServer:
         print(f"PUT {update_permission_url}")
 
         resp = requests.put(update_permission_url, headers=headers, json=permission,)
-        return resp.status_code, resp.text
+        resp.raise_for_status()
+        return self.get_permission(f"{resource_name}-{scope.value.split(':')[-1]}")
 
     def get_permission(self, permission_name):
         headers = {
@@ -298,19 +252,3 @@ class ResourceServer:
         print(f"GET {get_permission_url}")
         resp = requests.get(get_permission_url, headers=headers)
         return resp.json()
-
-
-# resource_server = ResourceServer()
-# pp.pprint(resource_server.create_dataset_resource("kebab-rating", "TEAM-Ingrids Team"))
-# pp.pprint(resource_server.get_permission("kebab-rating-read"))
-# print(resource_server.get_resource_id("badetemperatur"))
-
-# r = resource_server.evaluate("kebab-rating", ResourceScopes.read, "homersimpson")
-# r.pprint(r)
-# pp.pprint(resource_server.sandbox("kebab-rating"))
-
-# print(
-#     resource_server.update_permission(
-#         "kebab-rating", ResourceScopes.read, "janedoe", decicion_strategy="AFFIRMATIVE"
-#     )
-# )

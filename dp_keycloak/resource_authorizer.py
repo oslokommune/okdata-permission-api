@@ -1,0 +1,38 @@
+import os
+import requests
+from dp_keycloak.uma_utils import get_well_known
+from dp_keycloak.resource_manager import ResourceScope
+
+
+class ResourceAuthorizer:
+    keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
+    keycloak_realm = os.environ["KEYCLOAK_REALM"]
+
+    def __init__(self):
+        self.uma_well_known = get_well_known(
+            self.keycloak_server_url, self.keycloak_realm
+        )
+        self.resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
+
+    def has_access(self, resource_name, scope: ResourceScope, user_bearer_token):
+
+        payload = [
+            ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
+            ("audience", self.resource_server_name),
+            ("response_mode", "decision"),
+            ("permission", f"{resource_name}#{scope.value}"),
+        ]
+        headers = {
+            "Authorization": f"Bearer {user_bearer_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        response = requests.post(
+            self.uma_well_known.token_endpoint, data=payload, headers=headers
+        )
+
+        if response.status_code == 403:
+            return False
+
+        response.raise_for_status()
+
+        return response.json()["result"]
