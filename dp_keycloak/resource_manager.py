@@ -188,6 +188,20 @@ class ResourceServer:
                 return permission
         raise Exception(f"Permission {permission_name} not found")
 
+    def list_permissions(self, resource_name):
+        headers = {
+            "Authorization": f"Bearer {self.resource_server_access_token()}",
+            "Content-Type": "application/json",
+        }
+        resource_id = self.get_resource_id(resource_name)
+        get_permission_url = (
+            f"{self.uma_well_known.policy_endpoint}/?resource={resource_id}"
+        )
+        print(f"GET {get_permission_url}")
+        resp = requests.get(get_permission_url, headers=headers)
+        resp.raise_for_status()
+        return resp.json()
+
     def delete_permission(self, permission_name):
         headers = {
             "Authorization": f"Bearer {self.resource_server_access_token()}",
@@ -231,6 +245,7 @@ class ResourceServer:
             resource = requests.get(get_resource_url, headers=headers).json()
             if resource["name"] == resource_name:
                 return resource["_id"]
+        raise Exception(f"No resource named {resource_name}")
 
     def resource_server_access_token(self):
         if self.resource_server_token is None:

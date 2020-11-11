@@ -2,6 +2,7 @@ import os
 import requests
 from dp_keycloak.uma_utils import get_well_known
 from dp_keycloak.resource_manager import ResourceScope
+import jwt
 
 
 class ResourceAuthorizer:
@@ -36,3 +37,24 @@ class ResourceAuthorizer:
         response.raise_for_status()
 
         return response.json()["result"]
+
+    def get_user_permissions(self, user_bearer_token, scope: ResourceScope = None):
+        payload = [
+            ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
+            ("audience", self.resource_server_name),
+        ]
+        if scope:
+            payload.append(("permission", f"#{scope.value}"))
+
+        headers = {
+            "Authorization": f"Bearer {user_bearer_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        response = requests.post(
+            self.uma_well_known.token_endpoint, data=payload, headers=headers
+        )
+
+        response.raise_for_status()
+
+        access_token = response.json()["access_token"]
+        return jwt.decode(access_token, verify=False)["authorization"]["permissions"]

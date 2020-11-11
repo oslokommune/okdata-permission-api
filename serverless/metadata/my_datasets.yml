@@ -1,0 +1,6 @@
+handler: metadata.my_datasets.handle
+events:
+  - http:
+      path: my-datasets
+      method: get
+      authorizer: ${file(serverless/kc-authorizer.yaml)}

@@ -19,6 +19,7 @@ importlib-metadata==2.0.0  # via jsonpickle
 jmespath==0.10.0          # via boto3, botocore
 jsonpickle==1.4.1         # via aws-xray-sdk
 pyasn1==0.4.8             # via python-jose, rsa
+pyjwt==1.7.1              # via policy-server-poc (setup.py)
 python-dateutil==2.8.1    # via botocore
 python-jose==3.2.0        # via python-keycloak
 python-keycloak==0.22.0   # via dataplatform-common-python

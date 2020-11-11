@@ -1,0 +1,9 @@
+handler: dp_keycloak.access_handler.list_permissions
+events:
+  - http:
+      path: access/{dataset_id}
+      method: get
+      parameters:
+        paths:
+          dataset_id: true
+      authorizer: ${file(serverless/kc-authorizer.yaml)}
