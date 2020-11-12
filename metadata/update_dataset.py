@@ -19,5 +19,5 @@ def handle(event, context):
             ),
         }
     content = json.loads(event["body"])
-    updated = content.update({"dataset_id": dataset_id})
-    return {"statusCode": 200, "body": json.dumps(updated)}
+    content.update({"dataset_id": dataset_id})
+    return {"statusCode": 200, "body": json.dumps(content)}
