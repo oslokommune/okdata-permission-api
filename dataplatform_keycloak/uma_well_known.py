@@ -24,5 +24,5 @@ def get_well_known(server_url, realm) -> UMAWellKnown:
         token_introspection_endpoint=well_known["token_introspection_endpoint"],
         resource_registration_endpoint=well_known["resource_registration_endpoint"],
         permission_endpoint=well_known["permission_endpoint"],
-        policy_endpoint=well_known["policy_endpoint"]
+        policy_endpoint=well_known["policy_endpoint"],
     )

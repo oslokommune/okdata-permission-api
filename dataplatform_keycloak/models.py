@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ResourceScope(Enum):
     read = "ok:origo:dataset:read"
     write = "ok:origo:dataset:write"

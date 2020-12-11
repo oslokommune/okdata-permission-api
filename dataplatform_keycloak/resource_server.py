@@ -27,7 +27,7 @@ class ResourceServer:
             realm_name=self.keycloak_realm,
             server_url=f"{self.keycloak_server_url}/auth/",
             client_id=self.resource_server_name,
-            client_secret_key=client_secret_key
+            client_secret_key=client_secret_key,
         )
 
         self.uma_well_known = get_well_known(
@@ -128,7 +128,11 @@ class ResourceServer:
 
         create_permission_url = f"{self.uma_well_known.policy_endpoint}/{resource_id}"
         print(f"POST {create_permission_url}")
-        resp = requests.post(create_permission_url, headers=headers, json=permission,)
+        resp = requests.post(
+            create_permission_url,
+            headers=headers,
+            json=permission,
+        )
         return resp.json()
 
     def update_permission(
@@ -167,7 +171,11 @@ class ResourceServer:
         )
         print(f"PUT {update_permission_url}")
 
-        resp = requests.put(update_permission_url, headers=headers, json=permission,)
+        resp = requests.put(
+            update_permission_url,
+            headers=headers,
+            json=permission,
+        )
         resp.raise_for_status()
         return self.get_permission(f"{resource_name}-{scope.value.split(':')[-1]}")
 
@@ -221,7 +229,10 @@ class ResourceServer:
             f"{self.uma_well_known.resource_registration_endpoint}/{resource_id}"
         )
         print(f"DELETE {delete_url}")
-        resp = requests.delete(delete_url, headers=headers,)
+        resp = requests.delete(
+            delete_url,
+            headers=headers,
+        )
         return resp.status_code, resp.text
 
     def get_resource_id(self, resource_name):
@@ -258,10 +269,8 @@ class ResourceServer:
             "Authorization": f"Bearer {self.resource_server_access_token()}",
             "Content-Type": "application/json",
         }
-        #resource_id = self.get_resource_id(param)
-        get_permission_url = (
-            f"{self.uma_well_known.policy_endpoint}/"
-        )
+        # resource_id = self.get_resource_id(param)
+        get_permission_url = f"{self.uma_well_known.policy_endpoint}/"
         print(f"GET {get_permission_url}")
         resp = requests.get(get_permission_url, headers=headers)
         return resp.json()

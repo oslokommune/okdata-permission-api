@@ -28,8 +28,10 @@ format: $(BUILD_VENV)/bin/black
 	$(BUILD_PY) -m black .
 
 .PHONY: test
-test: $(BUILD_VENV)/bin/tox
+test: $(BUILD_VENV)/bin/tox setup-keycloak-local
 	$(BUILD_PY) -m tox -p auto -o
+	make tear-down-keycloak-local
+
 
 .PHONY: upgrade-deps
 upgrade-deps: $(BUILD_VENV)/bin/pip-compile
@@ -53,6 +55,16 @@ setup-keycloak-local: ## Run a local Keycloak instance running in docker
 	docker-compose \
 		-f keycloak-compose.yaml \
 		up -d
+
+tear-down-keycloak-local: ## Stop and remove local Keycloak instance running in docker
+	docker-compose \
+		-f keycloak-compose.yaml \
+		down --remove-orphans || true
+
+stop-keycloak-local: ## Stop local Keycloak instance running in docker
+	docker-compose \
+		-f keycloak-compose.yaml \
+		stop
 
 compose-down: ## Stop all containers for the backend
 	docker-compose -f keycloak-compose.yaml down --remove-orphans || true
