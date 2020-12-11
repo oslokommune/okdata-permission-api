@@ -45,16 +45,8 @@ package:
 
 
 functions:
-  download-data: ${file(serverless/data_downloader/download.yml)}
-  upload-data: ${file(serverless/data_uploader/upload.yml)}
-  create-event-stream: ${file(serverless/event_stream/create_event_stream.yml)}
-  send-events: ${file(serverless/event_stream/send_events.yml)}
-  create-dataset: ${file(serverless/metadata/create_dataset.yml)}
-  get-dataset: ${file(serverless/metadata/get_dataset.yml)}
-  update-dataset: ${file(serverless/metadata/update_dataset.yml)}
   give-access: ${file(serverless/access/give_access.yml)}
   list-permissions: ${file(serverless/access/list_permissions.yml)}
-  my-datasets: ${file(serverless/metadata/my_datasets.yml)}
 
 plugins:
   - serverless-python-requirements

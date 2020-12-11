@@ -1,19 +1,12 @@
 import requests
 import os
-from enum import Enum
 from pprint import PrettyPrinter
 from keycloak import KeycloakOpenID
-from dp_keycloak.uma_utils import get_well_known
-from dp_keycloak.ssm import get_secret
+from .uma_well_known import get_well_known
+from .ssm import get_secret
+from .models import ResourceScope
 
 pp = PrettyPrinter(indent=2)
-
-
-class ResourceScope(Enum):
-    read = "ok:origo:dataset:read"
-    write = "ok:origo:dataset:write"
-    update = "ok:origo:dataset:update"
-    owner = "ok:origo:dataset:owner"
 
 
 class ResourceServer:
@@ -21,15 +14,20 @@ class ResourceServer:
     keycloak_realm = os.environ["KEYCLOAK_REALM"]
     resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
-    def __init__(self):
+    def __init__(self, local=False):
+
+        if local:
+            client_secret_key = os.environ["RESOURCE_SERVER_CLIENT_SECRET"]
+        else:
+            client_secret_key = get_secret(
+                "/dataplatform/poc-policy-server/client_secret"
+            )
 
         self.resource_server_client = KeycloakOpenID(
             realm_name=self.keycloak_realm,
             server_url=f"{self.keycloak_server_url}/auth/",
             client_id=self.resource_server_name,
-            client_secret_key=get_secret(
-                "/dataplatform/poc-policy-server/client_secret"
-            ),  # os.environ["RESOURCE_SERVER_CLIENT_SECRET"],
+            client_secret_key=client_secret_key
         )
 
         self.uma_well_known = get_well_known(
@@ -66,7 +64,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScope.owner.value],
             groups=[owner],
-            decisionStrategy="UNANIMOUS",
+            decision_strategy="AFFIRMATIVE",
         )
         read_permission = self.create_permission(
             permission_name=f"{dataset_id}-read",
@@ -74,7 +72,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScope.read.value],
             groups=[owner],
-            decisionStrategy="AFFIRMATIVE",
+            decision_strategy="AFFIRMATIVE",
         )
         write_permission = self.create_permission(
             permission_name=f"{dataset_id}-write",
@@ -82,7 +80,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScope.write.value],
             groups=[owner],
-            decisionStrategy="AFFIRMATIVE",
+            decision_strategy="AFFIRMATIVE",
         )
         update_permission = self.create_permission(
             permission_name=f"{dataset_id}-update",
@@ -90,7 +88,7 @@ class ResourceServer:
             resource_id=resource_id,
             scopes=[ResourceScope.update.value],
             groups=[owner],
-            decisionStrategy="AFFIRMATIVE",
+            decision_strategy="AFFIRMATIVE",
         )
         return {
             "resource": dataset_resource,
@@ -109,7 +107,7 @@ class ResourceServer:
         description: str,
         resource_id: str,
         scopes: list,
-        decisionStrategy: str,
+        decision_strategy: str,
         logic="POSITIVE",
         groups: list = [],
         users: list = [],
@@ -125,7 +123,7 @@ class ResourceServer:
             "groups": groups,
             "users": users,
             "logic": logic,
-            "decisionStrategy": decisionStrategy,
+            "decisionStrategy": decision_strategy,
         }
 
         create_permission_url = f"{self.uma_well_known.policy_endpoint}/{resource_id}"
@@ -260,10 +258,14 @@ class ResourceServer:
             "Authorization": f"Bearer {self.resource_server_access_token()}",
             "Content-Type": "application/json",
         }
-        resource_id = self.get_resource_id(param)
+        #resource_id = self.get_resource_id(param)
         get_permission_url = (
-            f"{self.uma_well_known.policy_endpoint}/?resource={resource_id}"
+            f"{self.uma_well_known.policy_endpoint}/"
         )
         print(f"GET {get_permission_url}")
         resp = requests.get(get_permission_url, headers=headers)
         return resp.json()
+
+
+# rm = ResourceServer(local=True)
+# pp.pprint(rm.create_dataset_resource("some-dataset-2", "team 1"))

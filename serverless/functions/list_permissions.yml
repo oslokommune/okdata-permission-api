@@ -1,4 +1,4 @@
-handler: dp_keycloak.access_handler.list_permissions
+handler: handlers.access_handler.list_permissions
 events:
   - http:
       path: access/{dataset_id}

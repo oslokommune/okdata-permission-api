@@ -49,6 +49,14 @@ download-doc:
 deploy-prod: init format is-git-clean test login-prod
 	sls deploy --stage prod --aws-profile $(.PROD_PROFILE)
 
+setup-keycloak-local: ## Run a local Keycloak instance running in docker
+	docker-compose \
+		-f keycloak-compose.yaml \
+		up -d
+
+compose-down: ## Stop all containers for the backend
+	docker-compose -f keycloak-compose.yaml down --remove-orphans || true
+
 ifeq ($(MAKECMDGOALS),undeploy)
 ifndef STAGE
 $(error STAGE is not set)

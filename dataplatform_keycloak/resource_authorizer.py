@@ -1,7 +1,7 @@
 import os
 import requests
-from dp_keycloak.uma_utils import get_well_known
-from dp_keycloak.resource_manager import ResourceScope
+from .uma_well_known import get_well_known
+from .resource_server import ResourceScope
 import jwt
 
 

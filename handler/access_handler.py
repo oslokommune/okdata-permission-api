@@ -1,6 +1,6 @@
 import json
-from dp_keycloak.resource_authorizer import ResourceAuthorizer
-from dp_keycloak.resource_manager import ResourceScope, ResourceServer
+from dataplatform_keycloak import ResourceAuthorizer, ResourceServer, ResourceScope
+
 
 auth_client = ResourceAuthorizer()
 resource_server = ResourceServer()
