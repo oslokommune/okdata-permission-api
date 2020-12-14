@@ -34,9 +34,24 @@ def populate(realm_name, resource_server_id, users):
             "authorizationServicesEnabled": True,
             "serviceAccountsEnabled": True,
             "directAccessGrantsEnabled": True,
+            "secret": "8acda364-eafa-4a03-8fa6-b019a48ddafe",
         },
         skip_exists=True,
     )
+
+    for user in users:
+        for group in user["groups"]:
+            keycloak_admin.create_group(payload={"name": group}, skip_exists=True)
+        keycloak_admin.create_user(
+            payload={
+                "username": user["username"],
+                "groups": user["groups"],
+                "enabled": True,
+                "credentials": [
+                    {"type": "password", "value": "passord", "temporary": False}
+                ],
+            }
+        )
 
 
 def initialize_keycloak_admin(timeout_seconds=30.0):
@@ -63,5 +78,8 @@ if __name__ == "__main__":
     populate(
         realm_name="dataplatform",
         resource_server_id="resource_server",
-        users=["janedoe", "homersimpson"],
+        users=[
+            {"username": "janedoe", "groups": ["group1"]},
+            {"username": "homersimpson", "groups": []},
+        ],
     )
