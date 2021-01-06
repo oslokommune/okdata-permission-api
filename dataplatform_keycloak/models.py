@@ -2,7 +2,11 @@ from enum import Enum
 
 
 class ResourceScope(Enum):
-    read = "ok:origo:dataset:read"
-    write = "ok:origo:dataset:write"
-    update = "ok:origo:dataset:update"
-    owner = "ok:origo:dataset:owner"
+    read = "okdata:dataset:read"
+    write = "okdata:dataset:write"
+    update = "okdata:dataset:update"
+    owner = "okdata:dataset:owner"
+
+    @staticmethod
+    def list_values():
+        return list(map(lambda rs: rs.value, ResourceScope))

@@ -3,7 +3,8 @@ events:
   - http:
       path: access/{dataset_id}
       method: put
-      parameters:
-        paths:
-          dataset_id: true
+      request:
+        parameters:
+          paths:
+            dataset_id: true
       authorizer: ${file(serverless/kc-authorizer.yaml)}

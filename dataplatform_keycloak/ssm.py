@@ -1,8 +1,11 @@
+import os
 import boto3
 
-client = boto3.client("ssm", region_name="eu-west-1")
 
+class SsmClient:
+    def __init__(self):
+        self.client = boto3.client("ssm", region_name=os.environ["AWS_REGION"])
 
-def get_secret(key):
-    resp = client.get_parameter(Name=key, WithDecryption=True)
-    return resp["Parameter"]["Value"]
+    def get_secret(self, key):
+        resp = self.client.get_parameter(Name=key, WithDecryption=True)
+        return resp["Parameter"]["Value"]

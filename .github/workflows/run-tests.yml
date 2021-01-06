@@ -1,0 +1,22 @@
+name: Run Tests
+on:
+  pull_request:
+  push:
+    branches: master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup local keycloak
+      run: make setup-keycloak-local
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: pip install tox
+    - name: Test with tox
+      run: tox -e py,flake8,black
+    - name: Tear down local keycloak
+      run: make tear-down-keycloak-local

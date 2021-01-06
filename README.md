@@ -46,6 +46,14 @@ make init
 ```
 
 
+### Developing towards local keycloak instance
+
+```bash
+make setup-keycloak-local
+python -m tests.setup.populate_local_keycloak
+```
+
+
 ## Tests
 
 Tests are run using [tox](https://pypi.org/project/tox/): `make test`

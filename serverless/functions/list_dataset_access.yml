@@ -1,14 +1,12 @@
-handler: handlers.permission_handler.list_permissions
+handler: handlers.access_handler.list_access
 events:
   - http:
-      path: permissions
+      path: access
       method: get
       request:
         parameters:
           querystrings:
             dataset_id: false
-            team_id: false
+            team_id: true
             scope: false
-            first: false
-            max: false
       authorizer: ${file(serverless/kc-authorizer.yaml)}

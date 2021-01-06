@@ -14,9 +14,10 @@ class UMAWellKnown:
 
 
 def get_well_known(server_url, realm) -> UMAWellKnown:
-    well_known = requests.get(
-        f"{server_url}/auth/realms/{realm}/.well-known/uma2-configuration"
-    ).json()
+    well_known_url = f"{server_url}/auth/realms/{realm}/.well-known/uma2-configuration"
+    well_known_response = requests.get(well_known_url)
+    well_known_response.raise_for_status()
+    well_known = well_known_response.json()
     return UMAWellKnown(
         issuer=well_known["token_endpoint"],
         authorization_endpoint=well_known["authorization_endpoint"],

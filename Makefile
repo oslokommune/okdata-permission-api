@@ -59,7 +59,7 @@ setup-keycloak-local: ## Run a local Keycloak instance running in docker
 tear-down-keycloak-local: ## Stop and remove local Keycloak instance running in docker
 	docker-compose \
 		-f keycloak-compose.yaml \
-		down --remove-orphans || true
+		down -v --remove-orphans || true
 
 stop-keycloak-local: ## Stop local Keycloak instance running in docker
 	docker-compose \

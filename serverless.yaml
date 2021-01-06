@@ -1,4 +1,4 @@
-frameworkVersion: ">=1.64.0 <2.0.0"
+frameworkVersion: ">=2.10.0 <3.0.0"
 
 service: policy-server-poc
 
@@ -33,20 +33,17 @@ provider:
     KEYCLOAK_SERVER: ***REMOVED***
     RESOURCE_SERVER_CLIENT_ID: poc-resource-server
     KC_ADMIN_USERNAME: ***REMOVED***
+
 package:
   exclude:
     - '**/*'
   include:
-    - data_downloader/*.py
-    - data_uploader/*.py
-    - event_stream/*.py
-    - metadata/*.py
-    - dp_keycloak/*.py
-
+    - dataplatform_keycloak/*.py
+    - handlers/*.py
 
 functions:
-  give-access: ${file(serverless/access/give_access.yml)}
-  list-permissions: ${file(serverless/access/list_permissions.yml)}
+  give-access: ${file(serverless/functions/give_access.yml)}
+  list-permissions: ${file(serverless/functions/list_permissions.yml)}
 
 plugins:
   - serverless-python-requirements

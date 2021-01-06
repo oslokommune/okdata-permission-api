@@ -1,5 +1,3 @@
-
-
 server_url = "http://localhost:35789/auth/"
 
 realm_name = "localtest"
