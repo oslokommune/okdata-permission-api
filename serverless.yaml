@@ -1,6 +1,6 @@
 frameworkVersion: ">=2.10.0 <3.0.0"
 
-service: policy-server-poc
+service: okdata-permission-api
 
 provider:
   name: aws
@@ -18,7 +18,7 @@ provider:
       Action:
         - 'ssm:GetParameter'
       Resource:
-        - "arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/dataplatform/poc-policy-server/*"
+        - "arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/dataplatform/okdata-permission-api/*"
   iamManagedPolicies:
     - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
   tags:
@@ -30,9 +30,8 @@ provider:
     VERSION: ${self:custom.version}
     SERVICE_NAME: ${self:service}
     KEYCLOAK_REALM: api-catalog
-    KEYCLOAK_SERVER: ***REMOVED***
-    RESOURCE_SERVER_CLIENT_ID: poc-resource-server
-    KC_ADMIN_USERNAME: ***REMOVED***
+    KEYCLOAK_SERVER: /dataplatform/shared/keycloak-server-url
+    RESOURCE_SERVER_CLIENT_ID: ${ssm:okdata-resource-server}
 
 package:
   exclude:
@@ -74,8 +73,8 @@ custom:
   documentation:
     info:
       version: ${git:sha1}
-      title: 'policy-server-poc'
-      description: 'Harmless endpoints for testing policy-server-poc'
+      title: 'Okdata Permission API'
+      description: 'Endpoint for managing permissions to okdata resources'
     models: ${file(serverless/models.yml)}
   keycloakArn:
     prod: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:keycloak-authorizer-prod-authenticate

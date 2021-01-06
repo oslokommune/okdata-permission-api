@@ -1,4 +1,4 @@
-Policy Server POC
+Okdata Permission API
 ==================
 Endpoints and other stuff for keycloak policy server POC
 

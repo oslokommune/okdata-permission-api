@@ -4,20 +4,50 @@
 #
 #    pip-compile
 #
-boto3==1.16.38            # via policy-server-poc (setup.py)
-botocore==1.19.38         # via boto3, s3transfer
-certifi==2020.12.5        # via requests
-chardet==4.0.0            # via requests
-ecdsa==0.14.1             # via python-jose
-idna==2.10                # via requests
-jmespath==0.10.0          # via boto3, botocore
-pyasn1==0.4.8             # via python-jose, rsa
-pyjwt==1.7.1              # via policy-server-poc (setup.py)
-python-dateutil==2.8.1    # via botocore
-python-jose==3.2.0        # via python-keycloak
-python-keycloak==0.23.0   # via policy-server-poc (setup.py)
-requests==2.25.1          # via policy-server-poc (setup.py), python-keycloak
-rsa==4.6                  # via python-jose
-s3transfer==0.3.3         # via boto3
-six==1.15.0               # via ecdsa, python-dateutil, python-jose
-urllib3==1.26.2           # via botocore, requests
+boto3==1.16.38
+    # via okdata-permission-api (setup.py)
+botocore==1.19.38
+    # via
+    #   boto3
+    #   s3transfer
+certifi==2020.12.5
+    # via requests
+chardet==4.0.0
+    # via requests
+ecdsa==0.14.1
+    # via python-jose
+idna==2.10
+    # via requests
+jmespath==0.10.0
+    # via
+    #   boto3
+    #   botocore
+pyasn1==0.4.8
+    # via
+    #   python-jose
+    #   rsa
+pyjwt==1.7.1
+    # via okdata-permission-api (setup.py)
+python-dateutil==2.8.1
+    # via botocore
+python-jose==3.2.0
+    # via python-keycloak
+python-keycloak==0.23.0
+    # via okdata-permission-api (setup.py)
+requests==2.25.1
+    # via
+    #   okdata-permission-api (setup.py)
+    #   python-keycloak
+rsa==4.6
+    # via python-jose
+s3transfer==0.3.3
+    # via boto3
+six==1.15.0
+    # via
+    #   ecdsa
+    #   python-dateutil
+    #   python-jose
+urllib3==1.26.2
+    # via
+    #   botocore
+    #   requests

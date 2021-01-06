@@ -10,7 +10,7 @@ from .models import ResourceScope
 class ResourceServer:
     keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
     keycloak_realm = os.environ["KEYCLOAK_REALM"]
-    resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
+    resource_server_client_id = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
     def __init__(self, local=False):
 
@@ -18,13 +18,13 @@ class ResourceServer:
             client_secret_key = os.environ["RESOURCE_SERVER_CLIENT_SECRET"]
         else:
             client_secret_key = SsmClient().get_secret(
-                "/dataplatform/poc-policy-server/client_secret"
+                f"/dataplatform/{self.resource_server_client_id}/client_secret"
             )
 
         self.resource_server_client = KeycloakOpenID(
             realm_name=self.keycloak_realm,
             server_url=f"{self.keycloak_server_url}/auth/",
-            client_id=self.resource_server_name,
+            client_id=self.resource_server_client_id,
             client_secret_key=client_secret_key,
         )
 
