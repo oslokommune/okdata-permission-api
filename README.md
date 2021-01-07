@@ -1,6 +1,7 @@
 Okdata Permission API
 ==================
-Endpoints and other stuff for keycloak policy server POC
+API for managing permissions for okdata resources such as datasets. The API is currently WIP (work in progress) and is
+not in use anywhere at this time.
 
 
 ## Usage
