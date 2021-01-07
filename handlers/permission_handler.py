@@ -1,5 +1,6 @@
 import json
-from dataplatform_keycloak import ResourceAuthorizer, ResourceServer, ResourceScope
+from dataplatform_keycloak import ResourceAuthorizer, ResourceServer
+from models import ResourceScope, OkdataPermission
 
 
 auth_client = ResourceAuthorizer()
@@ -60,7 +61,7 @@ def list_permissions(event, context):
         )
         return {"statusCode": 400, "body": json.dumps({"message": error_msg})}
 
-    permissions = resource_server.list_permissions(
+    uma_permissions = resource_server.list_permissions(
         resource_name=dataset_id,
         group=team_id,
         scope=scope,
@@ -70,19 +71,19 @@ def list_permissions(event, context):
 
     return {
         "statusCode": 200,
-        "body": json.dumps(format_permissions(permissions)),
+        "body": json.dumps(to_okdata_permissions(uma_permissions)),
     }
 
 
-def format_permissions(permissions):
+def to_okdata_permissions(uma_permissions):
     return [
-        {
-            "dataset_id": permission["name"].split(":")[0],
-            "description": permission["description"],
-            "scopes": permission["scopes"],
-            "teams": [group[1:] for group in permission.get("groups", [])],
-            "users": permission.get("users", []),
-            "clients": permission.get("clients", []),
-        }
-        for permission in permissions
+        OkdataPermission(
+            dataset_id=uma_permission["name"].split(":")[0],
+            description=uma_permission["description"],
+            scopes=uma_permission["scopes"],
+            teams=[group[1:] for group in uma_permission.get("groups", [])],
+            users=uma_permission.get("users", []),
+            clients=uma_permission.get("clients", []),
+        ).dict()
+        for uma_permission in uma_permissions
     ]

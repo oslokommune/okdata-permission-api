@@ -4,7 +4,7 @@ import os
 from keycloak import KeycloakOpenID
 from .uma_well_known import get_well_known
 from .ssm import SsmClient
-from .models import ResourceScope
+from models import OwnerType, ResourceScope
 
 
 class ResourceServer:
@@ -34,7 +34,9 @@ class ResourceServer:
 
         self.resource_server_token = None
 
-    def create_dataset_resource(self, dataset_id, owner):
+    def create_dataset_resource(
+        self, dataset_id: str, owner_id: str, owner_type: OwnerType
+    ):
         create_resource_response = requests.post(
             self.uma_well_known.resource_registration_endpoint,
             json={
@@ -59,38 +61,37 @@ class ResourceServer:
             description=f"Allows for owner operations on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.owner.value],
-            groups=[owner],
-            decision_strategy="AFFIRMATIVE",
+            owner_id=owner_id,
+            owner_type=owner_type,
         )
         read_permission = self.create_permission(
             permission_name=f"{dataset_id}:read",
             description=f"Allows for read on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.read.value],
-            groups=[owner],
-            decision_strategy="AFFIRMATIVE",
+            owner_id=owner_id,
+            owner_type=owner_type,
         )
         write_permission = self.create_permission(
             permission_name=f"{dataset_id}:write",
             description=f"Allows for write on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.write.value],
-            groups=[owner],
-            decision_strategy="AFFIRMATIVE",
+            owner_id=owner_id,
+            owner_type=owner_type,
         )
         update_permission = self.create_permission(
             permission_name=f"{dataset_id}:update",
             description=f"Allows for update on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.update.value],
-            groups=[owner],
-            decision_strategy="AFFIRMATIVE",
+            owner_id=owner_id,
+            owner_type=owner_type,
         )
         return {
             "resource": dataset_resource,
             "permissions": [
                 owner_permission,
-                read_permission,
                 read_permission,
                 write_permission,
                 update_permission,
@@ -103,17 +104,21 @@ class ResourceServer:
         description: str,
         resource_id: str,
         scopes: list,
-        decision_strategy: str,
-        logic="POSITIVE",
-        groups: list = [],
-        users: list = [],
+        owner_id: str,
+        owner_type: OwnerType,
+        decision_strategy: str = "AFFIRMATIVE",
+        logic: str = "POSITIVE",
     ):
+        owner_map = {o: [] for o in OwnerType}
+        owner_map[owner_type].append(owner_id)
+
         permission = {
             "name": permission_name,
             "description": description,
             "scopes": scopes,
-            "groups": groups,
-            "users": users,
+            "groups": owner_map[OwnerType.GROUP],
+            "users": owner_map[OwnerType.USER],
+            "clients": owner_map[OwnerType.CLIENT],
             "logic": logic,
             "decisionStrategy": decision_strategy,
         }

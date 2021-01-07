@@ -1,0 +1,6 @@
+handler: handlers.resource_handler.create_resource
+events:
+  - http:
+      path: resources
+      method: post
+      authorizer: ${file(serverless/kc-authorizer.yaml)}

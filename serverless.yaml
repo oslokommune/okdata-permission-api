@@ -41,6 +41,7 @@ package:
     - handlers/*.py
 
 functions:
+  create-resource: ${file(serverless/functions/create_resource.yml)}
   give-access: ${file(serverless/functions/give_access.yml)}
   list-permissions: ${file(serverless/functions/list_permissions.yml)}
 

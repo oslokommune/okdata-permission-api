@@ -26,6 +26,8 @@ pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
+pydantic==1.7.3
+    # via okdata-permission-api (setup.py)
 pyjwt==1.7.1
     # via okdata-permission-api (setup.py)
 python-dateutil==2.8.1
