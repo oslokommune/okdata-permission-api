@@ -1,7 +1,7 @@
-handler: handlers.access_handler.handle
+handler: handlers.permission_handler.update_permission
 events:
   - http:
-      path: access/{dataset_id}
+      path: permissions/{dataset_id}
       method: put
       request:
         parameters:

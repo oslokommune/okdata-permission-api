@@ -42,7 +42,7 @@ package:
 
 functions:
   create-resource: ${file(serverless/functions/create_resource.yml)}
-  give-access: ${file(serverless/functions/give_access.yml)}
+  update-permission: ${file(serverless/functions/update_permission.yml)}
   list-permissions: ${file(serverless/functions/list_permissions.yml)}
 
 plugins:

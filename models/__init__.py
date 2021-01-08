@@ -1,3 +1,17 @@
-from .models import CreateResourceBody, OwnerType, ResourceScope, OkdataPermission
+from .models import (
+    CreateResourceBody,
+    UserType,
+    ResourceScope,
+    OkdataPermission,
+    UpdatePermissionBody,
+    User,
+)
 
-__all__ = ["CreateResourceBody", "OwnerType", "ResourceScope", "OkdataPermission"]
+__all__ = [
+    "CreateResourceBody",
+    "UserType",
+    "ResourceScope",
+    "OkdataPermission",
+    "UpdatePermissionBody",
+    "User",
+]

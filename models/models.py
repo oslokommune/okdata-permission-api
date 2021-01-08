@@ -14,16 +14,20 @@ class ResourceScope(Enum):
         return list(map(lambda rs: rs.value, ResourceScope))
 
 
-class OwnerType(Enum):
+class UserType(Enum):
     GROUP = "team"
     USER = "user"
     CLIENT = "client"
 
 
+class User(BaseModel):
+    user_id: str
+    user_type: UserType
+
+
 class CreateResourceBody(BaseModel):
     dataset_id: str
-    owner_id: str
-    owner_type: OwnerType
+    owner: User
 
 
 class OkdataPermission(BaseModel):
@@ -33,3 +37,9 @@ class OkdataPermission(BaseModel):
     teams: List[str]
     users: List[str]
     clients: List[str]
+
+
+class UpdatePermissionBody(BaseModel):
+    add_users: List[User] = []
+    remove_users: List[User] = []
+    scope: ResourceScope

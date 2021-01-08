@@ -1,10 +1,11 @@
 import requests
 from requests.models import PreparedRequest
+from typing import List
 import os
 from keycloak import KeycloakOpenID
 from .uma_well_known import get_well_known
 from .ssm import SsmClient
-from models import OwnerType, ResourceScope
+from models import UserType, ResourceScope, User
 
 
 class ResourceServer:
@@ -34,9 +35,7 @@ class ResourceServer:
 
         self.resource_server_token = None
 
-    def create_dataset_resource(
-        self, dataset_id: str, owner_id: str, owner_type: OwnerType
-    ):
+    def create_dataset_resource(self, dataset_id: str, owner: User):
         create_resource_response = requests.post(
             self.uma_well_known.resource_registration_endpoint,
             json={
@@ -61,32 +60,28 @@ class ResourceServer:
             description=f"Allows for owner operations on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.owner.value],
-            owner_id=owner_id,
-            owner_type=owner_type,
+            owner=owner,
         )
         read_permission = self.create_permission(
             permission_name=f"{dataset_id}:read",
             description=f"Allows for read on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.read.value],
-            owner_id=owner_id,
-            owner_type=owner_type,
+            owner=owner,
         )
         write_permission = self.create_permission(
             permission_name=f"{dataset_id}:write",
             description=f"Allows for write on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.write.value],
-            owner_id=owner_id,
-            owner_type=owner_type,
+            owner=owner,
         )
         update_permission = self.create_permission(
             permission_name=f"{dataset_id}:update",
             description=f"Allows for update on dataset: {dataset_id}",
             resource_id=resource_id,
             scopes=[ResourceScope.update.value],
-            owner_id=owner_id,
-            owner_type=owner_type,
+            owner=owner,
         )
         return {
             "resource": dataset_resource,
@@ -104,21 +99,20 @@ class ResourceServer:
         description: str,
         resource_id: str,
         scopes: list,
-        owner_id: str,
-        owner_type: OwnerType,
+        owner: User,
         decision_strategy: str = "AFFIRMATIVE",
         logic: str = "POSITIVE",
     ):
-        owner_map = {o: [] for o in OwnerType}
-        owner_map[owner_type].append(owner_id)
+        owner_map = {o: [] for o in UserType}
+        owner_map[owner.user_type].append(owner.user_id)
 
         permission = {
             "name": permission_name,
             "description": description,
             "scopes": scopes,
-            "groups": owner_map[OwnerType.GROUP],
-            "users": owner_map[OwnerType.USER],
-            "clients": owner_map[OwnerType.CLIENT],
+            "groups": owner_map[UserType.GROUP],
+            "users": owner_map[UserType.USER],
+            "clients": owner_map[UserType.CLIENT],
             "logic": logic,
             "decisionStrategy": decision_strategy,
         }
@@ -134,29 +128,42 @@ class ResourceServer:
 
     def update_permission(
         self,
-        resource_name,
-        scope,
-        user_to_add: str = None,
-        group_to_add: str = None,
-        decicion_strategy: str = None,
+        resource_name: str,
+        scope: ResourceScope,
+        add_users: List[User] = [],
+        remove_users: List[User] = [],
     ):
 
         permission = self.get_permission(
-            f"{resource_name}-{scope.value.split(':')[-1]}"
+            f"{resource_name}:{scope.value.split(':')[-1]}"
         )
 
-        if user_to_add:
-            users = permission.get("users", [])
-            users.append(user_to_add)
-            permission["users"] = users
+        users, groups, clients = (
+            set(permission.get("users", [])),
+            set(permission.get("groups", [])),
+            set(permission.get("clients", [])),
+        )
+        # Add if not present
+        for user in add_users:
+            if user.user_type is UserType.USER:
+                users.add(user.user_id)
+            elif user.user_type is UserType.GROUP:
+                groups.add(user.user_id)
+            elif user.user_type is UserType.CLIENT:
+                groups.add(user.user_id)
 
-        if group_to_add:
-            groups = permission.get("groups", [])
-            groups.append(group_to_add)
-            permission["groups"] = groups
+        # Remove if not present
+        for user in remove_users:
+            if user.user_type is UserType.USER:
+                users.discard(user.user_id)
+            elif user.user_type is UserType.GROUP:
+                groups.discard(user.user_id)
+            elif user.user_type is UserType.CLIENT:
+                groups.discard(user.user_id)
 
-        if decicion_strategy:
-            permission["decisionStrategy"] = decicion_strategy
+        permission["users"] = list(users)
+        permission["groups"] = list(groups)
+        permission["clients"] = list(clients)
 
         update_permission_url = (
             f"{self.uma_well_known.policy_endpoint}/{permission['id']}"
@@ -169,7 +176,7 @@ class ResourceServer:
             json=permission,
         )
         resp.raise_for_status()
-        return self.get_permission(f"{resource_name}-{scope.value.split(':')[-1]}")
+        return self.get_permission(f"{resource_name}:{scope.value.split(':')[-1]}")
 
     def get_permission(self, permission_name):
 
@@ -178,6 +185,7 @@ class ResourceServer:
         )
         print(f"GET {get_permission_url}")
         resp = requests.get(get_permission_url, headers=self.request_headers())
+        resp.raise_for_status()
         for permission in resp.json():
             if permission["name"] == permission_name:
                 return permission

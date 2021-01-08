@@ -16,8 +16,7 @@ def create_resource(event, context):
 
     resource_server.create_dataset_resource(
         dataset_id=request_body.dataset_id,
-        owner_id=request_body.owner_id,
-        owner_type=request_body.owner_type,
+        owner=request_body.owner,
     )
 
     return {"statusCode": 201, "body": json.dumps({"message": "Created"})}
