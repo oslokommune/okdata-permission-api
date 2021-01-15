@@ -22,6 +22,7 @@ node_modules: package.json package-lock.json
 $(BUILD_VENV):
 	$(GLOBAL_PY) -m venv $(BUILD_VENV)
 	$(BUILD_PY) -m pip install -U pip
+	$(BUILD_PY) -m pip install -r requirements.txt
 
 .PHONY: format
 format: $(BUILD_VENV)/bin/black
@@ -66,8 +67,17 @@ stop-keycloak-local: ## Stop local Keycloak instance running in docker
 		-f keycloak-compose.yaml \
 		stop
 
-compose-down: ## Stop all containers for the backend
-	docker-compose -f keycloak-compose.yaml down --remove-orphans || true
+.PHONY: populate-local-keycloak
+populate-local-keycloak: setup-keycloak-local
+	$(BUILD_PY) -m tests.setup.populate_local_keycloak
+
+.PHONY: run
+run: populate-local-keycloak $(BUILD_VENV)/bin/uvicorn
+	RESOURCE_SERVER_CLIENT_ID=resource-server \
+	RESOURCE_SERVER_CLIENT_SECRET=8acda364-eafa-4a03-8fa6-b019a48ddafe \
+	KEYCLOAK_REALM=localtest \
+	KEYCLOAK_SERVER=http://localhost:35789 \
+	$(BUILD_VENV)/bin/uvicorn app:app --reload
 
 ifeq ($(MAKECMDGOALS),undeploy)
 ifndef STAGE

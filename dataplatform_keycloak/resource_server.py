@@ -13,12 +13,12 @@ class ResourceServer:
     keycloak_realm = os.environ["KEYCLOAK_REALM"]
     resource_server_client_id = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
-    def __init__(self, local=False):
+    def __init__(self):
 
-        if local:
-            client_secret_key = os.environ["RESOURCE_SERVER_CLIENT_SECRET"]
-        else:
-            client_secret_key = SsmClient().get_secret(
+        client_secret_key = os.environ.get("RESOURCE_SERVER_CLIENT_SECRET", None)
+
+        if client_secret_key is None:
+            client_secret_key = SsmClient.get_secret(
                 f"/dataplatform/{self.resource_server_client_id}/client_secret"
             )
 

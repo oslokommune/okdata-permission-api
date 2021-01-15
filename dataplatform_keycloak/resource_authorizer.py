@@ -15,7 +15,7 @@ class ResourceAuthorizer:
         )
         self.resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
-    def has_access(self, resource_name, scope: ResourceScope, user_bearer_token):
+    def has_access(self, resource_name, scope: ResourceScope, bearer_token):
 
         payload = [
             ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
@@ -24,7 +24,30 @@ class ResourceAuthorizer:
             ("permission", f"{resource_name}#{scope.value}"),
         ]
         headers = {
-            "Authorization": f"Bearer {user_bearer_token}",
+            "Authorization": f"Bearer {bearer_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        response = requests.post(
+            self.uma_well_known.token_endpoint, data=payload, headers=headers
+        )
+
+        if response.status_code == 403:
+            return False
+
+        response.raise_for_status()
+
+        return response.json()["result"]
+
+    def create_resource_access(self, bearer_token: str):
+        payload = [
+            ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
+            ("audience", self.resource_server_name),
+            ("response_mode", "decision"),
+            ("permission", "#createResource"),
+        ]
+
+        headers = {
+            "Authorization": f"Bearer {bearer_token}",
             "Content-Type": "application/x-www-form-urlencoded",
         }
         response = requests.post(

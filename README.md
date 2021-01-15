@@ -1,6 +1,6 @@
 Okdata Permission API
 ==================
-API for managing permissions for okdata resources such as datasets. The API is currently WIP (work in progress) and is
+API for managing permissions to okdata resources such as datasets. The API is currently WIP (work in progress) and is
 not in use anywhere at this time.
 
 
@@ -47,11 +47,13 @@ make init
 ```
 
 
-### Developing towards local keycloak instance
+### Run application locally
+
+This command will run a local instance of keycloak, populate the local keycloak instance with necessary entities and run 
+the fastapi application on localhost.
 
 ```bash
-make setup-keycloak-local
-python -m tests.setup.populate_local_keycloak
+make run
 ```
 
 

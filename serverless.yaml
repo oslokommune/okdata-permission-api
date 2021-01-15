@@ -38,12 +38,18 @@ package:
     - '**/*'
   include:
     - dataplatform_keycloak/*.py
-    - handlers/*.py
+    - models/*.py
+    - resources/*.py
+    - app.py
+    - handler.py
 
 functions:
-  create-resource: ${file(serverless/functions/create_resource.yml)}
-  update-permission: ${file(serverless/functions/update_permission.yml)}
-  list-permissions: ${file(serverless/functions/list_permissions.yml)}
+  app:
+    handler: handler.handler
+    events:
+      - http: ANY /
+      - http: "ANY {proxy+}"
+    timeout: 29
 
 plugins:
   - serverless-python-requirements

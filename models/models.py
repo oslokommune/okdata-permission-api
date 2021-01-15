@@ -38,6 +38,17 @@ class OkdataPermission(BaseModel):
     users: List[str]
     clients: List[str]
 
+    @staticmethod
+    def from_uma_permission(uma_permission: dict):
+        return OkdataPermission(
+            dataset_id=uma_permission["name"].split(":")[0],
+            description=uma_permission["description"],
+            scopes=uma_permission["scopes"],
+            teams=[group[1:] for group in uma_permission.get("groups", [])],
+            users=uma_permission.get("users", []),
+            clients=uma_permission.get("clients", []),
+        )
+
 
 class UpdatePermissionBody(BaseModel):
     add_users: List[User] = []

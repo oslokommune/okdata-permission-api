@@ -16,18 +16,22 @@ chardet==4.0.0
     # via requests
 ecdsa==0.14.1
     # via python-jose
+fastapi==0.61.1
+    # via okdata-permission-api (setup.py)
 idna==2.10
     # via requests
 jmespath==0.10.0
     # via
     #   boto3
     #   botocore
+mangum==0.10.0
+    # via okdata-permission-api (setup.py)
 pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
 pydantic==1.7.3
-    # via okdata-permission-api (setup.py)
+    # via fastapi
 pyjwt==1.7.1
     # via okdata-permission-api (setup.py)
 python-dateutil==2.8.1
@@ -49,6 +53,10 @@ six==1.15.0
     #   ecdsa
     #   python-dateutil
     #   python-jose
+starlette==0.13.6
+    # via fastapi
+typing-extensions==3.7.4.3
+    # via mangum
 urllib3==1.26.2
     # via
     #   botocore
