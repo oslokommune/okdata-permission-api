@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List
 
 
-class ResourceScope(Enum):
+class ResourceScope(str, Enum):
     read = "okdata:dataset:read"
     write = "okdata:dataset:write"
     update = "okdata:dataset:update"
@@ -14,7 +14,7 @@ class ResourceScope(Enum):
         return list(map(lambda rs: rs.value, ResourceScope))
 
 
-class UserType(Enum):
+class UserType(str, Enum):
     GROUP = "team"
     USER = "user"
     CLIENT = "client"
@@ -33,7 +33,7 @@ class CreateResourceBody(BaseModel):
 class OkdataPermission(BaseModel):
     dataset_id: str
     description: str
-    scopes: List[str]
+    scopes: List[ResourceScope]
     teams: List[str]
     users: List[str]
     clients: List[str]

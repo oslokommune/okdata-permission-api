@@ -3,11 +3,9 @@ Okdata Permission API
 API for managing permissions to okdata resources such as datasets. The API is currently WIP (work in progress) and is
 not in use anywhere at this time.
 
+## Api Documentation
 
-## Usage
-Copy repo content to your new repository, or create a new branch where you
-quickly can test a custom lambda function
-
+Api documentation can be found here: [Openapi Spec](https://api.data.oslo.systems/okdata-permission-api/openapi.json)
 
 ## Setup
 
