@@ -30,8 +30,8 @@ provider:
     VERSION: ${self:custom.version}
     SERVICE_NAME: ${self:service}
     KEYCLOAK_REALM: api-catalog
-    KEYCLOAK_SERVER: /dataplatform/shared/keycloak-server-url
-    RESOURCE_SERVER_CLIENT_ID: ${ssm:okdata-resource-server}
+    KEYCLOAK_SERVER: ${ssm:/dataplatform/shared/keycloak-server-url}
+    RESOURCE_SERVER_CLIENT_ID: okdata-resource-server
 
 package:
   exclude:
