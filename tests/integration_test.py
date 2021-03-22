@@ -159,8 +159,8 @@ def get_token_for_service():
     client = KeycloakOpenID(
         realm_name=kc_config.realm_name,
         server_url=f"{kc_config.server_url}",
-        client_id=kc_config.create_resource_client_id,
-        client_secret_key=kc_config.create_resource_client_secret,
+        client_id=kc_config.create_permissions_client_id,
+        client_secret_key=kc_config.create_permissions_client_secret,
     )
     token = client.token(grant_type=["client_credentials"])
     return token["access_token"]

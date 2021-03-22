@@ -48,11 +48,11 @@ def populate():
     # Create client that simulates another service
     keycloak_admin.create_client(
         payload={
-            "id": keycloak_config.create_resource_client_id,
-            "name": keycloak_config.create_resource_client_id,
+            "id": keycloak_config.create_permissions_client_id,
+            "name": keycloak_config.create_permissions_client_id,
             "publicClient": False,
             "serviceAccountsEnabled": True,
-            "secret": keycloak_config.create_resource_client_secret,
+            "secret": keycloak_config.create_permissions_client_secret,
         },
         skip_exists=True,
     )
@@ -74,7 +74,7 @@ def populate():
         "decisionStrategy": "AFFIRMATIVE",
         "name": "createResource",
         "description": "Clients that can create resources",
-        "clients": [keycloak_config.create_resource_client_id],
+        "clients": [keycloak_config.create_permissions_client_id],
     }
     create_resource_policy = keycloak_admin.raw_post(
         path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/policy/client",

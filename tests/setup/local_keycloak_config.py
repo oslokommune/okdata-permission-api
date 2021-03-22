@@ -1,11 +1,14 @@
 server_url = "http://localhost:35789/auth/"
 
 realm_name = "localtest"
+
+# Client id and secret for the resource server
 resource_server_id = "resource-server"
 resource_server_secret = "8acda364-eafa-4a03-8fa6-b019a48ddafe"
 
-create_resource_client_id = "some-service"
-create_resource_client_secret = "77a44253-8649-4b8c-9f24-ce06f8edca0c"
+# Client id and secret for a client that will be permitted to create permissions
+create_permissions_client_id = "some-service"
+create_permissions_client_secret = "77a44253-8649-4b8c-9f24-ce06f8edca0c"
 
 janedoe = "janedoe"
 homersimpson = "homersimpson"

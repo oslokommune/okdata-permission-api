@@ -1,21 +1,29 @@
-from keycloak import KeycloakOpenID
-
+import os
 from dataplatform_keycloak import ResourceServer
 from pprint import PrettyPrinter
 from tests.setup import local_keycloak_config as kc_config
 
+# Python script for playing around with the api running on localhost
+
 pp = PrettyPrinter(indent=2)
+
+
+def initialize_local_environment():
+    os.environ["KEYCLOAK_REALM"] = kc_config.realm_name
+    os.environ["KEYCLOAK_SERVER"] = kc_config.server_url
+    os.environ["RESOURCE_SERVER_CLIENT_ID"] = kc_config.resource_server_id
+    os.environ["RESOURCE_SERVER_CLIENT_SECRET"] = kc_config.resource_server_secret
+
 
 if __name__ == "__main__":
     rm = ResourceServer()
 
-    pp.pprint(rm.resource_server_client.token("janedoe", "password"))
-
-    client = KeycloakOpenID(
-        realm_name=kc_config.realm_name,
-        server_url=f"{kc_config.server_url}",
-        client_id=kc_config.create_resource_client_id,
-        client_secret_key=kc_config.create_resource_client_secret,
+    janedoe_access_token = rm.resource_server_client.token(
+        "janedoesimpson", "password"
+    )["access_token"]
+    homersimpson_access_token = rm.resource_server_client.token(
+        "homersimpson", "password"
+    )["access_token"]
+    resource_server_access_token = rm.resource_server_client.token(
+        grant_type=["client_credentials"]
     )
-    # token = client.token(grant_type=["client_credentials"])
-    # print(token["access_token"])
