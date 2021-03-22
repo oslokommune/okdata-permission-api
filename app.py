@@ -13,11 +13,9 @@ app = FastAPI(
     root_path=root_path,
 )
 
-prefix = ""
-
 app.include_router(
     permissions.router,
-    prefix=prefix + "/permissions",
+    prefix="/permissions",
     tags=["permissions"],
 )
 
