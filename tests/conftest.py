@@ -14,9 +14,12 @@ def mock_client(mock_ssm_client):
 @pytest.fixture
 def mock_ssm_client(monkeypatch):
     def get_secret(key):
-        if key == f"/dataplatform/{kc_config.resource_server_id}/client_secret":
+        if (
+            key
+            == f"/dataplatform/{kc_config.resource_server_id}/keycloak-client-secret"
+        ):
             return kc_config.resource_server_secret
-        elif key == f"/dataplatform/{kc_config.client_id}/client_secret":
+        elif key == f"/dataplatform/{kc_config.client_id}/keycloak-client-secret":
             return kc_config.client_secret
 
     monkeypatch.setattr(SsmClient, "get_secret", get_secret)

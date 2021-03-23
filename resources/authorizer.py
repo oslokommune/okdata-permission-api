@@ -11,7 +11,7 @@ from dataplatform_keycloak import SsmClient, ResourceAuthorizer
 def keycloak_client():
     client_id = os.environ["CLIENT_ID"]
     client_secret = os.environ.get("CLIENT_SECRET") or SsmClient.get_secret(
-        f"/dataplatform/{client_id}/client_secret"
+        f"/dataplatform/{client_id}/keycloak-client-secret"
     )
     return KeycloakOpenID(
         realm_name=os.environ["KEYCLOAK_REALM"],

@@ -19,7 +19,7 @@ class ResourceServer:
 
         if client_secret_key is None:
             client_secret_key = SsmClient.get_secret(
-                f"/dataplatform/{self.resource_server_client_id}/client_secret"
+                f"/dataplatform/{self.resource_server_client_id}/keycloak-client-secret"
             )
 
         self.resource_server_client = KeycloakOpenID(
