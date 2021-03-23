@@ -11,6 +11,8 @@ pp = PrettyPrinter(indent=2)
 def initialize_local_environment():
     os.environ["KEYCLOAK_REALM"] = kc_config.realm_name
     os.environ["KEYCLOAK_SERVER"] = kc_config.server_url
+    os.environ["CLIENT_ID"] = kc_config.client_id
+    os.environ["CLIENT_SECRET"] = kc_config.client_secret
     os.environ["RESOURCE_SERVER_CLIENT_ID"] = kc_config.resource_server_id
     os.environ["RESOURCE_SERVER_CLIENT_SECRET"] = kc_config.resource_server_secret
 

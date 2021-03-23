@@ -62,10 +62,14 @@ stop-keycloak-local: ## Stop local Keycloak instance running in docker
 populate-local-keycloak: setup-keycloak-local
 	$(BUILD_PY) -m tests.setup.populate_local_keycloak
 
+# Run and populate local keycloak instance and okdata-permission-api service
+# The client-secret values below are not really secret values since they are only for testing on local machines
 .PHONY: run
 run: populate-local-keycloak $(BUILD_VENV)/bin/uvicorn
 	RESOURCE_SERVER_CLIENT_ID=resource-server \
 	RESOURCE_SERVER_CLIENT_SECRET=8acda364-eafa-4a03-8fa6-b019a48ddafe \
+	CLIENT_ID=client_id \
+	CLIENT_SECRET=868d1ca9-4d94-4c1e-a2e4-9f032bd8ae08 \
 	KEYCLOAK_REALM=localtest \
 	KEYCLOAK_SERVER=http://localhost:35789 \
 	$(BUILD_VENV)/bin/uvicorn app:app --reload
