@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-import tests.setup.local_keycloak_config as local_keycloak_config
+import tests.setup.local_keycloak_config as kc_config
 from dataplatform_keycloak.ssm import SsmClient
 from app import app
 
@@ -14,6 +14,9 @@ def mock_client(mock_ssm_client):
 @pytest.fixture
 def mock_ssm_client(monkeypatch):
     def get_secret(key):
-        return local_keycloak_config.resource_server_secret
+        if key == f"/dataplatform/{kc_config.resource_server_id}/client_secret":
+            return kc_config.resource_server_secret
+        elif key == f"/dataplatform/{kc_config.client_id}/client_secret":
+            return kc_config.client_secret
 
     monkeypatch.setattr(SsmClient, "get_secret", get_secret)

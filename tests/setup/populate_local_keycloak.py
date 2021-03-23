@@ -45,6 +45,18 @@ def populate():
         skip_exists=True,
     )
 
+    # Create client for this service (okdata-permission-api)
+    keycloak_admin.create_client(
+        payload={
+            "id": keycloak_config.client_id,
+            "name": keycloak_config.client_id,
+            "publicClient": False,
+            "serviceAccountsEnabled": True,
+            "secret": keycloak_config.client_secret,
+        },
+        skip_exists=True,
+    )
+
     # Create client that simulates another service
     keycloak_admin.create_client(
         payload={

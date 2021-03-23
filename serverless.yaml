@@ -13,13 +13,8 @@ provider:
     serverSideEncryption: AES256
   deploymentPrefix: deploy
   rolePermissionsBoundary: "arn:aws:iam::#{AWS::AccountId}:policy/oslokommune/oslokommune-boundary"
-  iamRoleStatements:
-    - Effect: 'Allow'
-      Action:
-        - 'ssm:GetParameter'
-      Resource:
-        - "arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/dataplatform/okdata-permission-api/*"
   iamManagedPolicies:
+    - "arn:aws:iam::#{AWS::AccountId}:policy/okdata-permission-api"
     - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
@@ -31,6 +26,7 @@ provider:
     SERVICE_NAME: ${self:service}
     KEYCLOAK_REALM: api-catalog
     KEYCLOAK_SERVER: ${ssm:/dataplatform/shared/keycloak-server-url}
+    CLIENT_ID: okdata-permission-api
     RESOURCE_SERVER_CLIENT_ID: okdata-resource-server
     ROOT_PATH: "/okdata-permission-api"
 package:
