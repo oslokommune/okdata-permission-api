@@ -9,7 +9,7 @@ from models import (
     OkdataPermission,
     UpdatePermissionBody,
 )
-from resources.authorizer import AuthInfo, create_resource_access, dataset_owner
+from resources.authorizer import AuthInfo, create_resource_access, is_admin
 from resources.errors import ErrorResponse, error_message_models
 
 
@@ -45,8 +45,8 @@ def create_resource(
 
 
 @router.put(
-    "/{dataset_id}",
-    dependencies=[Depends(dataset_owner)],
+    "/{resource_name}",
+    dependencies=[Depends(is_admin)],
     status_code=status.HTTP_200_OK,
     response_model=OkdataPermission,
     responses=error_message_models(
@@ -56,13 +56,13 @@ def create_resource(
     ),
 )
 def update_permission(
-    dataset_id: str,
+    resource_name: str,
     body: UpdatePermissionBody,
     resource_server: ResourceServer = Depends(resource_server),
 ):
     try:
         updated_permission = resource_server.update_permission(
-            resource_name=dataset_id,
+            resource_name=resource_name,
             scope=body.scope,
             add_users=body.add_users,
             remove_users=body.remove_users,

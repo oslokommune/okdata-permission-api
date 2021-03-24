@@ -48,15 +48,14 @@ class AuthInfo:
         self.bearer_token = authorization.credentials
 
 
-def dataset_owner(
-    dataset_id: str,
+def is_admin(
+    resource_name: str,
     auth_info: AuthInfo = Depends(),
     resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
 ):
-    dataset_access = resource_authorizer.has_access(
-        dataset_id, DatasetScope.owner, auth_info.bearer_token
-    )
-    if not dataset_access:
+    if not resource_authorizer.has_access(
+        resource_name, DatasetScope.admin, auth_info.bearer_token
+    ):
         raise ErrorResponse(403, "Forbidden")
 
 
