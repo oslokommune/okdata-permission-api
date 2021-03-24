@@ -1,8 +1,10 @@
 import os
-import requests
-from .uma_well_known import get_well_known
-from .resource_server import ResourceScope
+
 import jwt
+import requests
+
+from dataplatform_keycloak.uma_well_known import get_well_known
+from dataplatform_keycloak.resource_server import ResourceScope
 
 
 class ResourceAuthorizer:
