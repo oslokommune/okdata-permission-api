@@ -7,7 +7,7 @@ from requests.models import PreparedRequest
 
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
-from models import UserType, ResourceScope, User
+from models import UserType, DatasetScope, User
 
 
 class ResourceServer:
@@ -45,10 +45,10 @@ class ResourceServer:
                 "name": dataset_id,
                 "ownerManagedAccess": True,
                 "scopes": [
-                    ResourceScope.read.value,
-                    ResourceScope.write.value,
-                    ResourceScope.update.value,
-                    ResourceScope.owner.value,
+                    DatasetScope.read.value,
+                    DatasetScope.write.value,
+                    DatasetScope.update.value,
+                    DatasetScope.owner.value,
                 ],
             },
             headers=self.request_headers(),
@@ -61,28 +61,28 @@ class ResourceServer:
             permission_name=f"{dataset_id}:owner",
             description=f"Allows for owner operations on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScope.owner.value],
+            scopes=[DatasetScope.owner.value],
             owner=owner,
         )
         read_permission = self.create_permission(
             permission_name=f"{dataset_id}:read",
             description=f"Allows for read on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScope.read.value],
+            scopes=[DatasetScope.read.value],
             owner=owner,
         )
         write_permission = self.create_permission(
             permission_name=f"{dataset_id}:write",
             description=f"Allows for write on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScope.write.value],
+            scopes=[DatasetScope.write.value],
             owner=owner,
         )
         update_permission = self.create_permission(
             permission_name=f"{dataset_id}:update",
             description=f"Allows for update on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[ResourceScope.update.value],
+            scopes=[DatasetScope.update.value],
             owner=owner,
         )
         return {
@@ -131,7 +131,7 @@ class ResourceServer:
     def update_permission(
         self,
         resource_name: str,
-        scope: ResourceScope,
+        scope: DatasetScope,
         add_users: List[User] = [],
         remove_users: List[User] = [],
     ):
@@ -197,7 +197,7 @@ class ResourceServer:
         self,
         resource_name=None,
         group=None,
-        scope: ResourceScope = None,
+        scope: DatasetScope = None,
         first: int = None,
         max_result: int = None,
     ):

@@ -1,10 +1,9 @@
 import os
-
 import jwt
 import requests
 
 from dataplatform_keycloak.uma_well_known import get_well_known
-from models import ResourceScope
+from models import DatasetScope
 
 
 class ResourceAuthorizer:
@@ -16,7 +15,7 @@ class ResourceAuthorizer:
         )
         self.resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
-    def has_access(self, resource_name, scope: ResourceScope, bearer_token):
+    def has_access(self, resource_name, scope: DatasetScope, bearer_token):
 
         payload = [
             ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
@@ -62,7 +61,7 @@ class ResourceAuthorizer:
 
         return response.json()["result"]
 
-    def get_user_permissions(self, user_bearer_token, scope: ResourceScope = None):
+    def get_user_permissions(self, user_bearer_token, scope: DatasetScope = None):
         payload = [
             ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
             ("audience", self.resource_server_name),

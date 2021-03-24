@@ -5,8 +5,8 @@ from fastapi import Depends, APIRouter, status
 from dataplatform_keycloak import ResourceServer
 from models import (
     CreateResourceBody,
+    DatasetScope,
     OkdataPermission,
-    ResourceScope,
     UpdatePermissionBody,
 )
 from resources.authorizer import AuthInfo, create_resource_access, dataset_owner
@@ -86,7 +86,7 @@ def update_permission(
 def list_permissions(
     dataset_id: str = None,
     team_id: str = None,
-    scope: ResourceScope = None,
+    scope: DatasetScope = None,
     first: str = None,
     max_result: str = None,
     resource_server: ResourceServer = Depends(resource_server),

@@ -2,7 +2,7 @@ import jwt
 from keycloak import KeycloakOpenID
 
 from dataplatform_keycloak import ResourceAuthorizer
-from models import ResourceScope
+from models import DatasetScope
 from tests.setup import local_keycloak_config as kc_config
 
 dataset_id = "integration-test-dataset"
@@ -115,7 +115,7 @@ class TestOkdataPermissionApi:
 
         assert not resource_authorizer.has_access(
             dataset_id,
-            ResourceScope.read,
+            DatasetScope.read,
             get_bearer_token_for_user(kc_config.homersimpson),
         )
 
@@ -123,7 +123,7 @@ class TestOkdataPermissionApi:
 
         body = {
             "add_users": [{"user_id": kc_config.homersimpson, "user_type": "user"}],
-            "scope": ResourceScope.read.read.value,
+            "scope": DatasetScope.read.read.value,
         }
         response = mock_client.put(
             f"/permissions/{dataset_id}", json=body, headers=auth_header(token)
@@ -140,7 +140,7 @@ class TestOkdataPermissionApi:
 
         assert resource_authorizer.has_access(
             dataset_id,
-            ResourceScope.read,
+            DatasetScope.read,
             get_bearer_token_for_user(kc_config.homersimpson),
         )
 

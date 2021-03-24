@@ -5,7 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from keycloak import KeycloakOpenID
 
 from dataplatform_keycloak import ResourceAuthorizer, SsmClient
-from models import ResourceScope
+from models import DatasetScope
 from resources.errors import ErrorResponse
 
 
@@ -54,7 +54,7 @@ def dataset_owner(
     resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
 ):
     dataset_access = resource_authorizer.has_access(
-        dataset_id, ResourceScope.owner, auth_info.bearer_token
+        dataset_id, DatasetScope.owner, auth_info.bearer_token
     )
     if not dataset_access:
         raise ErrorResponse(403, "Forbidden")
