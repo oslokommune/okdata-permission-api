@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel
 
 
-class ResourceScope(str, Enum):
+class DatasetScope(str, Enum):
     read = "okdata:dataset:read"
     write = "okdata:dataset:write"
     update = "okdata:dataset:update"
@@ -12,7 +12,7 @@ class ResourceScope(str, Enum):
 
     @staticmethod
     def list_values():
-        return list(map(lambda rs: rs.value, ResourceScope))
+        return list(map(lambda rs: rs.value, DatasetScope))
 
 
 class UserType(str, Enum):
@@ -34,7 +34,7 @@ class CreateResourceBody(BaseModel):
 class OkdataPermission(BaseModel):
     dataset_id: str
     description: str
-    scopes: List[ResourceScope]
+    scopes: List[DatasetScope]
     teams: List[str]
     users: List[str]
     clients: List[str]
@@ -54,4 +54,4 @@ class OkdataPermission(BaseModel):
 class UpdatePermissionBody(BaseModel):
     add_users: List[User] = []
     remove_users: List[User] = []
-    scope: ResourceScope
+    scope: DatasetScope
