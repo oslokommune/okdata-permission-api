@@ -4,7 +4,7 @@ import jwt
 import requests
 
 from dataplatform_keycloak.uma_well_known import get_well_known
-from dataplatform_keycloak.resource_server import ResourceScope
+from models import ResourceScope
 
 
 class ResourceAuthorizer:
