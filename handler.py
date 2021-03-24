@@ -1,5 +1,7 @@
 import os
+
 from mangum import Mangum
+
 from app import app
 
 root_path = os.environ["ROOT_PATH"]

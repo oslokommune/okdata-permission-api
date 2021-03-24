@@ -1,8 +1,10 @@
-import time
 import json
+import time
 from datetime import datetime, timedelta
+
 from keycloak import KeycloakAdmin, KeycloakGetError
 from keycloak.exceptions import KeycloakConnectionError
+
 import tests.setup.local_keycloak_config as keycloak_config
 
 

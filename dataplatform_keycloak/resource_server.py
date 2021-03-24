@@ -1,10 +1,12 @@
-import requests
-from requests.models import PreparedRequest
-from typing import List
 import os
+from typing import List
+
+import requests
 from keycloak import KeycloakOpenID
-from .uma_well_known import get_well_known
-from .ssm import SsmClient
+from requests.models import PreparedRequest
+
+from dataplatform_keycloak.ssm import SsmClient
+from dataplatform_keycloak.uma_well_known import get_well_known
 from models import UserType, ResourceScope, User
 
 

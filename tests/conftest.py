@@ -1,8 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
+
 import tests.setup.local_keycloak_config as kc_config
-from dataplatform_keycloak.ssm import SsmClient
 from app import app
+from dataplatform_keycloak.ssm import SsmClient
 
 
 @pytest.fixture

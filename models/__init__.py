@@ -1,17 +1,17 @@
-from .models import (
+from models.models import (
     CreateResourceBody,
-    UserType,
-    ResourceScope,
     OkdataPermission,
+    ResourceScope,
     UpdatePermissionBody,
     User,
+    UserType,
 )
 
 __all__ = [
     "CreateResourceBody",
-    "UserType",
-    "ResourceScope",
     "OkdataPermission",
+    "ResourceScope",
     "UpdatePermissionBody",
     "User",
+    "UserType",
 ]

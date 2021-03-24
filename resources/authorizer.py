@@ -1,11 +1,12 @@
 import os
+
 from fastapi import Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from keycloak import KeycloakOpenID
 
+from dataplatform_keycloak import ResourceAuthorizer, SsmClient
 from models import ResourceScope
-from .errors import ErrorResponse
-from dataplatform_keycloak import SsmClient, ResourceAuthorizer
+from resources.errors import ErrorResponse
 
 
 def keycloak_client():

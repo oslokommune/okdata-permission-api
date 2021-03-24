@@ -1,15 +1,16 @@
-from fastapi import Depends, APIRouter, status
 from typing import List
+
+from fastapi import Depends, APIRouter, status
 
 from dataplatform_keycloak import ResourceServer
 from models import (
-    ResourceScope,
-    OkdataPermission,
-    UpdatePermissionBody,
     CreateResourceBody,
+    OkdataPermission,
+    ResourceScope,
+    UpdatePermissionBody,
 )
-from .errors import error_message_models, ErrorResponse
-from .authorizer import dataset_owner, create_resource_access, AuthInfo
+from resources.authorizer import AuthInfo, create_resource_access, dataset_owner
+from resources.errors import ErrorResponse, error_message_models
 
 
 def resource_server():
