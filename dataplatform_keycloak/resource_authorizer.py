@@ -43,7 +43,7 @@ class ResourceAuthorizer:
             ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
             ("audience", self.resource_server_name),
             ("response_mode", "decision"),
-            ("permission", "#createResource"),
+            ("permission", "#okdata:dataset:create"),
         ]
 
         headers = {

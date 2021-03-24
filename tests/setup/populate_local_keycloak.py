@@ -71,42 +71,43 @@ def populate():
         skip_exists=True,
     )
 
-    #  Create scope, policy and permission allowing another service to create resources
+    # Create scope, policy and permission allowing another service to create
+    # datasets.
 
-    create_resource_scope_body = {
-        "name": "createResource",
-        "displayName": "createResource",
+    create_dataset_scope_body = {
+        "name": "okdata:dataset:create",
+        "displayName": "okdata:dataset:create",
     }
-    create_resource_scope = keycloak_admin.raw_post(
+    create_dataset_scope = keycloak_admin.raw_post(
         path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/scope",
-        data=json.dumps(create_resource_scope_body),
+        data=json.dumps(create_dataset_scope_body),
     ).json()
 
-    create_resource_policy_body = {
+    create_dataset_policy_body = {
         "type": "client",
         "logic": "POSITIVE",
         "decisionStrategy": "AFFIRMATIVE",
         "name": "createResource",
-        "description": "Clients that can create resources",
+        "description": "Clients that can create datasets",
         "clients": [keycloak_config.create_permissions_client_id],
     }
-    create_resource_policy = keycloak_admin.raw_post(
+    create_dataset_policy = keycloak_admin.raw_post(
         path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/policy/client",
-        data=json.dumps(create_resource_policy_body),
+        data=json.dumps(create_dataset_policy_body),
     ).json()
 
-    create_resource_permission_body = {
+    create_dataset_permission_body = {
         "type": "scope",
         "logic": "POSITIVE",
         "decisionStrategy": "UNANIMOUS",
         "name": "createResourcePermission",
-        "description": "Allows for creating resources",
-        "scopes": [create_resource_scope["id"]],
-        "policies": [create_resource_policy["id"]],
+        "description": "Allows creating datasets",
+        "scopes": [create_dataset_scope["id"]],
+        "policies": [create_dataset_policy["id"]],
     }
     keycloak_admin.raw_post(
         path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/permission/scope",
-        data=json.dumps(create_resource_permission_body),
+        data=json.dumps(create_dataset_permission_body),
     )
 
     # Create users and groups
