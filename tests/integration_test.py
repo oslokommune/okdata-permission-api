@@ -123,7 +123,7 @@ class TestOkdataPermissionApi:
 
         body = {
             "add_users": [{"user_id": kc_config.homersimpson, "user_type": "user"}],
-            "scope": DatasetScope.read.read.value,
+            "scope": DatasetScope.read.value,
         }
         response = mock_client.put(
             f"/permissions/{dataset_id}", json=body, headers=auth_header(token)
