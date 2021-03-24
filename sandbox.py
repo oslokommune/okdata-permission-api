@@ -18,14 +18,21 @@ def initialize_local_environment():
 
 
 if __name__ == "__main__":
+    initialize_local_environment()
+
     rm = ResourceServer()
 
-    janedoe_access_token = rm.resource_server_client.token(
-        "janedoesimpson", "password"
-    )["access_token"]
+    janedoe_access_token = rm.resource_server_client.token("janedoe", "password")[
+        "access_token"
+    ]
     homersimpson_access_token = rm.resource_server_client.token(
         "homersimpson", "password"
     )["access_token"]
     resource_server_access_token = rm.resource_server_client.token(
         grant_type=["client_credentials"]
     )
+
+    print("Jane Doe token:")
+    print(janedoe_access_token)
+    print("Homer Simpson token:")
+    print(homersimpson_access_token)

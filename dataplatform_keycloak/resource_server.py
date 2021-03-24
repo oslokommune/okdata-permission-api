@@ -9,11 +9,11 @@ from models import UserType, ResourceScope, User
 
 
 class ResourceServer:
-    keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
-    keycloak_realm = os.environ["KEYCLOAK_REALM"]
-    resource_server_client_id = os.environ["RESOURCE_SERVER_CLIENT_ID"]
-
     def __init__(self):
+
+        self.keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
+        self.keycloak_realm = os.environ["KEYCLOAK_REALM"]
+        self.resource_server_client_id = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
         client_secret_key = os.environ.get("RESOURCE_SERVER_CLIENT_SECRET", None)
 

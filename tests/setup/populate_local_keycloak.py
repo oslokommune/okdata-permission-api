@@ -129,7 +129,7 @@ def initialize_keycloak_admin(timeout_seconds=30.0):
         try:
             print("Trying to connect to local keycloak")
             keycloak_admin = KeycloakAdmin(
-                server_url=keycloak_config.server_url,
+                server_url=keycloak_config.server_auth_url,
                 username="admin",
                 password="admin",
                 realm_name="master",

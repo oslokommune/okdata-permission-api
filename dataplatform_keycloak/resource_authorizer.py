@@ -6,10 +6,9 @@ import jwt
 
 
 class ResourceAuthorizer:
-    keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
-    keycloak_realm = os.environ["KEYCLOAK_REALM"]
-
     def __init__(self):
+        self.keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
+        self.keycloak_realm = os.environ["KEYCLOAK_REALM"]
         self.uma_well_known = get_well_known(
             self.keycloak_server_url, self.keycloak_realm
         )

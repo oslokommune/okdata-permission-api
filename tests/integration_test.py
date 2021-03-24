@@ -148,7 +148,7 @@ class TestOkdataPermissionApi:
 def get_bearer_token_for_user(username):
     token = KeycloakOpenID(
         realm_name=kc_config.realm_name,
-        server_url=f"{kc_config.server_url}",
+        server_url=f"{kc_config.server_auth_url}",
         client_id=kc_config.resource_server_id,
         client_secret_key=kc_config.resource_server_secret,
     ).token(username, "password")
@@ -158,7 +158,7 @@ def get_bearer_token_for_user(username):
 def get_token_for_service():
     client = KeycloakOpenID(
         realm_name=kc_config.realm_name,
-        server_url=f"{kc_config.server_url}",
+        server_url=f"{kc_config.server_auth_url}",
         client_id=kc_config.create_permissions_client_id,
         client_secret_key=kc_config.create_permissions_client_secret,
     )
