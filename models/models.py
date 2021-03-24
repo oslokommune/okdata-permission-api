@@ -8,7 +8,7 @@ class DatasetScope(str, Enum):
     read = "okdata:dataset:read"
     write = "okdata:dataset:write"
     update = "okdata:dataset:update"
-    owner = "okdata:dataset:owner"
+    admin = "okdata:dataset:admin"
 
     @staticmethod
     def list_values():

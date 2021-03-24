@@ -71,8 +71,8 @@ class TestOkdataPermissionApi:
         assert team_permissions_response.json() == [
             {
                 "dataset_id": "integration-test-dataset",
-                "description": "Allows for owner operations on dataset: integration-test-dataset",
-                "scopes": ["okdata:dataset:owner"],
+                "description": "Allows for admin operations on dataset: integration-test-dataset",
+                "scopes": ["okdata:dataset:admin"],
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],

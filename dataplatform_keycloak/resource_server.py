@@ -48,7 +48,7 @@ class ResourceServer:
                     DatasetScope.read.value,
                     DatasetScope.write.value,
                     DatasetScope.update.value,
-                    DatasetScope.owner.value,
+                    DatasetScope.admin.value,
                 ],
             },
             headers=self.request_headers(),
@@ -57,11 +57,11 @@ class ResourceServer:
         dataset_resource = create_resource_response.json()
         resource_id = dataset_resource["_id"]
 
-        owner_permission = self.create_permission(
-            permission_name=f"{dataset_id}:owner",
-            description=f"Allows for owner operations on dataset: {dataset_id}",
+        admin_permission = self.create_permission(
+            permission_name=f"{dataset_id}:admin",
+            description=f"Allows for admin operations on dataset: {dataset_id}",
             resource_id=resource_id,
-            scopes=[DatasetScope.owner.value],
+            scopes=[DatasetScope.admin.value],
             owner=owner,
         )
         read_permission = self.create_permission(
@@ -88,7 +88,7 @@ class ResourceServer:
         return {
             "resource": dataset_resource,
             "permissions": [
-                owner_permission,
+                admin_permission,
                 read_permission,
                 write_permission,
                 update_permission,
