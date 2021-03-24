@@ -3,7 +3,6 @@ import jwt
 import requests
 
 from dataplatform_keycloak.uma_well_known import get_well_known
-from models import DatasetScope
 
 
 class ResourceAuthorizer:
@@ -15,13 +14,12 @@ class ResourceAuthorizer:
         )
         self.resource_server_name = os.environ["RESOURCE_SERVER_CLIENT_ID"]
 
-    def has_access(self, resource_name, scope: DatasetScope, bearer_token):
-
+    def has_access(self, bearer_token, scope, resource_name=None):
         payload = [
             ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
             ("audience", self.resource_server_name),
             ("response_mode", "decision"),
-            ("permission", f"{resource_name}#{scope.value}"),
+            ("permission", "#".join([resource_name or "", scope])),
         ]
         headers = {
             "Authorization": f"Bearer {bearer_token}",
@@ -38,36 +36,13 @@ class ResourceAuthorizer:
 
         return response.json()["result"]
 
-    def create_resource_access(self, bearer_token: str):
-        payload = [
-            ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
-            ("audience", self.resource_server_name),
-            ("response_mode", "decision"),
-            ("permission", "#okdata:dataset:create"),
-        ]
-
-        headers = {
-            "Authorization": f"Bearer {bearer_token}",
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-        response = requests.post(
-            self.uma_well_known.token_endpoint, data=payload, headers=headers
-        )
-
-        if response.status_code == 403:
-            return False
-
-        response.raise_for_status()
-
-        return response.json()["result"]
-
-    def get_user_permissions(self, user_bearer_token, scope: DatasetScope = None):
+    def get_user_permissions(self, user_bearer_token, scope: str = None):
         payload = [
             ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
             ("audience", self.resource_server_name),
         ]
         if scope:
-            payload.append(("permission", f"#{scope.value}"))
+            payload.append(("permission", f"#{scope}"))
 
         headers = {
             "Authorization": f"Bearer {user_bearer_token}",

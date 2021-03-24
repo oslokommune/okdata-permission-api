@@ -1,6 +1,5 @@
 from models.models import (
     CreateResourceBody,
-    DatasetScope,
     OkdataPermission,
     UpdatePermissionBody,
     User,
@@ -9,7 +8,6 @@ from models.models import (
 
 __all__ = [
     "CreateResourceBody",
-    "DatasetScope",
     "OkdataPermission",
     "UpdatePermissionBody",
     "User",

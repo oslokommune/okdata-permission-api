@@ -7,7 +7,9 @@ from requests.models import PreparedRequest
 
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
-from models import UserType, DatasetScope, User
+from models import User, UserType
+from resources.resource import resource_type
+from resources.scope import all_scopes_for_type, scope_permission
 
 
 class ResourceServer:
@@ -37,62 +39,39 @@ class ResourceServer:
 
         self.resource_server_token = None
 
-    def create_dataset_resource(self, dataset_id: str, owner: User):
+    def create_resource(self, resource_name: str, owner: User):
+        scopes = all_scopes_for_type(resource_type(resource_name))
+
         create_resource_response = requests.post(
             self.uma_well_known.resource_registration_endpoint,
             json={
-                "type": "okdata:dataset",
-                "name": dataset_id,
+                "type": resource_type(resource_name),
+                "name": resource_name,
                 "ownerManagedAccess": True,
-                "scopes": [
-                    DatasetScope.read.value,
-                    DatasetScope.write.value,
-                    DatasetScope.update.value,
-                    DatasetScope.admin.value,
-                ],
+                "scopes": scopes,
             },
             headers=self.request_headers(),
         )
         create_resource_response.raise_for_status()
-        dataset_resource = create_resource_response.json()
-        resource_id = dataset_resource["_id"]
+        resource = create_resource_response.json()
 
-        admin_permission = self.create_permission(
-            permission_name=f"{dataset_id}:admin",
-            description=f"Allows for admin operations on dataset: {dataset_id}",
-            resource_id=resource_id,
-            scopes=[DatasetScope.admin.value],
-            owner=owner,
-        )
-        read_permission = self.create_permission(
-            permission_name=f"{dataset_id}:read",
-            description=f"Allows for read on dataset: {dataset_id}",
-            resource_id=resource_id,
-            scopes=[DatasetScope.read.value],
-            owner=owner,
-        )
-        write_permission = self.create_permission(
-            permission_name=f"{dataset_id}:write",
-            description=f"Allows for write on dataset: {dataset_id}",
-            resource_id=resource_id,
-            scopes=[DatasetScope.write.value],
-            owner=owner,
-        )
-        update_permission = self.create_permission(
-            permission_name=f"{dataset_id}:update",
-            description=f"Allows for update on dataset: {dataset_id}",
-            resource_id=resource_id,
-            scopes=[DatasetScope.update.value],
-            owner=owner,
-        )
+        permissions = [
+            self.create_permission(
+                permission_name=f"{resource_name}:{scope_permission(scope)}",
+                description="Allows for {} operations on resource: {}".format(
+                    scope_permission(scope),
+                    resource_name,
+                ),
+                resource_id=resource["_id"],
+                scopes=[scope],
+                owner=owner,
+            )
+            for scope in scopes
+        ]
+
         return {
-            "resource": dataset_resource,
-            "permissions": [
-                admin_permission,
-                read_permission,
-                write_permission,
-                update_permission,
-            ],
+            "resource": resource,
+            "permissions": permissions,
         }
 
     def create_permission(
@@ -131,14 +110,12 @@ class ResourceServer:
     def update_permission(
         self,
         resource_name: str,
-        scope: DatasetScope,
+        scope: str,
         add_users: List[User] = [],
         remove_users: List[User] = [],
     ):
-
-        permission = self.get_permission(
-            f"{resource_name}:{scope.value.split(':')[-1]}"
-        )
+        permission_name = f"{resource_name}:{scope_permission(scope)}"
+        permission = self.get_permission(permission_name)
 
         users, groups, clients = (
             set(permission.get("users", [])),
@@ -178,7 +155,7 @@ class ResourceServer:
             json=permission,
         )
         resp.raise_for_status()
-        return self.get_permission(f"{resource_name}:{scope.value.split(':')[-1]}")
+        return self.get_permission(permission_name)
 
     def get_permission(self, permission_name):
 
@@ -197,7 +174,7 @@ class ResourceServer:
         self,
         resource_name=None,
         group=None,
-        scope: DatasetScope = None,
+        scope: str = None,
         first: int = None,
         max_result: int = None,
     ):
@@ -206,7 +183,7 @@ class ResourceServer:
             resource_id = self.get_resource_id(resource_name)
             query_params["resource"] = resource_id
         if scope:
-            query_params["scope"] = scope.value
+            query_params["scope"] = scope
         if first:
             query_params["first"] = first
         if max_result:
