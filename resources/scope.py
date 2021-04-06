@@ -10,6 +10,15 @@ _SCOPES = {
 }
 
 
+def all_scopes():
+    """Return a list of every scope defined in `_SCOPES`."""
+    scopes = []
+    for resource_type, permissions in _SCOPES.items():
+        for permission in permissions:
+            scopes.append(f"{resource_type}:{permission}")
+    return scopes
+
+
 def all_scopes_for_type(resource_type):
     """Return every defined scope for `resource_type`.
 

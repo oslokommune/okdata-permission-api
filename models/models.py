@@ -1,7 +1,9 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+
+from resources.scope import all_scopes
 
 
 class UserType(str, Enum):
@@ -26,6 +28,15 @@ class OkdataPermission(BaseModel):
     teams: List[str]
     users: List[str]
     clients: List[str]
+
+    @validator("scopes", each_item=True)
+    def check_scopes(cls, scope):
+        known_scopes = all_scopes()
+        if scope not in known_scopes:
+            raise ValueError(
+                "Unknown scope: {}. Must be one of: {}".format(scope, known_scopes)
+            )
+        return scope
 
     @staticmethod
     def from_uma_permission(uma_permission: dict):
