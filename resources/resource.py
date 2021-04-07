@@ -2,9 +2,9 @@
 
 
 def resource_type(resource_name):
-    """Return the type part of `resource_name`.
+    """Return the (namespaced) type part of `resource_name`.
 
-    I.e. "type" from "namespace:type:id".
+    I.e. "namespace:type" from "namespace:type:id".
     """
     return ":".join(resource_name.split(":")[:2])
 
