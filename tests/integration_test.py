@@ -2,17 +2,15 @@ import jwt
 from keycloak import KeycloakOpenID
 
 from dataplatform_keycloak import ResourceAuthorizer
-from models import DatasetScope
 from tests.setup import local_keycloak_config as kc_config
 
-dataset_id = "integration-test-dataset"
+resource_name = "okdata:dataset:integration-test-dataset"
 resource_authorizer = ResourceAuthorizer()
 
 
 class TestOkdataPermissionApi:
     def test_create_resource_forbidden(self, mock_client):
         body = {
-            "dataset_id": dataset_id,
             "owner": {
                 "user_id": kc_config.team_id,
                 "user_type": "team",
@@ -22,14 +20,12 @@ class TestOkdataPermissionApi:
         token = get_bearer_token_for_user(kc_config.janedoe)
 
         create_resource_response = mock_client.post(
-            "/permissions", json=body, headers=auth_header(token)
+            f"/permissions/{resource_name}", json=body, headers=auth_header(token)
         )
         assert create_resource_response.status_code == 403
 
     def test_create_resource(self, mock_client):
-
         body = {
-            "dataset_id": dataset_id,
             "owner": {
                 "user_id": kc_config.team_id,
                 "user_type": "team",
@@ -39,7 +35,7 @@ class TestOkdataPermissionApi:
         token = get_token_for_service()
 
         create_resource_response = mock_client.post(
-            "/permissions", json=body, headers=auth_header(token)
+            f"/permissions/{resource_name}", json=body, headers=auth_header(token)
         )
         assert create_resource_response.status_code == 201
 
@@ -68,34 +64,42 @@ class TestOkdataPermissionApi:
             headers=auth_header(token),
         )
         assert team_permissions_response.status_code == 200
+        assert team_permissions_response.json()[0] == {
+            "resource_name": resource_name,
+            "description": f"Allows for admin operations on resource: {resource_name}",
+            "scopes": ["okdata:dataset:admin"],
+            "teams": ["group1"],
+            "users": [],
+            "clients": [],
+        }
         assert team_permissions_response.json() == [
             {
-                "dataset_id": "integration-test-dataset",
-                "description": "Allows for admin operations on dataset: integration-test-dataset",
+                "resource_name": resource_name,
+                "description": f"Allows for admin operations on resource: {resource_name}",
                 "scopes": ["okdata:dataset:admin"],
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],
             },
             {
-                "dataset_id": "integration-test-dataset",
-                "description": "Allows for read on dataset: integration-test-dataset",
+                "resource_name": resource_name,
+                "description": f"Allows for read operations on resource: {resource_name}",
                 "scopes": ["okdata:dataset:read"],
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],
             },
             {
-                "dataset_id": "integration-test-dataset",
-                "description": "Allows for update on dataset: integration-test-dataset",
+                "resource_name": resource_name,
+                "description": f"Allows for update operations on resource: {resource_name}",
                 "scopes": ["okdata:dataset:update"],
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],
             },
             {
-                "dataset_id": "integration-test-dataset",
-                "description": "Allows for write on dataset: integration-test-dataset",
+                "resource_name": resource_name,
+                "description": f"Allows for write operations on resource: {resource_name}",
                 "scopes": ["okdata:dataset:write"],
                 "teams": ["group1"],
                 "users": [],
@@ -106,32 +110,31 @@ class TestOkdataPermissionApi:
     def test_update_permission_forbidden(self, mock_client):
         token = get_bearer_token_for_user(kc_config.homersimpson)
         response = mock_client.put(
-            f"/permissions/{dataset_id}", headers=auth_header(token)
+            f"/permissions/{resource_name}", headers=auth_header(token)
         )
         assert response.status_code == 403
         assert response.json() == {"message": "Forbidden"}
 
     def test_update_permission(self, mock_client):
-
         assert not resource_authorizer.has_access(
-            dataset_id,
-            DatasetScope.read,
             get_bearer_token_for_user(kc_config.homersimpson),
+            "okdata:dataset:read",
+            resource_name,
         )
 
         token = get_bearer_token_for_user(kc_config.janedoe)
 
         body = {
             "add_users": [{"user_id": kc_config.homersimpson, "user_type": "user"}],
-            "scope": DatasetScope.read.value,
+            "scope": "okdata:dataset:read",
         }
         response = mock_client.put(
-            f"/permissions/{dataset_id}", json=body, headers=auth_header(token)
+            f"/permissions/{resource_name}", json=body, headers=auth_header(token)
         )
         assert response.status_code == 200
         assert response.json() == {
-            "dataset_id": "integration-test-dataset",
-            "description": "Allows for read on dataset: integration-test-dataset",
+            "resource_name": resource_name,
+            "description": f"Allows for read operations on resource: {resource_name}",
             "scopes": ["okdata:dataset:read"],
             "teams": ["group1"],
             "users": [kc_config.homersimpson],
@@ -139,9 +142,9 @@ class TestOkdataPermissionApi:
         }
 
         assert resource_authorizer.has_access(
-            dataset_id,
-            DatasetScope.read,
             get_bearer_token_for_user(kc_config.homersimpson),
+            "okdata:dataset:read",
+            resource_name,
         )
 
 

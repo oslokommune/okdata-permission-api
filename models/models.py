@@ -1,18 +1,9 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
-
-class DatasetScope(str, Enum):
-    read = "okdata:dataset:read"
-    write = "okdata:dataset:write"
-    update = "okdata:dataset:update"
-    admin = "okdata:dataset:admin"
-
-    @staticmethod
-    def list_values():
-        return list(map(lambda rs: rs.value, DatasetScope))
+from models.scope import all_scopes
 
 
 class UserType(str, Enum):
@@ -27,22 +18,30 @@ class User(BaseModel):
 
 
 class CreateResourceBody(BaseModel):
-    dataset_id: str
     owner: User
 
 
 class OkdataPermission(BaseModel):
-    dataset_id: str
+    resource_name: str
     description: str
-    scopes: List[DatasetScope]
+    scopes: List[str]
     teams: List[str]
     users: List[str]
     clients: List[str]
 
+    @validator("scopes", each_item=True)
+    def check_scopes(cls, scope):
+        known_scopes = all_scopes()
+        if scope not in known_scopes:
+            raise ValueError(
+                "Unknown scope: {}. Must be one of: {}".format(scope, known_scopes)
+            )
+        return scope
+
     @staticmethod
     def from_uma_permission(uma_permission: dict):
         return OkdataPermission(
-            dataset_id=uma_permission["name"].split(":")[0],
+            resource_name=":".join(uma_permission["name"].split(":")[:3]),
             description=uma_permission["description"],
             scopes=uma_permission["scopes"],
             teams=[group[1:] for group in uma_permission.get("groups", [])],
@@ -54,4 +53,4 @@ class OkdataPermission(BaseModel):
 class UpdatePermissionBody(BaseModel):
     add_users: List[User] = []
     remove_users: List[User] = []
-    scope: DatasetScope
+    scope: str

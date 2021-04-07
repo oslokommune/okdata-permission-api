@@ -5,8 +5,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from keycloak import KeycloakOpenID
 
 from dataplatform_keycloak import ResourceAuthorizer, SsmClient
-from models import DatasetScope
 from resources.errors import ErrorResponse
+from resources.resource import resource_type
 
 
 def keycloak_client():
@@ -48,23 +48,24 @@ class AuthInfo:
         self.bearer_token = authorization.credentials
 
 
-def is_admin(
-    resource_name: str,
-    auth_info: AuthInfo = Depends(),
-    resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
-):
-    if not resource_authorizer.has_access(
-        resource_name, DatasetScope.admin, auth_info.bearer_token
+def has_access(permission, object_level_permission=False):
+    def _has_access(
+        resource_name,
+        auth_info: AuthInfo = Depends(),
+        resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
     ):
-        raise ErrorResponse(403, "Forbidden")
+        """Pass through without exception if the user has access.
 
+        Check `permission` for the resource type belonging to
+        `resource_name`. If `object_level_permission` is true, the permission
+        is checked on object level ("resource-name#permission") instead of
+        resource wide ("#permission").
+        """
+        if not resource_authorizer.has_access(
+            auth_info.bearer_token,
+            f"{resource_type(resource_name)}:{permission}",
+            resource_name if object_level_permission else None,
+        ):
+            raise ErrorResponse(403, "Forbidden")
 
-def create_resource_access(
-    auth_info: AuthInfo = Depends(),
-    resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
-):
-
-    access = resource_authorizer.create_resource_access(auth_info.bearer_token)
-
-    if not access:
-        raise ErrorResponse(403, "Forbidden")
+    return _has_access
