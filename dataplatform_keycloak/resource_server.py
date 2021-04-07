@@ -8,8 +8,8 @@ from requests.models import PreparedRequest
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
 from models import User, UserType
+from models.scope import all_scopes_for_type, scope_permission
 from resources.resource import resource_type
-from resources.scope import all_scopes_for_type, scope_permission
 
 
 class ResourceServer:

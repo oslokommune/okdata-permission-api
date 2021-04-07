@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, validator
 
-from resources.scope import all_scopes
+from models.scope import all_scopes
 
 
 class UserType(str, Enum):
