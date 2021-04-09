@@ -4,7 +4,11 @@ from fastapi import Depends, APIRouter, status
 
 from dataplatform_keycloak import ResourceServer
 from models import CreateResourceBody, OkdataPermission, UpdatePermissionBody
-from resources.authorizer import AuthInfo, has_access
+from resources.authorizer import (
+    AuthInfo,
+    has_resource_permission,
+    has_resource_type_permission,
+)
 from resources.errors import ErrorResponse, error_message_models
 
 
@@ -17,20 +21,19 @@ router = APIRouter()
 
 # TODO: Ensure that resource exists
 @router.post(
-    "/{resource_name}",
-    dependencies=[Depends(has_access("create"))],
+    "/",
+    dependencies=[Depends(has_resource_type_permission("create"))],
     status_code=status.HTTP_201_CREATED,
     responses=error_message_models(
         status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR
     ),
 )
 def create_resource(
-    resource_name: str,
     body: CreateResourceBody,
     resource_server: ResourceServer = Depends(resource_server),
 ):
     try:
-        resource_server.create_resource(resource_name, body.owner)
+        resource_server.create_resource(body.resource_name, body.owner)
     #  TODO: log exception
     except Exception:
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
@@ -40,7 +43,7 @@ def create_resource(
 
 @router.put(
     "/{resource_name}",
-    dependencies=[Depends(has_access("admin", True))],
+    dependencies=[Depends(has_resource_permission("admin"))],
     status_code=status.HTTP_200_OK,
     response_model=OkdataPermission,
     responses=error_message_models(

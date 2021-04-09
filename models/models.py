@@ -3,7 +3,8 @@ from typing import List
 
 from pydantic import BaseModel, validator
 
-from models.scope import all_scopes
+from models.scope import all_scopes, all_scopes_for_type
+from resources.resource import resource_type
 
 
 class UserType(str, Enum):
@@ -19,6 +20,13 @@ class User(BaseModel):
 
 class CreateResourceBody(BaseModel):
     owner: User
+    resource_name: str
+
+    @validator("resource_name")
+    def check_resource_name(cls, resource_name):
+        # Raises `ValueError` when the resource type is unknown.
+        all_scopes_for_type(resource_type(resource_name))
+        return resource_name
 
 
 class OkdataPermission(BaseModel):

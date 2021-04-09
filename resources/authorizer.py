@@ -1,10 +1,11 @@
 import os
 
-from fastapi import Depends
+from fastapi import Body, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from keycloak import KeycloakOpenID
 
 from dataplatform_keycloak import ResourceAuthorizer, SsmClient
+from models import CreateResourceBody
 from resources.errors import ErrorResponse
 from resources.resource import resource_type
 
@@ -48,24 +49,43 @@ class AuthInfo:
         self.bearer_token = authorization.credentials
 
 
-def has_access(permission, object_level_permission=False):
-    def _has_access(
-        resource_name,
+def has_resource_type_permission(permission):
+    def _verify_permission(
+        body=Body(None),
         auth_info: AuthInfo = Depends(),
         resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
     ):
         """Pass through without exception if the user has access.
 
-        Check `permission` for the resource type belonging to
-        `resource_name`. If `object_level_permission` is true, the permission
-        is checked on object level ("resource-name#permission") instead of
-        resource wide ("#permission").
+        Check `permission` for the resource type belonging to `resource_name`
+        from the request body (scope = "#resource-type:permission").
+        """
+        create_resource_body = CreateResourceBody.parse_obj(body)
+        if not resource_authorizer.has_access(
+            auth_info.bearer_token,
+            f"{resource_type(create_resource_body.resource_name)}:{permission}",
+        ):
+            raise ErrorResponse(403, "Forbidden")
+
+    return _verify_permission
+
+
+def has_resource_permission(permission):
+    def _verify_permission(
+        resource_name,
+        auth_info: AuthInfo = Depends(),
+        resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
+    ):
+        """Pass through without exception if the user has permission.
+
+        Check `permission` for `resource_name`
+        (scope = "resource-name#resource-type:permission").
         """
         if not resource_authorizer.has_access(
             auth_info.bearer_token,
             f"{resource_type(resource_name)}:{permission}",
-            resource_name if object_level_permission else None,
+            resource_name,
         ):
             raise ErrorResponse(403, "Forbidden")
 
-    return _has_access
+    return _verify_permission

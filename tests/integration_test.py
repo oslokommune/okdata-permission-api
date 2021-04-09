@@ -15,14 +15,32 @@ class TestOkdataPermissionApi:
                 "user_id": kc_config.team_id,
                 "user_type": "team",
             },
+            "resource_name": resource_name,
         }
 
         token = get_bearer_token_for_user(kc_config.janedoe)
 
         create_resource_response = mock_client.post(
-            f"/permissions/{resource_name}", json=body, headers=auth_header(token)
+            "/permissions/", json=body, headers=auth_header(token)
         )
         assert create_resource_response.status_code == 403
+
+    def test_create_resource_unknown_resource_type(self, mock_client):
+        body = {
+            "owner": {
+                "user_id": kc_config.team_id,
+                "user_type": "team",
+            },
+            "resource_name": "foo:bar:integration-test-dataset",
+        }
+
+        token = get_bearer_token_for_user(kc_config.janedoe)
+
+        response = mock_client.post(
+            "/permissions/", json=body, headers=auth_header(token)
+        )
+        assert response.status_code == 400
+        assert response.json()["message"] == "Bad Request"
 
     def test_create_resource(self, mock_client):
         body = {
@@ -30,12 +48,13 @@ class TestOkdataPermissionApi:
                 "user_id": kc_config.team_id,
                 "user_type": "team",
             },
+            "resource_name": resource_name,
         }
 
         token = get_token_for_service()
 
         create_resource_response = mock_client.post(
-            f"/permissions/{resource_name}", json=body, headers=auth_header(token)
+            "/permissions/", json=body, headers=auth_header(token)
         )
         assert create_resource_response.status_code == 201
 

@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from resources import permissions
 from resources.errors import ErrorResponse
+from pydantic import ValidationError
 
 
 root_path = os.environ.get("ROOT_PATH", "")
@@ -25,3 +26,10 @@ app.include_router(
 @app.exception_handler(ErrorResponse)
 def abort_exception_handler(request: Request, exc: ErrorResponse):
     return JSONResponse(status_code=exc.status_code, content={"message": exc.message})
+
+
+@app.exception_handler(ValidationError)
+def abort_value_error(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=400, content={"message": "Bad Request", "errors": exc.errors()}
+    )
