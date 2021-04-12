@@ -68,7 +68,7 @@ populate-local-keycloak: setup-keycloak-local
 run: populate-local-keycloak $(BUILD_VENV)/bin/uvicorn
 	RESOURCE_SERVER_CLIENT_ID=resource-server \
 	RESOURCE_SERVER_CLIENT_SECRET=8acda364-eafa-4a03-8fa6-b019a48ddafe \
-	CLIENT_ID=client_id \
+	CLIENT_ID=okdata-permission-api \
 	CLIENT_SECRET=868d1ca9-4d94-4c1e-a2e4-9f032bd8ae08 \
 	KEYCLOAK_REALM=localtest \
 	KEYCLOAK_SERVER=http://localhost:35789 \
