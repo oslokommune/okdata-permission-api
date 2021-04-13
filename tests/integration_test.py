@@ -9,6 +9,9 @@ resource_authorizer = ResourceAuthorizer()
 
 
 class TestOkdataPermissionApi:
+
+    # POST /permissions
+
     def test_create_resource_forbidden(self, mock_client):
         body = {
             "owner": {
@@ -57,6 +60,28 @@ class TestOkdataPermissionApi:
             "/permissions/", json=body, headers=auth_header(token)
         )
         assert create_resource_response.status_code == 201
+
+    def test_create_resource_conflict_error(self, mock_client):
+        body = {
+            "owner": {
+                "user_id": kc_config.team_id,
+                "user_type": "team",
+            },
+            "resource_name": resource_name,
+        }
+
+        token = get_token_for_service()
+
+        response = mock_client.post(
+            "/permissions/", json=body, headers=auth_header(token)
+        )
+        assert response.status_code == 409
+        assert (
+            response.json()["message"]
+            == f"Resource with name [{resource_name}] already exists."
+        )
+
+    # GET /permissions
 
     def test_list_permission_no_bearer_token(self, mock_client):
         team_permissions_response = mock_client.get(
@@ -126,6 +151,8 @@ class TestOkdataPermissionApi:
             },
         ]
 
+    # PUT /permissions/{resource_name}
+
     def test_update_permission_forbidden(self, mock_client):
         token = get_bearer_token_for_user(kc_config.homersimpson)
         response = mock_client.put(
@@ -165,6 +192,16 @@ class TestOkdataPermissionApi:
             "okdata:dataset:read",
             resource_name,
         )
+
+    def test_update_permission_resource_not_exist(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.janedoe)
+        response = mock_client.put(
+            f"/permissions/{resource_name}-not-exist", headers=auth_header(token)
+        )
+        assert response.status_code == 400
+        assert response.json() == {
+            "message": f"Resource with id [{resource_name}-not-exist] does not exist."
+        }
 
 
 def get_bearer_token_for_user(username):

@@ -1,4 +1,7 @@
+import os
 from typing import List
+from requests.exceptions import HTTPError
+import logging
 
 from fastapi import Depends, APIRouter, status
 
@@ -10,6 +13,9 @@ from resources.authorizer import (
     has_resource_type_permission,
 )
 from resources.errors import ErrorResponse, error_message_models
+
+logger = logging.getLogger()
+logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 def resource_server():
@@ -25,7 +31,9 @@ router = APIRouter()
     dependencies=[Depends(has_resource_type_permission("create"))],
     status_code=status.HTTP_201_CREATED,
     responses=error_message_models(
-        status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR
+        status.HTTP_400_BAD_REQUEST,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+        status.HTTP_409_CONFLICT,
     ),
 )
 def create_resource(
@@ -34,8 +42,15 @@ def create_resource(
 ):
     try:
         resource_server.create_resource(body.resource_name, body.owner)
-    #  TODO: log exception
-    except Exception:
+    except HTTPError as e:
+        keycloak_response = e.response
+        if keycloak_response.status_code == 409:
+            error_msg = keycloak_response.json()["error_description"]
+            raise ErrorResponse(status.HTTP_409_CONFLICT, error_msg)
+        logger.exception(e)
+        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
+    except Exception as e:
+        logger.exception(e)
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
 
     return {"message": "Created"}
@@ -48,7 +63,6 @@ def create_resource(
     response_model=OkdataPermission,
     responses=error_message_models(
         status.HTTP_400_BAD_REQUEST,
-        status.HTTP_404_NOT_FOUND,
         status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
@@ -64,7 +78,8 @@ def update_permission(
             add_users=body.add_users,
             remove_users=body.remove_users,
         )
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
 
     return OkdataPermission.from_uma_permission(updated_permission)

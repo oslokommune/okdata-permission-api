@@ -1,13 +1,18 @@
 import os
+import logging
 
 from fastapi import Body, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from keycloak import KeycloakOpenID
+from requests.exceptions import HTTPError
 
 from dataplatform_keycloak import ResourceAuthorizer, SsmClient
 from models import CreateResourceBody
 from resources.errors import ErrorResponse
 from resources.resource import resource_type
+
+logger = logging.getLogger()
+logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 def keycloak_client():
@@ -81,11 +86,22 @@ def has_resource_permission(permission):
         Check `permission` for `resource_name`
         (scope = "resource-name#resource-type:permission").
         """
-        if not resource_authorizer.has_access(
-            auth_info.bearer_token,
-            f"{resource_type(resource_name)}:{permission}",
-            resource_name,
-        ):
-            raise ErrorResponse(403, "Forbidden")
+        try:
+            if not resource_authorizer.has_access(
+                auth_info.bearer_token,
+                f"{resource_type(resource_name)}:{permission}",
+                resource_name,
+            ):
+                raise ErrorResponse(403, "Forbidden")
+        except HTTPError as e:
+            error_response = e.response
+            if error_response.status_code == 400:
+                error_msg = error_response.json().get(
+                    "error_description", "Bad request"
+                )
+                raise ErrorResponse(400, error_msg)
+
+            logger.exception(e)
+            raise ErrorResponse(500, "Server error")
 
     return _verify_permission

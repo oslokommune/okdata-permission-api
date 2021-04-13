@@ -1,5 +1,6 @@
 import os
 from typing import List
+import logging
 
 import requests
 from keycloak import KeycloakOpenID
@@ -10,6 +11,9 @@ from dataplatform_keycloak.uma_well_known import get_well_known
 from models import User, UserType
 from models.scope import all_scopes_for_type, scope_permission
 from resources.resource import resource_type
+
+logger = logging.getLogger()
+logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 class ResourceServer:
@@ -99,7 +103,7 @@ class ResourceServer:
         }
 
         create_permission_url = f"{self.uma_well_known.policy_endpoint}/{resource_id}"
-        print(f"POST {create_permission_url}")
+        logger.info(f"POST {create_permission_url}")
         resp = requests.post(
             create_permission_url,
             headers=self.request_headers(),
@@ -147,7 +151,7 @@ class ResourceServer:
         update_permission_url = (
             f"{self.uma_well_known.policy_endpoint}/{permission['id']}"
         )
-        print(f"PUT {update_permission_url}")
+        logger.info(f"PUT {update_permission_url}")
 
         resp = requests.put(
             update_permission_url,
@@ -162,7 +166,7 @@ class ResourceServer:
         get_permission_url = (
             f"{self.uma_well_known.policy_endpoint}/?name={permission_name}"
         )
-        print(f"GET {get_permission_url}")
+        logger.info(f"GET {get_permission_url}")
         resp = requests.get(get_permission_url, headers=self.request_headers())
         resp.raise_for_status()
         for permission in resp.json():
@@ -198,7 +202,7 @@ class ResourceServer:
             params=query_params,
         )
 
-        print(f"GET {list_permissions_request.url}")
+        logger.info(f"GET {list_permissions_request.url}")
         resp = requests.Session().send(list_permissions_request)
         resp.raise_for_status()
 
@@ -215,7 +219,7 @@ class ResourceServer:
 
         permission_id = self.get_permission(permission_name)["id"]
         delete_url = f"{self.uma_well_known.policy_endpoint}/{permission_id}"
-        print(f"DELETE {delete_url}")
+        logger.info(f"DELETE {delete_url}")
         resp = requests.delete(delete_url, headers=self.request_headers())
         return resp.status_code, resp.text
 
@@ -225,7 +229,7 @@ class ResourceServer:
         delete_url = (
             f"{self.uma_well_known.resource_registration_endpoint}/{resource_id}"
         )
-        print(f"DELETE {delete_url}")
+        logger.info(f"DELETE {delete_url}")
         resp = requests.delete(
             delete_url,
             headers=self.request_headers(),
@@ -237,13 +241,13 @@ class ResourceServer:
         get_id_url = (
             f"{self.uma_well_known.resource_registration_endpoint}?name={resource_name}"
         )
-        print(f"GET {get_id_url}")
+        logger.info(f"GET {get_id_url}")
         resp = requests.get(get_id_url, headers=self.request_headers())
         for resource_id in resp.json():
             get_resource_url = (
                 f"{self.uma_well_known.resource_registration_endpoint}/{resource_id}"
             )
-            print(f"GET {get_resource_url}")
+            logger.info(f"GET {get_resource_url}")
             resource = requests.get(
                 get_resource_url, headers=self.request_headers()
             ).json()
@@ -264,10 +268,3 @@ class ResourceServer:
             )["access_token"]
 
         return self.resource_server_token
-
-    def sandbox(self, param):
-        # resource_id = self.get_resource_id(param)
-        get_permission_url = f"{self.uma_well_known.policy_endpoint}/"
-        print(f"GET {get_permission_url}")
-        resp = requests.get(get_permission_url, headers=self.request_headers())
-        return resp.json()

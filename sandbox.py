@@ -3,6 +3,7 @@ from pprint import PrettyPrinter
 
 from dataplatform_keycloak import ResourceServer
 from tests.setup import local_keycloak_config as kc_config
+from models import User
 
 # Python script for playing around with the api running on localhost
 
@@ -23,6 +24,7 @@ if __name__ == "__main__":
 
     rm = ResourceServer()
 
+    janedoe_user = User.parse_obj({"user_id": "janedoe", "user_type": "user"})
     janedoe_access_token = rm.resource_server_client.token("janedoe", "password")[
         "access_token"
     ]

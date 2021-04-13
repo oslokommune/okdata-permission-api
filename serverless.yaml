@@ -29,6 +29,7 @@ provider:
     CLIENT_ID: okdata-permission-api
     RESOURCE_SERVER_CLIENT_ID: okdata-resource-server
     ROOT_PATH: "/okdata-permission-api"
+    LOG_LEVEL: INFO
 package:
   exclude:
     - '**/*'

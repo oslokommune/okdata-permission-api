@@ -72,6 +72,7 @@ run: populate-local-keycloak $(BUILD_VENV)/bin/uvicorn
 	CLIENT_SECRET=868d1ca9-4d94-4c1e-a2e4-9f032bd8ae08 \
 	KEYCLOAK_REALM=localtest \
 	KEYCLOAK_SERVER=http://localhost:35789 \
+	LOG_LEVEL=DEBUG \
 	$(BUILD_VENV)/bin/uvicorn app:app --reload
 
 ifeq ($(MAKECMDGOALS),undeploy)
