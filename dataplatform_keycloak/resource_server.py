@@ -133,16 +133,16 @@ class ResourceServer:
             elif user.user_type is UserType.GROUP:
                 groups.add(user.user_id)
             elif user.user_type is UserType.CLIENT:
-                groups.add(user.user_id)
+                clients.add(user.user_id)
 
-        # Remove if not present
+        # Remove if present
         for user in remove_users:
             if user.user_type is UserType.USER:
                 users.discard(user.user_id)
             elif user.user_type is UserType.GROUP:
                 groups.discard(user.user_id)
             elif user.user_type is UserType.CLIENT:
-                groups.discard(user.user_id)
+                clients.discard(user.user_id)
 
         permission["users"] = list(users)
         permission["groups"] = list(groups)
