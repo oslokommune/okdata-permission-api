@@ -24,7 +24,7 @@ class TestOkdataPermissionApi:
         token = get_bearer_token_for_user(kc_config.janedoe)
 
         create_resource_response = mock_client.post(
-            "/permissions/", json=body, headers=auth_header(token)
+            "/permissions", json=body, headers=auth_header(token)
         )
         assert create_resource_response.status_code == 403
 
@@ -40,7 +40,7 @@ class TestOkdataPermissionApi:
         token = get_bearer_token_for_user(kc_config.janedoe)
 
         response = mock_client.post(
-            "/permissions/", json=body, headers=auth_header(token)
+            "/permissions", json=body, headers=auth_header(token)
         )
         assert response.status_code == 400
         assert response.json()["message"] == "Bad Request"
@@ -57,7 +57,7 @@ class TestOkdataPermissionApi:
         token = get_token_for_service()
 
         create_resource_response = mock_client.post(
-            "/permissions/", json=body, headers=auth_header(token)
+            "/permissions", json=body, headers=auth_header(token)
         )
         assert create_resource_response.status_code == 201
 
@@ -73,7 +73,7 @@ class TestOkdataPermissionApi:
         token = get_token_for_service()
 
         response = mock_client.post(
-            "/permissions/", json=body, headers=auth_header(token)
+            "/permissions", json=body, headers=auth_header(token)
         )
         assert response.status_code == 409
         assert (

@@ -27,7 +27,7 @@ router = APIRouter()
 
 # TODO: Ensure that resource exists
 @router.post(
-    "/",
+    "",
     dependencies=[Depends(has_resource_type_permission("create"))],
     status_code=status.HTTP_201_CREATED,
     responses=error_message_models(

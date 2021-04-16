@@ -1,6 +1,7 @@
 import os
 from pprint import PrettyPrinter
 
+# import requests
 from dataplatform_keycloak import ResourceServer
 from tests.setup import local_keycloak_config as kc_config
 from models import User
@@ -21,6 +22,7 @@ def initialize_local_environment():
 
 if __name__ == "__main__":
     initialize_local_environment()
+    from tests.integration_test import get_token_for_service
 
     rm = ResourceServer()
 
@@ -35,7 +37,16 @@ if __name__ == "__main__":
         grant_type=["client_credentials"]
     )
 
+    create_resource_client = User.parse_obj(
+        {"user_id": kc_config.create_permissions_client_id, "user_type": "client"}
+    )
+    create_resource_client_access_token = get_token_for_service()
+
+    base_url = "http://127.0.0.1:8000"
+
     print("Jane Doe token:")
     print(janedoe_access_token)
     print("Homer Simpson token:")
     print(homersimpson_access_token)
+    print("Client that can create permissions access token")
+    print(create_resource_client_access_token)
