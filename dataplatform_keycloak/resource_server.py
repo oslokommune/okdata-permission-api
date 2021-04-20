@@ -210,7 +210,7 @@ class ResourceServer:
             return [
                 permission
                 for permission in resp.json()
-                if f"/{group}" in permission["groups"]
+                if f"/{group}" in permission.get("groups", [])
             ]
 
         return resp.json()
