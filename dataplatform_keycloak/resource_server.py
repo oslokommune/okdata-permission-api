@@ -5,7 +5,12 @@ import logging
 import requests
 from keycloak import KeycloakOpenID
 from requests.models import PreparedRequest
+from okdata.sdk.auth.util import is_token_expired
 
+from dataplatform_keycloak.exceptions import (
+    PermissionNotFoundException,
+    ResourceNotFoundException,
+)
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
 from models import User, UserType
@@ -172,7 +177,7 @@ class ResourceServer:
         for permission in resp.json():
             if permission["name"] == permission_name:
                 return permission
-        raise Exception(f"Permission {permission_name} not found")
+        raise PermissionNotFoundException(f"Permission {permission_name} not found")
 
     def list_permissions(
         self,
@@ -253,7 +258,7 @@ class ResourceServer:
             ).json()
             if resource["name"] == resource_name:
                 return resource["_id"]
-        raise Exception(f"No resource named {resource_name}")
+        raise ResourceNotFoundException(f"No resource named {resource_name}")
 
     def request_headers(self):
         return {
@@ -266,5 +271,9 @@ class ResourceServer:
             self.resource_server_token = self.resource_server_client.token(
                 grant_type=["client_credentials"]
             )["access_token"]
-
+        else:
+            if is_token_expired(self.resource_server_token):
+                self.resource_server_token = self.resource_server_client.token(
+                    grant_type=["client_credentials"]
+                )["access_token"]
         return self.resource_server_token

@@ -1,23 +1,31 @@
-"""Script for migrating simple-dataset-authorizer permissions to Keycloak."""
+"""Script for migrating simple-dataset-authorizer permissions to Keycloak.
+
+Expects list of dataset,principal_id combinations to migrate in input file.
+"""
 
 import argparse
 import dataclasses
 import json
 import logging
 import os
+import sys
 import time
 from datetime import datetime
 
-from requests.exceptions import HTTPError
 import boto3
+from requests.exceptions import HTTPError
 
-from tests.setup import populate_local_keycloak
 from dataplatform_keycloak import ResourceServer
+from dataplatform_keycloak.exceptions import (
+    ResourceNotFoundException,
+    PermissionNotFoundException,
+)
 from dataplatform_keycloak.ssm import SsmClient
 from models import User
 from models.scope import all_scopes_for_type
 from resources.resource import resource_type
 from sandbox import initialize_local_environment
+from tests.setup import populate_local_keycloak
 
 logger = logging.getLogger("sda2keycloak")
 
@@ -56,19 +64,77 @@ def get_all_items(table):
     return items
 
 
-def write_output(output_dir_path, output_json):
-    dt_now_iso = datetime.utcnow().isoformat()
-    output_file = os.path.join(
-        output_dir_path, f"sda2keycloak_result-{dt_now_iso}.json"
+def read_input(input_path):
+    with open(input_path) as f:
+        return [
+            {"datasetId": line.split(",")[0], "principalId": line.split(",")[1]}
+            for line in f.read().splitlines()
+        ]
+
+
+def write_output(output_dir_path, results):
+    output_json = json.dumps(results, indent=2)
+    if output_dir_path:
+        dt_now_iso = datetime.utcnow().isoformat()
+        output_file = os.path.join(
+            output_dir_path, f"sda2keycloak_result-{dt_now_iso}.json"
+        )
+        logger.info(f"Writing results to {output_file}")
+        with open(output_file, "w+") as f:
+            f.write(output_json)
+    print(output_json)
+
+
+class ResourceAlreadyExistsException(Exception):
+    pass
+
+
+def create_resource(server, name, owner, delete_first=False):
+    if delete_first and apply_changes:
+        try:
+            logger.info(f"Deleting resource {name}")
+            server.delete_resource(name)
+        except ResourceNotFoundException:
+            pass
+    try:
+        if apply_changes:
+            server.create_resource(name, owner)
+    except HTTPError as e:
+        if e.response.status_code == 409:
+            logger.info(f"Resource {name} already exists")
+            raise ResourceAlreadyExistsException()
+        logger.exception(f"Could not create resource {name}")
+        raise
+    logger.info(
+        "Created resource {} (owner={}, type={})".format(
+            name, owner.user_id, owner.user_type
+        )
     )
-    logger.info(f"Writing results to {output_file}")
-    with open(output_file, "w+") as f:
-        f.write(output_json)
+
+
+def update_permissions(server, name, user):
+    for scope in all_scopes_for_type(resource_type(name)):
+        logger.info(
+            "Updating permission {} for {} ({}) on {}".format(
+                scope, user.user_id, user.user_type, name
+            )
+        )
+        if apply_changes:
+            server.update_permission(
+                resource_name=resource_name,
+                scope=scope,
+                add_users=[user],
+            )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", required=True, choices=["local", "dev", "prod"])
+    parser.add_argument(
+        "--input",
+        required=True,
+        help="Path to line separated txt file with dataset and principal ids to be migrated",
+    )
     parser.add_argument(
         "--output",
         required=False,
@@ -87,6 +153,7 @@ if __name__ == "__main__":
 
     apply_changes = args.apply
     output_dir_path = args.output
+    input_permissions = read_input(args.input)
 
     if args.env == "local":
         initialize_local_environment()
@@ -118,25 +185,46 @@ if __name__ == "__main__":
                 "principalId": "service-account-some-service",
                 "datasetId": "bym-dbo-ladbar-motorvogn",
             },
+            # Resources with non-existing user as owner (i.e. no
+            # permissions created, causing update_permission to fail)
+            {"principalId": "janedoe2", "datasetId": "dode-hester"},
+            {"principalId": "janedoe", "datasetId": "dode-hester"},
         ]
     else:
         dynamodb = boto3.resource("dynamodb", region_name=os.environ["AWS_REGION"])
         sda_table = dynamodb.Table("simple-dataset-authorizer")
         sda_items = get_all_items(sda_table)
 
-    logger.info(f"Found {len(sda_items)} items in table")
+    permissions_to_migrate = []
+
+    # Build list of permissions to migrate from input file,
+    # ignoring duplicates and items not found in SDA table
+    for item in input_permissions:
+        if item in permissions_to_migrate:
+            logger.warning(f"Ignored {','.join(item.values())} (duplicate)")
+            continue
+
+        if item not in sda_items:
+            logger.warning(f"Permission {','.join(item.values())} not found in table")
+            continue
+
+        permissions_to_migrate.append(item)
+
+    logger.info(
+        "Found {} items to migrate (of {} in file)".format(
+            len(permissions_to_migrate), len(input_permissions)
+        )
+    )
+
+    if (len(permissions_to_migrate) == 0) or (input("Continue? [y/N] ").lower() != "y"):
+        logger.info("Aborted!")
+        sys.exit()
 
     results = {"updated_items": {}, "failed_items": {}}
 
-    for item in map(SDAItem.fromdict, sda_items):
+    for item in map(SDAItem.fromdict, permissions_to_migrate):
         resource_name = f"okdata:dataset:{item.dataset_id}"
         user = User(user_id=item.user_id, user_type=item.user_type)
-        scopes = all_scopes_for_type(resource_type(resource_name))
-
-        permission = {
-            "resource_name": resource_name,
-            "owner": user,
-        }
 
         logger.info(
             "Setting permissions for {} ({}) on {}".format(
@@ -145,52 +233,50 @@ if __name__ == "__main__":
         )
 
         try:
-            # Create resource and permissions
-            if apply_changes:
-                resource_server.create_resource(resource_name, owner=user)
-        except HTTPError as e:
-            if e.response.status_code != 409:
-                raise
+            try:
+                # Create resource and permissions
+                create_resource(resource_server, resource_name, owner=user)
 
-            # Update permissions for any additional user(s)
-            for scope in scopes:
+            except ResourceAlreadyExistsException:
                 try:
-                    if apply_changes:
-                        resource_server.update_permission(
-                            resource_name=resource_name,
-                            scope=scope,
-                            add_users=[user],
-                        )
-                    logger.info(
-                        "Updated permission {} for {} ({}) on {}".format(
-                            scope, user.user_id, user.user_type, resource_name
-                        )
+                    # Update permissions for subsequent users
+                    update_permissions(resource_server, resource_name, user)
+                    results["updated_items"].setdefault(resource_name, []).append(
+                        user.user_id
                     )
-                    results["updated_items"].setdefault(resource_name, {}).setdefault(
-                        user.user_id, []
-                    ).append(scope)
+
+                except PermissionNotFoundException as e:
+                    logger.error(e)
+                    # Attempt re-creation of resource previously created
+                    # with non-existent user as owner
+                    if resource_name in results["updated_items"]:
+                        results["failed_items"][resource_name] = results[
+                            "updated_items"
+                        ][resource_name]
+
+                    create_resource(
+                        resource_server, resource_name, owner=user, delete_first=True
+                    )
+                    results["updated_items"][resource_name] = [user.user_id]
+
                 except HTTPError:
                     # KC returns 500 error="unknown_error" if user doesn't exist (?)
                     logger.exception(
-                        "Could not update permission {} for {} ({}) on {}".format(
-                            scope, user.user_id, user.user_type, resource_name
+                        "Could not update permissions {} ({}) on {}".format(
+                            user.user_id, user.user_type, resource_name
                         )
                     )
-                    results["failed_items"].setdefault(resource_name, {}).setdefault(
-                        user.user_id, []
-                    ).append(scope)
-
-        else:
-            logger.info(
-                "Created resource {} with owner {} ({})".format(
-                    resource_name, user.user_id, user.user_type
+                    results["failed_items"].setdefault(resource_name, []).append(
+                        user.user_id
+                    )
+            else:
+                results["updated_items"].setdefault(resource_name, []).append(
+                    user.user_id
                 )
-            )
-            results["updated_items"].setdefault(resource_name, {}).setdefault(
-                user.user_id, scopes
-            )
+        except Exception as e:
+            logger.exception(e)
+            logger.info("Aborted!")
+            results["failed_items"].setdefault(resource_name, []).append(user.user_id)
+            break
 
-    output_json = json.dumps(results, indent=2)
-    if output_dir_path:
-        write_output(output_dir_path, output_json)
-    print(output_json)
+write_output(output_dir_path, results)

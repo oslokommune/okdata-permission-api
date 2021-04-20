@@ -1,5 +1,5 @@
-import jwt
 from keycloak import KeycloakOpenID
+from okdata.sdk.auth.util import decode_token, jwt
 
 from dataplatform_keycloak import ResourceAuthorizer
 from tests.setup import local_keycloak_config as kc_config
@@ -230,6 +230,6 @@ def auth_header(token: str):
 
 
 def invalidate_token(token):
-    decoded = jwt.decode(token, verify=False)
+    decoded = decode_token(token)
     decoded["exp"] = 1610617383
     return jwt.encode(decoded, "some-key", algorithm="HS256")

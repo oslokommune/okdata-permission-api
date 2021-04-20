@@ -19,10 +19,10 @@ setup(
     packages=find_packages(),
     install_requires=[
         "boto3",
-        "pyjwt",
-        "requests",
-        "python-keycloak",
         "fastapi==0.61.1",
         "mangum==0.10.0",
+        "okdata-sdk>=0.7.0",
+        "python-keycloak",
+        "requests",
     ],
 )

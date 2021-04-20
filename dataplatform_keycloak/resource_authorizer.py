@@ -1,6 +1,7 @@
 import os
-import jwt
+
 import requests
+from okdata.sdk.auth.util import decode_token
 
 from dataplatform_keycloak.uma_well_known import get_well_known
 
@@ -55,4 +56,4 @@ class ResourceAuthorizer:
         response.raise_for_status()
 
         access_token = response.json()["access_token"]
-        return jwt.decode(access_token, verify=False)["authorization"]["permissions"]
+        return decode_token(access_token)["authorization"]["permissions"]
