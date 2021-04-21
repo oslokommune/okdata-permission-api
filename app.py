@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from resources import permissions
+from resources import permissions, my_permissions
 from resources.errors import ErrorResponse
 
 from pydantic import ValidationError
@@ -23,6 +23,12 @@ app.include_router(
     tags=["permissions"],
 )
 
+app.include_router(
+    my_permissions.router,
+    prefix="/my_permissions",
+    tags=["permissions"],
+)
+
 
 @app.exception_handler(ErrorResponse)
 def abort_exception_handler(request: Request, exc: ErrorResponse):
@@ -32,5 +38,6 @@ def abort_exception_handler(request: Request, exc: ErrorResponse):
 @app.exception_handler(ValidationError)
 def abort_value_error(request: Request, exc: ValidationError):
     return JSONResponse(
-        status_code=400, content={"message": "Bad Request", "errors": exc.errors()}
+        status_code=400,
+        content={"message": "Bad Request", "errors": exc.errors()},
     )

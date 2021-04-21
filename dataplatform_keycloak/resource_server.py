@@ -1,11 +1,12 @@
 import os
 from typing import List
 import logging
+from datetime import datetime
 
+import jwt
 import requests
 from keycloak import KeycloakOpenID
 from requests.models import PreparedRequest
-from okdata.sdk.auth.util import is_token_expired
 
 from dataplatform_keycloak.exceptions import (
     PermissionNotFoundException,
@@ -260,6 +261,36 @@ class ResourceServer:
                 return resource["_id"]
         raise ResourceNotFoundException(f"No resource named {resource_name}")
 
+    def get_user_permissions(self, user_bearer_token, scope: str = None):
+
+        """
+        Request a urn:ietf:params:oauth:grant-type:uma-ticket rpt from resource server
+        and returns a decoded value with all permissions associated with the rpt
+        https://github.com/keycloak/keycloak-documentation/blob/master/authorization_services/topics/service-authorization-uma-authz-process.adoc
+        """
+
+        payload = [
+            ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
+            ("audience", self.resource_server_client_id),
+        ]
+        if scope:
+            payload.append(("permission", f"#{scope}"))
+
+        headers = {
+            "Authorization": f"Bearer {user_bearer_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        response = requests.post(
+            self.uma_well_known.token_endpoint, data=payload, headers=headers
+        )
+
+        response.raise_for_status()
+        uma_ticket_access_token = response.json()["access_token"]
+        return jwt.decode(
+            uma_ticket_access_token,
+            options={"verify_signature": False, "verify_aud": False},
+        )["authorization"]["permissions"]
+
     def request_headers(self):
         return {
             "Authorization": f"Bearer {self.resource_server_access_token()}",
@@ -272,8 +303,19 @@ class ResourceServer:
                 grant_type=["client_credentials"]
             )["access_token"]
         else:
-            if is_token_expired(self.resource_server_token):
+            if token_is_expired(self.resource_server_token):
                 self.resource_server_token = self.resource_server_client.token(
                     grant_type=["client_credentials"]
                 )["access_token"]
         return self.resource_server_token
+
+
+def token_is_expired(token):
+    decoded_token = jwt.decode(token, options={"verify_signature": False})
+    expires_timestamp = decoded_token["exp"]
+    expires_dt = datetime.utcfromtimestamp(expires_timestamp)
+
+    difference = expires_dt - datetime.utcnow()
+
+    # Ensure that the token will not expire before it is used in a request
+    return difference.total_seconds() < 10

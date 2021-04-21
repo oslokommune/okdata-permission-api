@@ -4,6 +4,7 @@ from models.models import (
     UpdatePermissionBody,
     User,
     UserType,
+    MyPermissionsResponse,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "UpdatePermissionBody",
     "User",
     "UserType",
+    "MyPermissionsResponse",
 ]

@@ -4,8 +4,6 @@
 #
 #    pip-compile
 #
-attrs==20.3.0
-    # via jsonschema
 boto3==1.17.54
     # via okdata-permission-api (setup.py)
 botocore==1.20.54
@@ -26,36 +24,25 @@ jmespath==0.10.0
     # via
     #   boto3
     #   botocore
-jsonschema==3.2.0
-    # via okdata-sdk
 mangum==0.10.0
     # via okdata-permission-api (setup.py)
-okdata-sdk==0.7.0
-    # via okdata-permission-api (setup.py)
-prettytable==2.1.0
-    # via okdata-sdk
 pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
-pydantic==1.8.1
+pydantic==1.7.3
     # via fastapi
 pyjwt==2.0.1
-    # via okdata-sdk
-pyrsistent==0.17.3
-    # via jsonschema
+    # via okdata-permission-api (setup.py)
 python-dateutil==2.8.1
     # via botocore
 python-jose==3.2.0
     # via python-keycloak
 python-keycloak==0.24.0
-    # via
-    #   okdata-permission-api (setup.py)
-    #   okdata-sdk
+    # via okdata-permission-api (setup.py)
 requests==2.25.1
     # via
     #   okdata-permission-api (setup.py)
-    #   okdata-sdk
     #   python-keycloak
 rsa==4.7.2
     # via python-jose
@@ -64,22 +51,13 @@ s3transfer==0.4.0
 six==1.15.0
     # via
     #   ecdsa
-    #   jsonschema
     #   python-dateutil
     #   python-jose
 starlette==0.13.6
     # via fastapi
 typing-extensions==3.7.4.3
-    # via
-    #   mangum
-    #   pydantic
+    # via mangum
 urllib3==1.26.4
     # via
     #   botocore
-    #   okdata-sdk
     #   requests
-wcwidth==0.2.5
-    # via prettytable
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools

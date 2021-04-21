@@ -46,7 +46,14 @@ def populate():
         },
         skip_exists=True,
     )
-
+    # Delete default resource
+    for resource in keycloak_admin.raw_get(
+        path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/resource"
+    ).json():
+        resource_id = resource["_id"]
+        keycloak_admin.raw_delete(
+            path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/resource/{resource_id}"
+        )
     # Create client for this service (okdata-permission-api)
     keycloak_admin.create_client(
         payload={

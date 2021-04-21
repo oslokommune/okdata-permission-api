@@ -1,8 +1,9 @@
 from keycloak import KeycloakOpenID
-from okdata.sdk.auth.util import decode_token, jwt
+import jwt
 
 from dataplatform_keycloak import ResourceAuthorizer
 from tests.setup import local_keycloak_config as kc_config
+
 
 resource_name = "okdata:dataset:integration-test-dataset"
 resource_authorizer = ResourceAuthorizer()
@@ -203,6 +204,16 @@ class TestOkdataPermissionApi:
             "message": f"Resource with id [{resource_name}-not-exist] does not exist."
         }
 
+    # GET /my_permissions
+
+    def test_get_my_permissions(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.homersimpson)
+        response = mock_client.get("/my_permissions", headers=auth_header(token))
+        assert response.status_code == 200
+        response_body = response.json()
+        assert set(response_body.keys()) == {resource_name}
+        assert response_body[resource_name] == {"scopes": ["okdata:dataset:read"]}
+
 
 def get_bearer_token_for_user(username):
     token = KeycloakOpenID(
@@ -230,6 +241,6 @@ def auth_header(token: str):
 
 
 def invalidate_token(token):
-    decoded = decode_token(token)
+    decoded = jwt.decode(token, options={"verify_signature": False})
     decoded["exp"] = 1610617383
     return jwt.encode(decoded, "some-key", algorithm="HS256")

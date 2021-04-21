@@ -1,7 +1,6 @@
 import os
 
 import requests
-from okdata.sdk.auth.util import decode_token
 
 from dataplatform_keycloak.uma_well_known import get_well_known
 
@@ -36,24 +35,3 @@ class ResourceAuthorizer:
         response.raise_for_status()
 
         return response.json()["result"]
-
-    def get_user_permissions(self, user_bearer_token, scope: str = None):
-        payload = [
-            ("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket"),
-            ("audience", self.resource_server_name),
-        ]
-        if scope:
-            payload.append(("permission", f"#{scope}"))
-
-        headers = {
-            "Authorization": f"Bearer {user_bearer_token}",
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-        response = requests.post(
-            self.uma_well_known.token_endpoint, data=payload, headers=headers
-        )
-
-        response.raise_for_status()
-
-        access_token = response.json()["access_token"]
-        return decode_token(access_token)["authorization"]["permissions"]

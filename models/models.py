@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Dict
 
 from pydantic import BaseModel, validator
 
@@ -62,3 +62,10 @@ class UpdatePermissionBody(BaseModel):
     add_users: List[User] = []
     remove_users: List[User] = []
     scope: str
+
+
+class MyPermissionsResponse(BaseModel):
+    class MyPermissionScopes(BaseModel):
+        scopes: List[str]
+
+    __root__: Dict[str, MyPermissionScopes]

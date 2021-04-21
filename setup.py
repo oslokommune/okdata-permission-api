@@ -21,8 +21,8 @@ setup(
         "boto3",
         "fastapi==0.61.1",
         "mangum==0.10.0",
-        "okdata-sdk>=0.7.0",
         "python-keycloak",
         "requests",
+        "pyjwt",
     ],
 )
