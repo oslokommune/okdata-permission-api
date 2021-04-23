@@ -82,42 +82,36 @@ class TestOkdataPermissionApi:
             == f"Resource with name [{resource_name}] already exists."
         )
 
-    # GET /permissions
+    # GET /permissions/{resource_name}
 
-    def test_list_permission_no_bearer_token(self, mock_client):
-        team_permissions_response = mock_client.get(
-            "/permissions",
-        )
-        assert team_permissions_response.status_code == 403
-        assert team_permissions_response.json() == {"detail": "Not authenticated"}
+    def test_get_permissions_no_bearer_token(self, mock_client):
+        response = mock_client.get(f"/permissions/{resource_name}")
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not authenticated"}
 
-    def test_list_permission_invalid_bearer_token(self, mock_client):
+    def test_get_permissions_invalid_bearer_token(self, mock_client):
         invalid_token = invalidate_token(get_bearer_token_for_user(kc_config.janedoe))
-        team_permissions_response = mock_client.get(
-            "/permissions",
+        response = mock_client.get(
+            f"/permissions/{resource_name}",
             headers=auth_header(invalid_token),
         )
-        assert team_permissions_response.status_code == 401
-        assert team_permissions_response.json() == {"message": "Invalid access token"}
+        assert response.status_code == 401
+        assert response.json() == {"message": "Invalid access token"}
 
-    def test_list_permissions(self, mock_client):
-
-        token = get_bearer_token_for_user(kc_config.janedoe)
-        team_permissions_response = mock_client.get(
-            "/permissions",
-            params={"team_id": kc_config.team_id},
-            headers=auth_header(token),
+    def test_get_permissions_not_admin(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.homersimpson)
+        response = mock_client.get(
+            f"/permissions/{resource_name}", headers=auth_header(token)
         )
-        assert team_permissions_response.status_code == 200
-        assert team_permissions_response.json()[0] == {
-            "resource_name": resource_name,
-            "description": f"Allows for admin operations on resource: {resource_name}",
-            "scopes": ["okdata:dataset:admin"],
-            "teams": ["group1"],
-            "users": [],
-            "clients": [],
-        }
-        assert team_permissions_response.json() == [
+        assert response.status_code == 403
+
+    def test_get_permissions(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.janedoe)
+        response = mock_client.get(
+            f"/permissions/{resource_name}", headers=auth_header(token)
+        )
+        assert response.status_code == 200
+        assert response.json() == [
             {
                 "resource_name": resource_name,
                 "description": f"Allows for admin operations on resource: {resource_name}",
