@@ -1,17 +1,13 @@
-import os
-from typing import List
-from requests.exceptions import HTTPError
 import logging
+import os
+from requests.exceptions import HTTPError
+from typing import List
 
 from fastapi import Depends, APIRouter, status
 
 from dataplatform_keycloak import ResourceServer
 from models import CreateResourceBody, OkdataPermission, UpdatePermissionBody
-from resources.authorizer import (
-    AuthInfo,
-    has_resource_permission,
-    has_resource_type_permission,
-)
+from resources.authorizer import has_resource_permission, has_resource_type_permission
 from resources.errors import ErrorResponse, error_message_models
 
 logger = logging.getLogger()
@@ -85,33 +81,20 @@ def update_permission(
     return OkdataPermission.from_uma_permission(updated_permission)
 
 
-# TODO: Find out if this information should be open to all logged in users
 @router.get(
-    "",
-    dependencies=[Depends(AuthInfo)],
+    "/{resource_name}",
+    dependencies=[Depends(has_resource_permission("admin"))],
     status_code=status.HTTP_200_OK,
     response_model=List[OkdataPermission],
     responses=error_message_models(
         status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR
     ),
 )
-def list_permissions(
-    resource_name: str = None,
-    team_id: str = None,
-    scope: str = None,
-    first: str = None,
-    max_result: str = None,
+def get_permissions(
+    resource_name: str,
     resource_server: ResourceServer = Depends(resource_server),
 ):
-    uma_permissions = resource_server.list_permissions(
-        resource_name=resource_name,
-        group=team_id,
-        scope=scope,
-        first=first,
-        max_result=max_result,
-    )
-
     return [
-        OkdataPermission.from_uma_permission(permission)
-        for permission in uma_permissions
+        OkdataPermission.from_uma_permission(p)
+        for p in resource_server.list_permissions(resource_name)
     ]

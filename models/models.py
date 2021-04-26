@@ -1,3 +1,5 @@
+import logging
+import os
 from enum import Enum
 from typing import List, Dict
 
@@ -5,6 +7,9 @@ from pydantic import BaseModel, validator
 
 from models.scope import all_scopes, all_scopes_for_type
 from resources.resource import resource_type
+
+logger = logging.getLogger()
+logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 class UserType(str, Enum):
@@ -32,13 +37,13 @@ class CreateResourceBody(BaseModel):
 class OkdataPermission(BaseModel):
     resource_name: str
     description: str
-    scopes: List[str]
+    scope: str
     teams: List[str]
     users: List[str]
     clients: List[str]
 
-    @validator("scopes", each_item=True)
-    def check_scopes(cls, scope):
+    @validator("scope")
+    def check_scope(cls, scope):
         known_scopes = all_scopes()
         if scope not in known_scopes:
             raise ValueError(
@@ -48,10 +53,15 @@ class OkdataPermission(BaseModel):
 
     @staticmethod
     def from_uma_permission(uma_permission: dict):
+        scope, *extra_scopes = uma_permission["scopes"]
+
+        if extra_scopes:
+            logger.warning(f"Got unexpcted additional scopes: {extra_scopes}")
+
         return OkdataPermission(
             resource_name=":".join(uma_permission["name"].split(":")[:3]),
             description=uma_permission["description"],
-            scopes=uma_permission["scopes"],
+            scope=scope,
             teams=[group[1:] for group in uma_permission.get("groups", [])],
             users=uma_permission.get("users", []),
             clients=uma_permission.get("clients", []),
