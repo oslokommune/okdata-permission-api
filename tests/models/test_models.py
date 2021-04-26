@@ -24,7 +24,7 @@ def test_okdata_permission_from_uma_permission(uma_permission):
     p = OkdataPermission.from_uma_permission(uma_permission)
     assert p.resource_name == "okdata:dataset:foo"
     assert p.description == "Allows reading the dataset `foo`."
-    assert p.scopes == ["okdata:dataset:read"]
+    assert p.scope == "okdata:dataset:read"
     assert p.teams == []
     assert p.users == ["user"]
     assert p.clients == []

@@ -115,7 +115,7 @@ class TestOkdataPermissionApi:
             {
                 "resource_name": resource_name,
                 "description": f"Allows for admin operations on resource: {resource_name}",
-                "scopes": ["okdata:dataset:admin"],
+                "scope": "okdata:dataset:admin",
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],
@@ -123,7 +123,7 @@ class TestOkdataPermissionApi:
             {
                 "resource_name": resource_name,
                 "description": f"Allows for read operations on resource: {resource_name}",
-                "scopes": ["okdata:dataset:read"],
+                "scope": "okdata:dataset:read",
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],
@@ -131,7 +131,7 @@ class TestOkdataPermissionApi:
             {
                 "resource_name": resource_name,
                 "description": f"Allows for update operations on resource: {resource_name}",
-                "scopes": ["okdata:dataset:update"],
+                "scope": "okdata:dataset:update",
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],
@@ -139,7 +139,7 @@ class TestOkdataPermissionApi:
             {
                 "resource_name": resource_name,
                 "description": f"Allows for write operations on resource: {resource_name}",
-                "scopes": ["okdata:dataset:write"],
+                "scope": "okdata:dataset:write",
                 "teams": ["group1"],
                 "users": [],
                 "clients": [],
@@ -176,7 +176,7 @@ class TestOkdataPermissionApi:
         assert response.json() == {
             "resource_name": resource_name,
             "description": f"Allows for read operations on resource: {resource_name}",
-            "scopes": ["okdata:dataset:read"],
+            "scope": "okdata:dataset:read",
             "teams": ["group1"],
             "users": [kc_config.homersimpson],
             "clients": [],
