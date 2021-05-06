@@ -5,7 +5,7 @@ from typing import List
 
 from fastapi import Depends, APIRouter, status
 
-from dataplatform_keycloak import ResourceServer
+from dataplatform_keycloak import ResourceServer, CannotRemoveOnlyAdminException
 from models import CreateResourceBody, OkdataPermission, UpdatePermissionBody
 from resources.authorizer import has_resource_permission, has_resource_type_permission
 from resources.errors import ErrorResponse, error_message_models
@@ -73,6 +73,10 @@ def update_permission(
             scope=body.scope,
             add_users=body.add_users,
             remove_users=body.remove_users,
+        )
+    except CannotRemoveOnlyAdminException:
+        raise ErrorResponse(
+            status.HTTP_400_BAD_REQUEST, "Cannot remove the only admin for resource"
         )
     except Exception as e:
         logger.exception(e)

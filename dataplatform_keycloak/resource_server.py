@@ -11,6 +11,7 @@ from requests.models import PreparedRequest
 from dataplatform_keycloak.exceptions import (
     PermissionNotFoundException,
     ResourceNotFoundException,
+    CannotRemoveOnlyAdminException,
 )
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
@@ -68,13 +69,10 @@ class ResourceServer:
         permissions = [
             self.create_permission(
                 permission_name=f"{resource_name}:{scope_permission(scope)}",
-                description="Allows for {} operations on resource: {}".format(
-                    scope_permission(scope),
-                    resource_name,
-                ),
+                description=permission_description(scope, resource_name),
                 resource_id=resource["_id"],
                 scopes=[scope],
-                owner=owner,
+                users=[owner],
             )
             for scope in scopes
         ]
@@ -90,20 +88,21 @@ class ResourceServer:
         description: str,
         resource_id: str,
         scopes: list,
-        owner: User,
+        users: List[User],
         decision_strategy: str = "AFFIRMATIVE",
         logic: str = "POSITIVE",
     ):
-        owner_map = {o: [] for o in UserType}
-        owner_map[owner.user_type].append(owner.user_id)
+        user_map = {o: [] for o in UserType}
+        for user in users:
+            user_map[user.user_type].append(user.user_id)
 
         permission = {
             "name": permission_name,
             "description": description,
             "scopes": scopes,
-            "groups": owner_map[UserType.GROUP],
-            "users": owner_map[UserType.USER],
-            "clients": owner_map[UserType.CLIENT],
+            "groups": user_map[UserType.GROUP],
+            "users": user_map[UserType.USER],
+            "clients": user_map[UserType.CLIENT],
             "logic": logic,
             "decisionStrategy": decision_strategy,
         }
@@ -125,47 +124,65 @@ class ResourceServer:
         remove_users: List[User] = [],
     ):
         permission_name = f"{resource_name}:{scope_permission(scope)}"
-        permission = self.get_permission(permission_name)
 
-        users, groups, clients = (
-            set(permission.get("users", [])),
-            set(permission.get("groups", [])),
-            set(permission.get("clients", [])),
-        )
-        # Add if not present
-        for user in add_users:
-            if user.user_type is UserType.USER:
-                users.add(user.user_id)
-            elif user.user_type is UserType.GROUP:
-                groups.add(user.user_id)
-            elif user.user_type is UserType.CLIENT:
-                clients.add(user.user_id)
+        try:
+            permission = self.get_permission(permission_name)
 
-        # Remove if present
-        for user in remove_users:
-            if user.user_type is UserType.USER:
-                users.discard(user.user_id)
-            elif user.user_type is UserType.GROUP:
-                groups.discard(user.user_id)
-            elif user.user_type is UserType.CLIENT:
-                clients.discard(user.user_id)
+            users, groups, clients = (
+                set(permission.get("users", [])),
+                set(permission.get("groups", [])),
+                set(permission.get("clients", [])),
+            )
+            # Add if not present
+            for user in add_users:
+                if user.user_type is UserType.USER:
+                    users.add(user.user_id)
+                elif user.user_type is UserType.GROUP:
+                    groups.add(f"{user.user_id}")
+                elif user.user_type is UserType.CLIENT:
+                    clients.add(user.user_id)
 
-        permission["users"] = list(users)
-        permission["groups"] = list(groups)
-        permission["clients"] = list(clients)
+            # Remove if present
+            for user in remove_users:
+                if user.user_type is UserType.USER:
+                    users.discard(user.user_id)
+                elif user.user_type is UserType.GROUP:
+                    groups.discard(f"/{user.user_id}")
+                elif user.user_type is UserType.CLIENT:
+                    clients.discard(user.user_id)
 
-        update_permission_url = (
-            f"{self.uma_well_known.policy_endpoint}/{permission['id']}"
-        )
-        logger.info(f"PUT {update_permission_url}")
+            if scope_permission(scope) == "admin" and not any([users, groups, clients]):
+                raise CannotRemoveOnlyAdminException
 
-        resp = requests.put(
-            update_permission_url,
-            headers=self.request_headers(),
-            json=permission,
-        )
-        resp.raise_for_status()
-        return self.get_permission(permission_name)
+            permission["users"] = list(users)
+            permission["groups"] = list(groups)
+            permission["clients"] = list(clients)
+
+            update_permission_url = (
+                f"{self.uma_well_known.policy_endpoint}/{permission['id']}"
+            )
+            logger.info(f"PUT {update_permission_url}")
+
+            resp = requests.put(
+                update_permission_url,
+                headers=self.request_headers(),
+                json=permission,
+            )
+            resp.raise_for_status()
+
+        except PermissionNotFoundException as e:
+            if add_users:
+                permission = self.create_permission(
+                    permission_name=permission_name,
+                    description=permission_description(scope, resource_name),
+                    resource_id=self.get_resource_id(resource_name),
+                    scopes=[scope],
+                    users=add_users,
+                )
+            else:
+                raise e
+
+        return permission
 
     def get_permission(self, permission_name):
 
@@ -308,6 +325,13 @@ class ResourceServer:
                     grant_type=["client_credentials"]
                 )["access_token"]
         return self.resource_server_token
+
+
+def permission_description(scope, resource_name):
+    return "Allows for {} operations on resource: {}".format(
+        scope_permission(scope),
+        resource_name,
+    )
 
 
 def token_is_expired(token):

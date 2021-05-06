@@ -198,6 +198,119 @@ class TestOkdataPermissionApi:
             "message": f"Resource with id [{resource_name}-not-exist] does not exist."
         }
 
+    def test_update_permission_create_permission_if_deleted(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.janedoe)
+
+        remove_all_users_body = {
+            "remove_users": [
+                {"user_id": kc_config.homersimpson, "user_type": "user"},
+                {"user_id": kc_config.team_id, "user_type": "team"},
+            ],
+            "scope": "okdata:dataset:read",
+        }
+        remove_all_users_response = mock_client.put(
+            f"/permissions/{resource_name}",
+            json=remove_all_users_body,
+            headers=auth_header(token),
+        )
+        assert remove_all_users_response.status_code == 200
+        assert remove_all_users_response.json() == {
+            "resource_name": resource_name,
+            "description": f"Allows for read operations on resource: {resource_name}",
+            "scope": "okdata:dataset:read",
+            "teams": [],
+            "users": [],
+            "clients": [],
+        }
+
+        assert not resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.homersimpson),
+            "okdata:dataset:read",
+            resource_name,
+        )
+
+        add_user_body = {
+            "add_users": [{"user_id": kc_config.homersimpson, "user_type": "user"}],
+            "scope": "okdata:dataset:read",
+        }
+
+        add_user_response = mock_client.put(
+            f"/permissions/{resource_name}",
+            json=add_user_body,
+            headers=auth_header(token),
+        )
+        assert add_user_response.status_code == 200
+        assert add_user_response.json() == {
+            "resource_name": resource_name,
+            "description": f"Allows for read operations on resource: {resource_name}",
+            "scope": "okdata:dataset:read",
+            "teams": [],
+            "users": [kc_config.homersimpson],
+            "clients": [],
+        }
+
+        assert resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.homersimpson),
+            "okdata:dataset:read",
+            resource_name,
+        )
+
+    def test_update_permissions_for_admin_scopes(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.janedoe)
+
+        # Add a second admin
+        mock_client.put(
+            f"/permissions/{resource_name}",
+            json={
+                "add_users": [{"user_id": kc_config.homersimpson, "user_type": "user"}],
+                "scope": "okdata:dataset:admin",
+            },
+            headers=auth_header(token),
+        )
+
+        assert resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.homersimpson),
+            "okdata:dataset:admin",
+            resource_name,
+        )
+
+        # Remove the second admin
+
+        mock_client.put(
+            f"/permissions/{resource_name}",
+            json={
+                "remove_users": [
+                    {"user_id": kc_config.homersimpson, "user_type": "user"}
+                ],
+                "scope": "okdata:dataset:admin",
+            },
+            headers=auth_header(token),
+        )
+
+        assert not resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.homersimpson),
+            "okdata:dataset:admin",
+            resource_name,
+        )
+
+        # Try to remove the only remaining admin
+
+        remove_only_admin_body = {
+            "remove_users": [
+                {"user_id": kc_config.team_id, "user_type": "team"},
+            ],
+            "scope": "okdata:dataset:admin",
+        }
+        remove_all_users_response = mock_client.put(
+            f"/permissions/{resource_name}",
+            json=remove_only_admin_body,
+            headers=auth_header(token),
+        )
+        assert remove_all_users_response.status_code == 400
+        assert remove_all_users_response.json() == {
+            "message": "Cannot remove the only admin for resource"
+        }
+
     # GET /my_permissions
 
     def test_get_my_permissions(self, mock_client):

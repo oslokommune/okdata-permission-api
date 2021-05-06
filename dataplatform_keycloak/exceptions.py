@@ -4,3 +4,7 @@ class ResourceNotFoundException(Exception):
 
 class PermissionNotFoundException(Exception):
     pass
+
+
+class CannotRemoveOnlyAdminException(Exception):
+    pass
