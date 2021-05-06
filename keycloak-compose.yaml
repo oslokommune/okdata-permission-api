@@ -4,7 +4,7 @@ version: "3"
 services:
   keycloak:
     container_name: keycloak
-    image: jboss/keycloak:10.0.1
+    image: jboss/keycloak:12.0.4
     ports:
       - "35789:8080"
     environment:
