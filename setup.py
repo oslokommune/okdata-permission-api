@@ -21,8 +21,10 @@ setup(
         "boto3",
         "fastapi==0.61.1",
         "mangum==0.10.0",
+        "okdata-resource-auth",
+        "pydantic==1.7.3",
+        "pyjwt",
         "python-keycloak",
         "requests",
-        "pyjwt",
     ],
 )

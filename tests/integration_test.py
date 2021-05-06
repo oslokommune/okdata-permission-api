@@ -1,7 +1,7 @@
-from keycloak import KeycloakOpenID
 import jwt
+from keycloak import KeycloakOpenID
+from okdata.resource_auth import ResourceAuthorizer
 
-from dataplatform_keycloak import ResourceAuthorizer
 from tests.setup import local_keycloak_config as kc_config
 
 

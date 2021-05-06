@@ -4,9 +4,10 @@ import logging
 from fastapi import Body, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from keycloak import KeycloakOpenID
+from okdata.resource_auth import ResourceAuthorizer
 from requests.exceptions import HTTPError
 
-from dataplatform_keycloak import ResourceAuthorizer, SsmClient
+from dataplatform_keycloak import SsmClient
 from models import CreateResourceBody
 from resources.errors import ErrorResponse
 from resources.resource import resource_type

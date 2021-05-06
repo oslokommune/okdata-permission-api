@@ -4,9 +4,9 @@
 #
 #    pip-compile
 #
-boto3==1.17.54
+boto3==1.17.66
     # via okdata-permission-api (setup.py)
-botocore==1.20.54
+botocore==1.20.66
     # via
     #   boto3
     #   s3transfer
@@ -26,13 +26,17 @@ jmespath==0.10.0
     #   botocore
 mangum==0.10.0
     # via okdata-permission-api (setup.py)
+okdata-resource-auth==0.1.0
+    # via okdata-permission-api (setup.py)
 pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
 pydantic==1.7.3
-    # via fastapi
-pyjwt==2.0.1
+    # via
+    #   fastapi
+    #   okdata-permission-api (setup.py)
+pyjwt==2.1.0
     # via okdata-permission-api (setup.py)
 python-dateutil==2.8.1
     # via botocore
@@ -43,19 +47,20 @@ python-keycloak==0.24.0
 requests==2.25.1
     # via
     #   okdata-permission-api (setup.py)
+    #   okdata-resource-auth
     #   python-keycloak
 rsa==4.7.2
     # via python-jose
-s3transfer==0.4.0
+s3transfer==0.4.2
     # via boto3
-six==1.15.0
+six==1.16.0
     # via
     #   ecdsa
     #   python-dateutil
     #   python-jose
 starlette==0.13.6
     # via fastapi
-typing-extensions==3.7.4.3
+typing-extensions==3.10.0.0
     # via mangum
 urllib3==1.26.4
     # via
