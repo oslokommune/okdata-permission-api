@@ -82,6 +82,11 @@ def update_permission(
         logger.exception(e)
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
 
+    if "error" in updated_permission:
+        raise ErrorResponse(
+            status.HTTP_400_BAD_REQUEST, updated_permission["error_description"]
+        )
+
     return OkdataPermission.from_uma_permission(updated_permission)
 
 

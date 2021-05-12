@@ -188,6 +188,21 @@ class TestOkdataPermissionApi:
             resource_name,
         )
 
+    def test_update_permission_unkown_scope(self, mock_client):
+        response = mock_client.put(
+            f"/permissions/{resource_name}",
+            json={
+                "add_users": [{"user_id": kc_config.homersimpson, "user_type": "user"}],
+                "scope": "okdata:dataset:foobar",
+            },
+            headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        )
+        assert response.status_code == 400
+        assert (
+            "Some of the scopes [[okdata:dataset:foobar]] are not valid for resource"
+            in response.json()["message"]
+        )
+
     def test_update_permission_resource_not_exist(self, mock_client):
         token = get_bearer_token_for_user(kc_config.janedoe)
         response = mock_client.put(
