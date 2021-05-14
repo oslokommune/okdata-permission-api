@@ -32,7 +32,7 @@ pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
-pydantic==1.7.3
+pydantic==1.7.4
     # via
     #   fastapi
     #   okdata-permission-api (setup.py)
