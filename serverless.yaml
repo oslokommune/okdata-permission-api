@@ -30,6 +30,7 @@ provider:
     RESOURCE_SERVER_CLIENT_ID: okdata-resource-server
     ROOT_PATH: "/okdata-permission-api"
     LOG_LEVEL: INFO
+    BACKUP_BUCKET_NAME: ${self:custom.backupBucket.${self:provider.stage}, self:custom.backupBucket.dev}
 package:
   exclude:
     - '**/*'
@@ -37,6 +38,7 @@ package:
     - dataplatform_keycloak/*.py
     - models/*.py
     - resources/*.py
+    - backup/*.py
     - app.py
     - handler.py
 
@@ -47,6 +49,11 @@ functions:
       - http: ANY /
       - http: "ANY {proxy+}"
     timeout: 29
+  backup:
+    handler: backup.handler.backup_permissions
+    events:
+      - schedule: cron(0 0 * * ? *)
+    timeout: 30
 
 plugins:
   - serverless-python-requirements
@@ -73,6 +80,9 @@ custom:
   deploymentBucket:
     prod: ok-origo-dataplatform-config-prod
     dev: ok-origo-dataplatform-config-dev
+  backupBucket:
+    prod: ok-origo-dataplatform-backup-prod
+    dev: ok-origo-dataplatform-backup-dev
   keycloakArn:
     prod: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:keycloak-authorizer-prod-authenticate
     dev: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:keycloak-authorizer-dev-authenticate
