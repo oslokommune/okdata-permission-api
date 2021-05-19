@@ -31,6 +31,6 @@ def test_okdata_permission_from_uma_permission(uma_permission):
 
 
 @patch("models.scope._SCOPES", {"okdata:dataset": ["write"]})
-def test_okdata_permission_from_uma_permission_unkown_scope(uma_permission):
+def test_okdata_permission_from_uma_permission_unknown_scope(uma_permission):
     with pytest.raises(ValueError):
         OkdataPermission.from_uma_permission(uma_permission)

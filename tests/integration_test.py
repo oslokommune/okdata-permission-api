@@ -188,7 +188,7 @@ class TestOkdataPermissionApi:
             resource_name,
         )
 
-    def test_update_permission_unkown_scope(self, mock_client):
+    def test_update_permission_unknown_scope(self, mock_client):
         response = mock_client.put(
             f"/permissions/{resource_name}",
             json={
