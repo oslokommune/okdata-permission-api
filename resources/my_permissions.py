@@ -2,6 +2,7 @@ import os
 import logging
 
 from fastapi import Depends, APIRouter, status
+from requests.exceptions import HTTPError
 
 from dataplatform_keycloak import ResourceServer
 from models import MyPermissionsResponse
@@ -35,7 +36,14 @@ def get_my_permissions(
     """Return all permissions associated with the logged in user"""
 
     try:
-        user_permissions = resource_server.get_user_permissions(auth_info.bearer_token)
+        try:
+            user_permissions = resource_server.get_user_permissions(
+                auth_info.bearer_token
+            )
+        except HTTPError as e:
+            if e.response.status_code == 403:
+                return MyPermissionsResponse.parse_obj({})
+            raise
 
         return MyPermissionsResponse.parse_obj(
             {

@@ -336,6 +336,12 @@ class TestOkdataPermissionApi:
         assert set(response_body.keys()) == {resource_name}
         assert response_body[resource_name] == {"scopes": ["okdata:dataset:read"]}
 
+    def test_get_my_permissions_no_permissions(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.nopermissions)
+        response = mock_client.get("/my_permissions", headers=auth_header(token))
+        assert response.status_code == 200
+        assert response.json() == {}
+
 
 def get_bearer_token_for_user(username):
     token = KeycloakOpenID(
