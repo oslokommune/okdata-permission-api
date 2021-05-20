@@ -39,6 +39,7 @@ package:
     - models/*.py
     - resources/*.py
     - backup/*.py
+    - webhook_tokens/*.py
     - app.py
     - handler.py
 
