@@ -66,7 +66,7 @@ def populate():
         skip_exists=True,
     )
 
-    # Create client that simulates another service
+    # Create client that simulates another service that will have permission to create resources
     keycloak_admin.create_client(
         payload={
             "id": keycloak_config.create_permissions_client_id,
@@ -115,6 +115,18 @@ def populate():
     keycloak_admin.raw_post(
         path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/permission/scope",
         data=json.dumps(create_dataset_permission_body),
+    )
+
+    # Create client that simulates another service that uses webhook authorization
+    keycloak_admin.create_client(
+        payload={
+            "id": keycloak_config.service_with_webhook_client_id,
+            "name": keycloak_config.service_with_webhook_client_id,
+            "publicClient": False,
+            "serviceAccountsEnabled": True,
+            "secret": keycloak_config.service_with_webhook_client_secret,
+        },
+        skip_exists=True,
     )
 
     # Create users and groups

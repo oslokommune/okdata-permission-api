@@ -2,8 +2,9 @@ import os
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
-from resources import permissions, my_permissions
+from resources import permissions, my_permissions, webhook_tokens
 from resources.errors import ErrorResponse
 
 from pydantic import ValidationError
@@ -29,14 +30,17 @@ app.include_router(
     tags=["permissions"],
 )
 
+app.include_router(webhook_tokens.router, prefix="/webhooks", tags=["webhooks"])
+
 
 @app.exception_handler(ErrorResponse)
 def abort_exception_handler(request: Request, exc: ErrorResponse):
     return JSONResponse(status_code=exc.status_code, content={"message": exc.message})
 
 
+@app.exception_handler(RequestValidationError)
 @app.exception_handler(ValidationError)
-def abort_value_error(request: Request, exc: ValidationError):
+def abort_validation_error(request: Request, exc):
     return JSONResponse(
         status_code=400,
         content={"message": "Bad Request", "errors": exc.errors()},

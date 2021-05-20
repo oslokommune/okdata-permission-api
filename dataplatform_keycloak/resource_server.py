@@ -24,13 +24,15 @@ logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 class ResourceServer:
-    def __init__(self):
+    def __init__(
+        self,
+        client_secret_key=os.environ.get("RESOURCE_SERVER_CLIENT_SECRET"),
+        keycloak_server_url=os.environ["KEYCLOAK_SERVER"],
+        keycloak_realm=os.environ["KEYCLOAK_REALM"],
+        resource_server_client_id=os.environ["RESOURCE_SERVER_CLIENT_ID"],
+    ):
 
-        self.keycloak_server_url = os.environ["KEYCLOAK_SERVER"]
-        self.keycloak_realm = os.environ["KEYCLOAK_REALM"]
-        self.resource_server_client_id = os.environ["RESOURCE_SERVER_CLIENT_ID"]
-
-        client_secret_key = os.environ.get("RESOURCE_SERVER_CLIENT_SECRET", None)
+        self.resource_server_client_id = resource_server_client_id
 
         if client_secret_key is None:
             client_secret_key = SsmClient.get_secret(
@@ -38,15 +40,13 @@ class ResourceServer:
             )
 
         self.resource_server_client = KeycloakOpenID(
-            realm_name=self.keycloak_realm,
-            server_url=f"{self.keycloak_server_url}/auth/",
+            realm_name=keycloak_realm,
+            server_url=f"{keycloak_server_url}/auth/",
             client_id=self.resource_server_client_id,
             client_secret_key=client_secret_key,
         )
 
-        self.uma_well_known = get_well_known(
-            self.keycloak_server_url, self.keycloak_realm
-        )
+        self.uma_well_known = get_well_known(keycloak_server_url, keycloak_realm)
 
         self.resource_server_token = None
 

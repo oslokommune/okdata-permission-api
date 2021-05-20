@@ -1,7 +1,6 @@
 Okdata Permission API
 ==================
-API for managing permissions to okdata resources such as datasets. The API is currently WIP (work in progress) and is
-not in use anywhere at this time.
+API for managing permissions to okdata resources such as datasets.
 
 ## Api Documentation
 

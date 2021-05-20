@@ -12,7 +12,7 @@ def mock_client(mock_ssm_client):
     return TestClient(app)
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_ssm_client(monkeypatch):
     def get_secret(key):
         if (
