@@ -66,6 +66,8 @@ python-keycloak==0.24.0
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
+pytz==2021.1
+    # via okdata-permission-api (setup.py)
 requests==2.25.1
     # via
     #   okdata-permission-api (setup.py)

@@ -27,6 +27,7 @@ setup(
         "pydantic==1.7.4",
         "pyjwt",
         "python-keycloak",
+        "pytz",
         "requests",
     ],
 )
