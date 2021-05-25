@@ -9,7 +9,7 @@ from typing import List, Dict
 from pydantic import BaseModel, validator
 
 from models.scope import all_scopes, all_scopes_for_type
-from resources.resource import resource_type
+from resources.resource import resource_type, resource_name_from_permission_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
@@ -62,7 +62,7 @@ class OkdataPermission(BaseModel):
             logger.warning(f"Got unexpcted additional scopes: {extra_scopes}")
 
         return OkdataPermission(
-            resource_name=":".join(uma_permission["name"].split(":")[:3]),
+            resource_name=resource_name_from_permission_name(uma_permission["name"]),
             description=uma_permission["description"],
             scope=scope,
             teams=[group[1:] for group in uma_permission.get("groups", [])],
