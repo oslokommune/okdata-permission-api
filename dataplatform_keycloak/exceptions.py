@@ -8,3 +8,7 @@ class PermissionNotFoundException(Exception):
 
 class CannotRemoveOnlyAdminException(Exception):
     pass
+
+
+class ConfigurationError(Exception):
+    pass

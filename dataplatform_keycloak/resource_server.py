@@ -12,6 +12,7 @@ from dataplatform_keycloak.exceptions import (
     PermissionNotFoundException,
     ResourceNotFoundException,
     CannotRemoveOnlyAdminException,
+    ConfigurationError,
 )
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
@@ -27,12 +28,21 @@ class ResourceServer:
     def __init__(
         self,
         client_secret_key=os.environ.get("RESOURCE_SERVER_CLIENT_SECRET"),
-        keycloak_server_url=os.environ["KEYCLOAK_SERVER"],
-        keycloak_realm=os.environ["KEYCLOAK_REALM"],
-        resource_server_client_id=os.environ["RESOURCE_SERVER_CLIENT_ID"],
+        keycloak_server_url=os.environ.get("KEYCLOAK_SERVER"),
+        keycloak_realm=os.environ.get("KEYCLOAK_REALM"),
+        resource_server_client_id=os.environ.get("RESOURCE_SERVER_CLIENT_ID"),
     ):
 
+        if not keycloak_realm:
+            raise ConfigurationError("keycloak_realm is not set")
+        if not keycloak_server_url:
+            raise ConfigurationError("keycloak_server_url is not set")
+        if not resource_server_client_id:
+            raise ConfigurationError("resource_server_client_id is not set")
+
         self.resource_server_client_id = resource_server_client_id
+        self.keycloak_server_url = keycloak_server_url
+        self.keycloak_realm = keycloak_realm
 
         if client_secret_key is None:
             client_secret_key = SsmClient.get_secret(
@@ -40,8 +50,8 @@ class ResourceServer:
             )
 
         self.resource_server_client = KeycloakOpenID(
-            realm_name=keycloak_realm,
-            server_url=f"{keycloak_server_url}/auth/",
+            realm_name=self.keycloak_realm,
+            server_url=f"{self.keycloak_server_url}/auth/",
             client_id=self.resource_server_client_id,
             client_secret_key=client_secret_key,
         )
