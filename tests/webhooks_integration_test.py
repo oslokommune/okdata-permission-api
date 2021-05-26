@@ -10,7 +10,7 @@ from moto import mock_dynamodb2
 import tests.setup.local_keycloak_config as kc_config
 import tests.utils as test_utils
 from dataplatform_keycloak import ResourceServer
-from models import User
+from models import User, WebhookTokenOperation
 
 
 @dataclass
@@ -35,7 +35,7 @@ class TestWebhooksApi:
 
         response = mock_client.post(
             f"/webhooks/{test_data.dataset_id}/tokens",
-            json={"service": kc_config.service_with_webhook_client_id},
+            json={"operation": "read"},
             headers=test_utils.auth_header(access_token),
         )
 
@@ -44,7 +44,7 @@ class TestWebhooksApi:
             "token": test_data.webhook_token,
             "created_by": test_data.created_by,
             "dataset_id": test_data.dataset_id,
-            "service": f"service-account-{kc_config.service_with_webhook_client_id}",
+            "operation": WebhookTokenOperation.READ.value,
             "created_at": test_data.created_at.isoformat(),
             "expires_at": (
                 test_data.created_at + timedelta(days=(365 * 2))
@@ -58,35 +58,41 @@ class TestWebhooksApi:
 
         response = mock_client.post(
             f"/webhooks/{test_data.dataset_id}/tokens",
-            json={"service": kc_config.service_with_webhook_client_id},
+            json={"operation": "read"},
             headers=test_utils.auth_header(access_token),
         )
 
         assert response.status_code == 403
         assert response.json() == {"message": "Forbidden"}
 
-    def test_create_webhook_token_invalid_service(self, mock_client):
+    def test_create_webhook_token_invalid_operation(self, mock_client):
 
         access_token = test_utils.get_bearer_token_for_user(kc_config.janedoe)
-        service = "cake-bake-api"
         response = mock_client.post(
             f"/webhooks/{test_data.dataset_id}/tokens",
-            json={"service": service},
+            json={"operation": "cake"},
             headers=test_utils.auth_header(access_token),
         )
 
-        assert response.status_code == 403
+        assert response.status_code == 400
         assert response.json() == {
-            "message": f"{service} does not allow webhook token authorization"
+            "errors": [
+                {
+                    "loc": ["body", "operation"],
+                    "msg": "value is not a valid enumeration member; permitted: "
+                    "'read', 'write'",
+                }
+            ],
+            "message": "Bad Request",
         }
 
-    def test_create_webhook_tokens_bad_request(self, mock_client):
+    def test_create_webhook_json_field_missing(self, mock_client):
 
         access_token = test_utils.get_bearer_token_for_user(kc_config.janedoe)
 
         invalid_body_response = mock_client.post(
             f"/webhooks/{test_data.dataset_id}/tokens",
-            json={"tjeneste": kc_config.service_with_webhook_client_id},
+            json={"operationzz": "read"},
             headers=test_utils.auth_header(access_token),
         )
 
@@ -94,9 +100,8 @@ class TestWebhooksApi:
         assert invalid_body_response.json() == {
             "errors": [
                 {
-                    "loc": ["body", "service"],
+                    "loc": ["body", "operation"],
                     "msg": "field required",
-                    "type": "value_error.missing",
                 }
             ],
             "message": "Bad Request",
@@ -119,7 +124,7 @@ class TestWebhooksApi:
                 "token": test_data.webhook_token,
                 "created_by": test_data.created_by,
                 "dataset_id": test_data.dataset_id,
-                "service": f"service-account-{kc_config.service_with_webhook_client_id}",
+                "operation": WebhookTokenOperation.READ.value,
                 "created_at": test_data.created_at.isoformat(),
                 "expires_at": (
                     test_data.created_at + timedelta(days=(365 * 2))
@@ -146,12 +151,12 @@ class TestWebhooksApi:
     def test_authorize_webhook_token(self, mock_client):
 
         access_token = test_utils.get_token_for_service(
-            kc_config.service_with_webhook_client_id,
-            kc_config.service_with_webhook_client_secret,
+            kc_config.client_id,
+            kc_config.client_secret,
         )
 
         response = mock_client.get(
-            f"/webhooks/{test_data.dataset_id}/tokens/{test_data.webhook_token}/authorize",
+            f"/webhooks/{test_data.dataset_id}/tokens/{test_data.webhook_token}/authorize?operation=read",
             headers=test_utils.auth_header(access_token),
         )
 
@@ -159,7 +164,7 @@ class TestWebhooksApi:
         assert response.json() == {"access": True, "reason": None}
 
     @freeze_time(test_data.created_at)
-    def test_authorize_webhook_invalid_service(self, mock_client):
+    def test_authorize_webhook_operation_unauthorized(self, mock_client):
 
         access_token = test_utils.get_token_for_service(
             kc_config.client_id,
@@ -167,25 +172,49 @@ class TestWebhooksApi:
         )
 
         response = mock_client.get(
-            f"/webhooks/{test_data.dataset_id}/tokens/{test_data.webhook_token}/authorize",
+            f"/webhooks/{test_data.dataset_id}/tokens/{test_data.webhook_token}/authorize?operation=write",
             headers=test_utils.auth_header(access_token),
         )
 
         assert response.status_code == 200
         assert response.json() == {
             "access": False,
-            "reason": "Provided token does not have access to call this service",
+            "reason": f"Provided token does not have access to perform write on {test_data.dataset_id}",
+        }
+
+    @freeze_time(test_data.created_at)
+    def test_authorize_webhook_invalid_operation(self, mock_client):
+
+        access_token = test_utils.get_token_for_service(
+            kc_config.client_id,
+            kc_config.client_secret,
+        )
+
+        response = mock_client.get(
+            f"/webhooks/{test_data.dataset_id}/tokens/{test_data.webhook_token}/authorize?operation=cake",
+            headers=test_utils.auth_header(access_token),
+        )
+
+        assert response.status_code == 400
+        assert response.json() == {
+            "errors": [
+                {
+                    "loc": ["query", "operation"],
+                    "msg": "value is not a valid enumeration member; permitted: 'read', 'write'",
+                }
+            ],
+            "message": "Bad Request",
         }
 
     @freeze_time(test_data.created_at + timedelta(days=(365 * 2), seconds=1))
     def test_authorize_webhook_expired_token(self, mock_client):
         access_token = test_utils.get_token_for_service(
-            kc_config.service_with_webhook_client_id,
-            kc_config.service_with_webhook_client_secret,
+            kc_config.client_id,
+            kc_config.client_secret,
         )
 
         response = mock_client.get(
-            f"/webhooks/{test_data.dataset_id}/tokens/{test_data.webhook_token}/authorize",
+            f"/webhooks/{test_data.dataset_id}/tokens/{test_data.webhook_token}/authorize?operation=read",
             headers=test_utils.auth_header(access_token),
         )
 

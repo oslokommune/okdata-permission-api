@@ -41,7 +41,13 @@ def abort_exception_handler(request: Request, exc: ErrorResponse):
 @app.exception_handler(RequestValidationError)
 @app.exception_handler(ValidationError)
 def abort_validation_error(request: Request, exc):
+    errors = exc.errors()
+    # Exclude python-specific
+    # e.g. 'ctx': {'enum_values': [<WebhookTokenOperation.READ: 'read'>, <WebhookTokenOperation.WRITE: 'write'>]}
+    for error in errors:
+        error.pop("ctx", None)
+        error.pop("type", None)
     return JSONResponse(
         status_code=400,
-        content={"message": "Bad Request", "errors": exc.errors()},
+        content={"message": "Bad Request", "errors": errors},
     )

@@ -16,11 +16,6 @@ create_permissions_client_id = "some-service"
 create_permissions_client_secret = "77a44253-8649-4b8c-9f24-ce06f8edca0c"
 
 
-# Client id and secret for a service that uses webhook authorization
-service_with_webhook_client_id = "event-collector"
-service_with_webhook_client_secret = "662a8e59-f357-47d3-8815-58afe223d8e4"
-
-
 janedoe = "janedoe"
 homersimpson = "homersimpson"
 nopermissions = "nopermissions"

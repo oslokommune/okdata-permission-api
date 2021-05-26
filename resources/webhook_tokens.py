@@ -2,13 +2,18 @@ import os
 import logging
 import uuid
 from datetime import datetime, timedelta
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import pytz
 from fastapi import Depends, APIRouter, status
 from okdata.resource_auth import ResourceAuthorizer
 
-from models import CreateWebhookTokenBody, WebhookTokenAuthResponse, WebhookTokenItem
+from models import (
+    CreateWebhookTokenBody,
+    WebhookTokenAuthResponse,
+    WebhookTokenItem,
+    WebhookTokenOperation,
+)
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
 from webhook_tokens import WebhookTokensTable
@@ -50,16 +55,6 @@ def create_webhook_token(
     ):
         raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
 
-    if body.service not in [
-        "event-collector",
-        "agresso-connector",
-        "event-data-subscription",
-    ]:
-        raise ErrorResponse(
-            status.HTTP_403_FORBIDDEN,
-            f"{body.service} does not allow webhook token authorization",
-        )
-
     # Create token
     token_created = datetime.utcnow().replace(tzinfo=pytz.utc)
     token_expires = token_created + timedelta(days=(365 * 2))
@@ -68,7 +63,7 @@ def create_webhook_token(
         token=uuid.uuid4(),
         created_by=auth_info.principal_id,
         dataset_id=dataset_id,
-        service=f"service-account-{body.service}",
+        operation=body.operation,
         created_at=token_created,
         expires_at=token_expires,
     )
@@ -152,6 +147,7 @@ def delete(
 def authorize_webhook_token(
     dataset_id: str,
     webhook_token: str,
+    operation: WebhookTokenOperation,
     auth_info: AuthInfo = Depends(),
     webhook_tokens_table=Depends(webhook_tokens_table),
 ) -> WebhookTokenAuthResponse:
@@ -165,9 +161,7 @@ def authorize_webhook_token(
                 reason=f"Provided token is not associated to dataset-id: {dataset_id}",
             )
 
-        has_access, reason = validate_webhook_token(
-            webhook_token_item, auth_info.principal_id
-        )
+        has_access, reason = validate_webhook_token(webhook_token_item, operation)
         return WebhookTokenAuthResponse(access=has_access, reason=reason)
     except Exception as e:
         logger.exception(e)
@@ -178,11 +172,13 @@ def authorize_webhook_token(
 
 
 def validate_webhook_token(
-    webhook_token_item: WebhookTokenItem, service_name: str
-) -> Tuple[str, str]:
-    service_access = service_name == webhook_token_item.service
-    if not service_access:
-        return False, "Provided token does not have access to call this service"
+    webhook_token_item: WebhookTokenItem, operation: WebhookTokenOperation
+) -> Tuple[bool, Optional[str]]:
+    if webhook_token_item.operation != operation:
+        return (
+            False,
+            f"Provided token does not have access to perform {operation.value} on {webhook_token_item.dataset_id}",
+        )
 
     dt_now = datetime.utcnow().replace(tzinfo=pytz.utc)
     token_expired = webhook_token_item.expires_at < dt_now

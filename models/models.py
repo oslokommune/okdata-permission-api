@@ -84,20 +84,25 @@ class MyPermissionsResponse(BaseModel):
     __root__: Dict[str, MyPermissionScopes]
 
 
-class CreateWebhookTokenBody(BaseModel):
-    service: str
-
-
 class WebhookTokenAuthResponse(BaseModel):
     access: bool
     reason: str = None
+
+
+class WebhookTokenOperation(Enum):
+    READ = "read"
+    WRITE = "write"
+
+
+class CreateWebhookTokenBody(BaseModel):
+    operation: WebhookTokenOperation
 
 
 class WebhookTokenItem(BaseModel):
     token: UUID
     created_by: str
     dataset_id: str
-    service: str
+    operation: WebhookTokenOperation
     created_at: datetime
     expires_at: datetime
     is_active: bool = True

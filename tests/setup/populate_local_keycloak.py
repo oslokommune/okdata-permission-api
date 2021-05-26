@@ -117,18 +117,6 @@ def populate():
         data=json.dumps(create_dataset_permission_body),
     )
 
-    # Create client that simulates another service that uses webhook authorization
-    keycloak_admin.create_client(
-        payload={
-            "id": keycloak_config.service_with_webhook_client_id,
-            "name": keycloak_config.service_with_webhook_client_id,
-            "publicClient": False,
-            "serviceAccountsEnabled": True,
-            "secret": keycloak_config.service_with_webhook_client_secret,
-        },
-        skip_exists=True,
-    )
-
     # Create users and groups
     for user in keycloak_config.users:
         for group in user["groups"]:

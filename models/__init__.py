@@ -8,6 +8,7 @@ from models.models import (
     MyPermissionsResponse,
     WebhookTokenAuthResponse,
     WebhookTokenItem,
+    WebhookTokenOperation,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "MyPermissionsResponse",
     "WebhookTokenAuthResponse",
     "WebhookTokenItem",
+    "WebhookTokenOperation",
 ]
