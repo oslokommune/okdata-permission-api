@@ -7,11 +7,9 @@ import sys
 from boto3 import resource
 from requests.exceptions import HTTPError
 
-from dataplatform_keycloak import ResourceServer
-from dataplatform_keycloak.ssm import SsmClient
 from models import User, UserType
-from resources.resource import resource_type, resource_name_from_permission_name
-from sandbox import initialize_local_environment
+from resources.resource import resource_name_from_permission_name
+from scripts.utils import resource_server_from_env
 
 logger = logging.getLogger("restore_permissions_backup")
 
@@ -53,19 +51,10 @@ def restore_permissions(resource_server, permissions, apply_changes=True):
     for resource_name, scopes in resources.items():
         logger.info(f"Attempting to restore permissions for {resource_name}")
 
-        admin_scope = resource_type(resource_name) + ":admin"
-        owner = next(iter(scopes.get(admin_scope, [])), None)
-
-        if not owner:
-            logger.error(
-                f"Could not restore permissions for {resource_name}: no owner found"
-            )
-            continue
-
-        logger.info(f"Creating resource {resource_name}, owner={owner.user_id}")
+        logger.info(f"Creating resource {resource_name}")
         if apply_changes:
             try:
-                resource_server.create_resource(resource_name, owner)
+                resource_server.create_resource(resource_name)
             except HTTPError as e:
                 if e.response.status_code == 409:
                     logger.info(f"Resource {resource_name} already exists")
@@ -104,28 +93,10 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.getLevelName(args.log_level))
 
-    os.environ["AWS_PROFILE"] = f"okdata-{args.env}"
-    os.environ["AWS_REGION"] = "eu-west-1"
-
     apply_changes = args.apply
 
-    if args.env == "local":
-        initialize_local_environment()
-    else:
-        resource_server_client_id = "okdata-resource-server"
-        os.environ["RESOURCE_SERVER_CLIENT_ID"] = resource_server_client_id
-        os.environ["KEYCLOAK_REALM"] = "api-catalog"
-        os.environ["KEYCLOAK_SERVER"] = SsmClient.get_secret(
-            "/dataplatform/shared/keycloak-server-url"
-        )
-        os.environ["RESOURCE_SERVER_CLIENT_SECRET"] = SsmClient.get_secret(
-            f"/dataplatform/{resource_server_client_id}/keycloak-client-secret"
-        )
-
-    logger.info(f"Environment: {args.env}")
-
     try:
-        resource_server = ResourceServer()
+        resource_server = resource_server_from_env(args.env)
     except HTTPError:
         logger.error(
             "Could not connect to Keycloak, server={}, realm={}".format(
@@ -135,8 +106,6 @@ if __name__ == "__main__":
         )
         sys.exit()
 
-    logger.info(f"Keycloak server URL: {resource_server.keycloak_server_url}")
-    logger.info(f"Keycloak realm: {resource_server.keycloak_realm}")
     logger.info(f"Backup file: {args.input}")
 
     backed_up_permissions = read_input(args.input)

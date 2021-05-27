@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 import logging
 from datetime import datetime
 
@@ -60,7 +60,7 @@ class ResourceServer:
 
         self.resource_server_token = None
 
-    def create_resource(self, resource_name: str, owner: User):
+    def create_resource(self, resource_name: str, owner: Optional[User] = None):
         scopes = all_scopes_for_type(resource_type(resource_name))
 
         create_resource_response = requests.post(
@@ -76,16 +76,20 @@ class ResourceServer:
         create_resource_response.raise_for_status()
         resource = create_resource_response.json()
 
-        permissions = [
-            self.create_permission(
-                permission_name=f"{resource_name}:{scope_permission(scope)}",
-                description=permission_description(scope, resource_name),
-                resource_id=resource["_id"],
-                scopes=[scope],
-                users=[owner],
-            )
-            for scope in scopes
-        ]
+        permissions = (
+            [
+                self.create_permission(
+                    permission_name=f"{resource_name}:{scope_permission(scope)}",
+                    description=permission_description(scope, resource_name),
+                    resource_id=resource["_id"],
+                    scopes=[scope],
+                    users=[owner],
+                )
+                for scope in scopes
+            ]
+            if owner
+            else []
+        )
 
         return {
             "resource": resource,
