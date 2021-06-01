@@ -8,6 +8,7 @@ from typing import List, Dict
 
 from pydantic import BaseModel, validator
 
+from dataplatform_keycloak.groups import group_name_to_team_name
 from models.scope import all_scopes, all_scopes_for_type
 from resources.resource import resource_type, resource_name_from_permission_name
 
@@ -65,7 +66,10 @@ class OkdataPermission(BaseModel):
             resource_name=resource_name_from_permission_name(uma_permission["name"]),
             description=uma_permission["description"],
             scope=scope,
-            teams=[group[1:] for group in uma_permission.get("groups", [])],
+            teams=[
+                group_name_to_team_name(group[1:])
+                for group in uma_permission.get("groups", [])
+            ],
             users=uma_permission.get("users", []),
             clients=uma_permission.get("clients", []),
         )

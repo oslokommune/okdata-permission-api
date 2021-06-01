@@ -14,6 +14,7 @@ from dataplatform_keycloak.exceptions import (
     CannotRemoveOnlyAdminException,
     ConfigurationError,
 )
+from dataplatform_keycloak.groups import team_name_to_group_name
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
 from models import User, UserType
@@ -113,7 +114,7 @@ class ResourceServer:
             "name": permission_name,
             "description": description,
             "scopes": scopes,
-            "groups": user_map[UserType.GROUP],
+            "groups": list(map(team_name_to_group_name, user_map[UserType.GROUP])),
             "users": user_map[UserType.USER],
             "clients": user_map[UserType.CLIENT],
             "logic": logic,
@@ -151,7 +152,7 @@ class ResourceServer:
                 if user.user_type is UserType.USER:
                     users.add(user.user_id)
                 elif user.user_type is UserType.GROUP:
-                    groups.add(f"{user.user_id}")
+                    groups.add(team_name_to_group_name(user.user_id))
                 elif user.user_type is UserType.CLIENT:
                     clients.add(user.user_id)
 
@@ -160,7 +161,7 @@ class ResourceServer:
                 if user.user_type is UserType.USER:
                     users.discard(user.user_id)
                 elif user.user_type is UserType.GROUP:
-                    groups.discard(f"/{user.user_id}")
+                    groups.discard(f"/{team_name_to_group_name(user.user_id)}")
                 elif user.user_type is UserType.CLIENT:
                     clients.discard(user.user_id)
 
