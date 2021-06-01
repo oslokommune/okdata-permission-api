@@ -19,11 +19,14 @@ create_permissions_client_secret = "77a44253-8649-4b8c-9f24-ce06f8edca0c"
 janedoe = "janedoe"
 homersimpson = "homersimpson"
 nopermissions = "nopermissions"
+team2member = "team2member"
 
-team_id = "group1"
+team1 = "team1"
+team2 = "team2"
 
-user1 = {"username": janedoe, "groups": [team_id]}
+user1 = {"username": janedoe, "groups": [team1]}
 user2 = {"username": homersimpson, "groups": []}
 user3 = {"username": nopermissions, "groups": []}
+user4 = {"username": team2member, "groups": [team2]}
 
-users = [user1, user2, user3]
+users = [user1, user2, user3, user4]

@@ -16,7 +16,7 @@ class TestOkdataPermissionApi:
     def test_create_resource_forbidden(self, mock_client):
         body = {
             "owner": {
-                "user_id": kc_config.team_id,
+                "user_id": kc_config.team1,
                 "user_type": "team",
             },
             "resource_name": resource_name,
@@ -32,7 +32,7 @@ class TestOkdataPermissionApi:
     def test_create_resource_unknown_resource_type(self, mock_client):
         body = {
             "owner": {
-                "user_id": kc_config.team_id,
+                "user_id": kc_config.team1,
                 "user_type": "team",
             },
             "resource_name": "foo:bar:integration-test-dataset",
@@ -49,7 +49,7 @@ class TestOkdataPermissionApi:
     def test_create_resource(self, mock_client):
         body = {
             "owner": {
-                "user_id": kc_config.team_id,
+                "user_id": kc_config.team1,
                 "user_type": "team",
             },
             "resource_name": resource_name,
@@ -65,7 +65,7 @@ class TestOkdataPermissionApi:
     def test_create_resource_conflict_error(self, mock_client):
         body = {
             "owner": {
-                "user_id": kc_config.team_id,
+                "user_id": kc_config.team1,
                 "user_type": "team",
             },
             "resource_name": resource_name,
@@ -116,7 +116,7 @@ class TestOkdataPermissionApi:
                 "resource_name": resource_name,
                 "description": f"Allows for admin operations on resource: {resource_name}",
                 "scope": "okdata:dataset:admin",
-                "teams": ["group1"],
+                "teams": ["team1"],
                 "users": [],
                 "clients": [],
             },
@@ -124,7 +124,7 @@ class TestOkdataPermissionApi:
                 "resource_name": resource_name,
                 "description": f"Allows for read operations on resource: {resource_name}",
                 "scope": "okdata:dataset:read",
-                "teams": ["group1"],
+                "teams": ["team1"],
                 "users": [],
                 "clients": [],
             },
@@ -132,7 +132,7 @@ class TestOkdataPermissionApi:
                 "resource_name": resource_name,
                 "description": f"Allows for update operations on resource: {resource_name}",
                 "scope": "okdata:dataset:update",
-                "teams": ["group1"],
+                "teams": ["team1"],
                 "users": [],
                 "clients": [],
             },
@@ -140,7 +140,7 @@ class TestOkdataPermissionApi:
                 "resource_name": resource_name,
                 "description": f"Allows for write operations on resource: {resource_name}",
                 "scope": "okdata:dataset:write",
-                "teams": ["group1"],
+                "teams": ["team1"],
                 "users": [],
                 "clients": [],
             },
@@ -177,13 +177,38 @@ class TestOkdataPermissionApi:
             "resource_name": resource_name,
             "description": f"Allows for read operations on resource: {resource_name}",
             "scope": "okdata:dataset:read",
-            "teams": ["group1"],
+            "teams": ["team1"],
             "users": [kc_config.homersimpson],
             "clients": [],
         }
 
         assert resource_authorizer.has_access(
             get_bearer_token_for_user(kc_config.homersimpson),
+            "okdata:dataset:read",
+            resource_name,
+        )
+
+    def test_update_permission_team(self, mock_client):
+        assert not resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.team2member),
+            "okdata:dataset:read",
+            resource_name,
+        )
+
+        token = get_bearer_token_for_user(kc_config.janedoe)
+        body = {
+            "add_users": [{"user_id": kc_config.team2, "user_type": "team"}],
+            "scope": "okdata:dataset:read",
+        }
+
+        response = mock_client.put(
+            f"/permissions/{resource_name}", json=body, headers=auth_header(token)
+        )
+        assert response.status_code == 200
+        assert set(response.json()["teams"]) == {"team1", "team2"}
+
+        assert resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.team2member),
             "okdata:dataset:read",
             resource_name,
         )
@@ -219,7 +244,8 @@ class TestOkdataPermissionApi:
         remove_all_users_body = {
             "remove_users": [
                 {"user_id": kc_config.homersimpson, "user_type": "user"},
-                {"user_id": kc_config.team_id, "user_type": "team"},
+                {"user_id": kc_config.team1, "user_type": "team"},
+                {"user_id": kc_config.team2, "user_type": "team"},
             ],
             "scope": "okdata:dataset:read",
         }
@@ -312,7 +338,7 @@ class TestOkdataPermissionApi:
 
         remove_only_admin_body = {
             "remove_users": [
-                {"user_id": kc_config.team_id, "user_type": "team"},
+                {"user_id": kc_config.team1, "user_type": "team"},
             ],
             "scope": "okdata:dataset:admin",
         }

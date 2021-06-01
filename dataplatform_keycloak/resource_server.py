@@ -32,7 +32,6 @@ class ResourceServer:
         keycloak_realm=os.environ.get("KEYCLOAK_REALM"),
         resource_server_client_id=os.environ.get("RESOURCE_SERVER_CLIENT_ID"),
     ):
-
         if not keycloak_realm:
             raise ConfigurationError("keycloak_realm is not set")
         if not keycloak_server_url:
@@ -184,9 +183,17 @@ class ResourceServer:
             )
             resp.raise_for_status()
 
+            if any([users, groups, clients]):
+                # Return the "real" updated permission from Keycloak.
+                return self.get_permission(permission_name)
+
+            # Permission was deleted. Return our synthesized one for the user's
+            # convenience.
+            return permission
+
         except PermissionNotFoundException as e:
             if add_users:
-                permission = self.create_permission(
+                return self.create_permission(
                     permission_name=permission_name,
                     description=permission_description(scope, resource_name),
                     resource_id=self.get_resource_id(resource_name),
@@ -195,8 +202,6 @@ class ResourceServer:
                 )
             else:
                 raise e
-
-        return permission
 
     def get_permission(self, permission_name):
 
