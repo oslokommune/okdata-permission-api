@@ -1,3 +1,5 @@
+from dataplatform_keycloak.groups import team_name_to_group_name
+
 server_url = "http://localhost:35789"
 server_auth_url = f"{server_url}/auth/"
 
@@ -24,9 +26,9 @@ team2member = "team2member"
 team1 = "team1"
 team2 = "team2"
 
-user1 = {"username": janedoe, "groups": [team1]}
+user1 = {"username": janedoe, "groups": [team_name_to_group_name(team1)]}
 user2 = {"username": homersimpson, "groups": []}
 user3 = {"username": nopermissions, "groups": []}
-user4 = {"username": team2member, "groups": [team2]}
+user4 = {"username": team2member, "groups": [team_name_to_group_name(team2)]}
 
 users = [user1, user2, user3, user4]
