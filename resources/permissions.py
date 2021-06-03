@@ -21,7 +21,6 @@ def resource_server():
 router = APIRouter()
 
 
-# TODO: Ensure that resource exists
 @router.post(
     "",
     dependencies=[Depends(has_resource_type_permission("create"))],
@@ -43,6 +42,8 @@ def create_resource(
         if keycloak_response.status_code == 409:
             error_msg = keycloak_response.json()["error_description"]
             raise ErrorResponse(status.HTTP_409_CONFLICT, error_msg)
+        logger.info(f"Keycloak response status code: {keycloak_response.status_code}")
+        logger.info(f"Keycloak response body: {keycloak_response.text}")
         logger.exception(e)
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
     except Exception as e:
@@ -78,6 +79,12 @@ def update_permission(
         raise ErrorResponse(
             status.HTTP_400_BAD_REQUEST, "Cannot remove the only admin for resource"
         )
+    except HTTPError as e:
+        keycloak_response = e.response
+        logger.info(f"Keycloak response status code: {keycloak_response.status_code}")
+        logger.info(f"Keycloak response body: {keycloak_response.text}")
+        logger.exception(e)
+        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
     except Exception as e:
         logger.exception(e)
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
@@ -103,7 +110,14 @@ def get_permissions(
     resource_name: str,
     resource_server: ResourceServer = Depends(resource_server),
 ):
-    return [
-        OkdataPermission.from_uma_permission(p)
-        for p in resource_server.list_permissions(resource_name)
-    ]
+    try:
+        return [
+            OkdataPermission.from_uma_permission(p)
+            for p in resource_server.list_permissions(resource_name)
+        ]
+    except HTTPError as e:
+        keycloak_response = e.response
+        logger.info(f"Keycloak response status code: {keycloak_response.status_code}")
+        logger.info(f"Keycloak response body: {keycloak_response.text}")
+        logger.exception(e)
+        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")

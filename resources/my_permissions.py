@@ -43,6 +43,8 @@ def get_my_permissions(
         except HTTPError as e:
             if e.response.status_code == 403:
                 return MyPermissionsResponse.parse_obj({})
+            logger.info(f"Keycloak response status code: {e.response.status_code}")
+            logger.info(f"Keycloak response body: {e.response.text}")
             raise
 
         return MyPermissionsResponse.parse_obj(
