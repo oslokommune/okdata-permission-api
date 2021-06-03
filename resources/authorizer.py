@@ -7,7 +7,7 @@ from keycloak import KeycloakOpenID
 from okdata.resource_auth import ResourceAuthorizer
 from requests.exceptions import HTTPError
 
-from dataplatform_keycloak import SsmClient
+from dataplatform_keycloak.ssm import SsmClient
 from models import CreateResourceBody
 from resources.errors import ErrorResponse
 from resources.resource import resource_type

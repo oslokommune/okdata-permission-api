@@ -5,7 +5,8 @@ from typing import List
 
 from fastapi import Depends, APIRouter, status
 
-from dataplatform_keycloak import ResourceServer, CannotRemoveOnlyAdminException
+from dataplatform_keycloak.exceptions import CannotRemoveOnlyAdminException
+from dataplatform_keycloak.resource_server import ResourceServer
 from models import CreateResourceBody, OkdataPermission, UpdatePermissionBody
 from resources.authorizer import has_resource_permission, has_resource_type_permission
 from resources.errors import ErrorResponse, error_message_models

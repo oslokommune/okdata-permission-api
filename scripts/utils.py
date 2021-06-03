@@ -1,7 +1,7 @@
 import logging
 import os
 
-from dataplatform_keycloak import ResourceServer
+from dataplatform_keycloak.resource_server import ResourceServer
 from dataplatform_keycloak.ssm import SsmClient
 from tests.setup import local_keycloak_config
 

@@ -9,7 +9,7 @@ from moto import mock_dynamodb2
 
 import tests.setup.local_keycloak_config as kc_config
 import tests.utils as test_utils
-from dataplatform_keycloak import ResourceServer
+from dataplatform_keycloak.resource_server import ResourceServer
 from models import User, WebhookTokenOperation
 
 
