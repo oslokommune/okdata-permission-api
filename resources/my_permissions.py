@@ -4,7 +4,7 @@ import logging
 from fastapi import Depends, APIRouter, status
 from requests.exceptions import HTTPError
 
-from dataplatform_keycloak import ResourceServer
+from dataplatform_keycloak.resource_server import ResourceServer
 from models import MyPermissionsResponse
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models

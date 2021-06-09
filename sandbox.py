@@ -2,9 +2,9 @@ import os
 from pprint import PrettyPrinter
 
 # import requests
-from dataplatform_keycloak import ResourceServer
-from tests.setup import local_keycloak_config as kc_config
+from dataplatform_keycloak.resource_server import ResourceServer
 from models import User
+from tests.setup import local_keycloak_config as kc_config
 
 # Python script for playing around with the api running on localhost
 

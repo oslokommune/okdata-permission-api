@@ -15,11 +15,11 @@ from datetime import datetime
 import boto3
 from requests.exceptions import HTTPError
 
-from dataplatform_keycloak import ResourceServer
 from dataplatform_keycloak.exceptions import (
     ResourceNotFoundException,
     PermissionNotFoundException,
 )
+from dataplatform_keycloak.resource_server import ResourceServer
 from dataplatform_keycloak.ssm import SsmClient
 from models import User
 from models.scope import all_scopes_for_type
