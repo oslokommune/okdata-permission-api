@@ -8,18 +8,18 @@ attrs==21.2.0
     # via jsonschema
 aws-xray-sdk==2.8.0
     # via okdata-permission-api (setup.py)
-boto3==1.17.70
+boto3==1.17.91
     # via okdata-permission-api (setup.py)
-botocore==1.20.70
+botocore==1.20.91
     # via
     #   aws-xray-sdk
     #   boto3
     #   s3transfer
-certifi==2020.12.5
+certifi==2021.5.30
     # via requests
 chardet==4.0.0
     # via requests
-ecdsa==0.14.1
+ecdsa==0.17.0
     # via python-jose
 fastapi==0.61.1
     # via okdata-permission-api (setup.py)
@@ -37,12 +37,10 @@ mangum==0.10.0
     # via okdata-permission-api (setup.py)
 okdata-aws==0.3.3
     # via okdata-permission-api (setup.py)
-okdata-resource-auth==0.1.0
+okdata-resource-auth==0.1.1
     # via okdata-permission-api (setup.py)
-okdata-sdk==0.8.1
+okdata-sdk==0.9.0
     # via okdata-aws
-prettytable==2.1.0
-    # via okdata-sdk
 pyasn1==0.4.8
     # via
     #   python-jose
@@ -60,9 +58,9 @@ pyrsistent==0.17.3
     # via jsonschema
 python-dateutil==2.8.1
     # via botocore
-python-jose==3.2.0
+python-jose==3.3.0
     # via python-keycloak
-python-keycloak==0.24.0
+python-keycloak==0.25.0
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
@@ -83,7 +81,6 @@ six==1.16.0
     #   ecdsa
     #   jsonschema
     #   python-dateutil
-    #   python-jose
 starlette==0.13.6
     # via fastapi
 structlog==21.1.0
@@ -95,8 +92,6 @@ urllib3==1.26.5
     #   botocore
     #   okdata-sdk
     #   requests
-wcwidth==0.2.5
-    # via prettytable
 wrapt==1.12.1
     # via aws-xray-sdk
 
