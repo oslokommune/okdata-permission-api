@@ -1,14 +1,13 @@
 import os
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-
-from resources import permissions, my_permissions, webhook_tokens
-from resources.errors import ErrorResponse
-
+from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+from logging_middleware import add_logging_middleware
+from resources import permissions, my_permissions, webhook_tokens
+from resources.errors import ErrorResponse
 
 root_path = os.environ.get("ROOT_PATH", "")
 app = FastAPI(
@@ -17,6 +16,8 @@ app = FastAPI(
     version="0.1.0",
     root_path=root_path,
 )
+
+add_logging_middleware(app, "okdata-permission-api")
 
 app.include_router(
     permissions.router,
