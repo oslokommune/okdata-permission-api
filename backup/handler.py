@@ -11,7 +11,6 @@ from dataplatform_keycloak.resource_server import ResourceServer
 
 BACKUP_BUCKET_NAME = os.environ["BACKUP_BUCKET_NAME"]
 BACKUP_BUCKET_PREFIX = os.environ["SERVICE_NAME"]
-KEYCLOAK_MAX_ITEMS_PER_PAGE = 100
 
 patch_all()
 
@@ -20,31 +19,12 @@ patch_all()
 @xray_recorder.capture("backup_permissions")
 def backup_permissions(event, context):
     """Get all permissions and save to S3."""
-    permissions = list(get_all_permissions())
+    permissions = ResourceServer().list_permissions()
 
     log_add(num_permissions=len(permissions))
 
-    if not permissions:
-        return
-
-    write_to_s3(permissions)
-
-
-def get_all_permissions():
-    """Generator that yields permissions."""
-    resource_server = ResourceServer()
-
-    current_index = 0
-    permissions = resource_server.list_permissions(
-        first=current_index, max_result=KEYCLOAK_MAX_ITEMS_PER_PAGE
-    )
-    while len(permissions) > 0:
-        for permission in permissions:
-            current_index += 1
-            yield permission
-        permissions = resource_server.list_permissions(
-            first=current_index, max_result=KEYCLOAK_MAX_ITEMS_PER_PAGE
-        )
+    if permissions:
+        write_to_s3(permissions)
 
 
 def write_to_s3(permissions_data):

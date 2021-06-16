@@ -41,26 +41,6 @@ def test_backup_permissions(mock_ssm_client, mock_s3_bucket):
     case.assertCountEqual(backed_up_permissions, rs.list_permissions())
 
 
-def test_backup_permissions_paginated(mock_ssm_client, mock_s3_bucket):
-    rs = ResourceServer()
-    janedoe_user = User.parse_obj({"user_id": "janedoe", "user_type": "user"})
-    for dataset_id in [f"test-dataset-{i}" for i in range(0, 25)]:
-        rs.create_resource(f"okdata:dataset:{dataset_id}", owner=janedoe_user)
-
-    handler.KEYCLOAK_MAX_RESULTS = 5
-    handler.backup_permissions({}, {})
-
-    s3 = boto3.client("s3", region_name=os.environ["AWS_REGION"])
-    key = s3.list_objects_v2(Bucket=os.environ["BACKUP_BUCKET_NAME"])["Contents"][0][
-        "Key"
-    ]
-    obj = s3.get_object(Bucket=os.environ["BACKUP_BUCKET_NAME"], Key=key)
-    backed_up_permissions = json.loads(obj["Body"].read())
-
-    case = unittest.TestCase()
-    case.assertCountEqual(backed_up_permissions, rs.list_permissions(max_result=300))
-
-
 def test_s3_prefixes(mock_s3_bucket):
     backup_dates = [
         "2021-05-01T10:00:30+00:00",

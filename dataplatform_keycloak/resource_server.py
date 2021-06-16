@@ -26,6 +26,8 @@ logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 class ResourceServer:
+    MAX_ITEMS_PER_PAGE = 300
+
     def __init__(
         self,
         client_secret_key=os.environ.get("RESOURCE_SERVER_CLIENT_SECRET"),
@@ -217,46 +219,71 @@ class ResourceServer:
                 return permission
         raise PermissionNotFoundException(f"Permission {permission_name} not found")
 
+    def _get(self, url, params):
+        request = PreparedRequest()
+        request.prepare(
+            method="GET", url=url, headers=self.request_headers(), params=params
+        )
+        logger.info(f"GET {request.url}")
+        resp = requests.Session().send(request)
+        resp.raise_for_status()
+        return resp.json()
+
+    def _get_permissions(self, params={}):
+        """Yield every permission from Keycloak matching `params`.
+
+        The queries to Keycloak are paginated based on `MAX_ITEMS_PER_PAGE`.
+        """
+        url = f"{self.uma_well_known.policy_endpoint}/"
+        params["max"] = self.MAX_ITEMS_PER_PAGE
+        params["first"] = 0
+
+        while True:
+            permissions = self._get(url, params)
+
+            if permissions:
+                for permission in permissions:
+                    yield permission
+                params["first"] += len(permissions)
+            else:
+                return
+
     def list_permissions(
         self,
-        resource_name=None,
-        group=None,
+        resource_name: str = None,
         scope: str = None,
-        first: int = None,
-        max_result: int = None,
+        user: str = None,
+        team: str = None,
+        client: str = None,
     ):
+        """Return a list of permissions matching the given parameters.
+
+        By default (when no parameters are given), every permission is
+        returned.
+        """
         query_params = {}
         if resource_name:
             resource_id = self.get_resource_id(resource_name)
             query_params["resource"] = resource_id
         if scope:
             query_params["scope"] = scope
-        if first:
-            query_params["first"] = first
-        if max_result:
-            query_params["max"] = max_result
 
-        get_permission_url = f"{self.uma_well_known.policy_endpoint}/"
-        list_permissions_request = PreparedRequest()
-        list_permissions_request.prepare(
-            method="GET",
-            url=get_permission_url,
-            headers=self.request_headers(),
-            params=query_params,
-        )
+        permissions = self._get_permissions(query_params)
 
-        logger.info(f"GET {list_permissions_request.url}")
-        resp = requests.Session().send(list_permissions_request)
-        resp.raise_for_status()
-
-        if group:
-            return [
-                permission
-                for permission in resp.json()
-                if f"/{group}" in permission.get("groups", [])
+        # Keycloak doesn't support querying by these parameters directly, so we
+        # need to filter by them manually after querying Keycloak.
+        if user:
+            permissions = [p for p in permissions if user in p.get("users", [])]
+        if team:
+            permissions = [
+                p
+                for p in permissions
+                if f"/{team_name_to_group_name(team)}" in p.get("groups", [])
             ]
+        if client:
+            permissions = [p for p in permissions if client in p.get("clients", [])]
 
-        return resp.json()
+        return list(permissions)
 
     def delete_permission(self, permission_name):
 
