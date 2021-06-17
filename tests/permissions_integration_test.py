@@ -9,7 +9,7 @@ resource_name = "okdata:dataset:integration-test-dataset"
 resource_authorizer = ResourceAuthorizer()
 
 
-class TestOkdataPermissionApi:
+class TestPermissionsEndpoints:
 
     # POST /permissions
 

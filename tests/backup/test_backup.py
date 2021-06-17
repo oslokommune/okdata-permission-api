@@ -10,6 +10,7 @@ from moto import mock_s3
 import backup.handler as handler
 from dataplatform_keycloak.resource_server import ResourceServer
 from models import User
+from tests.setup import populate_local_keycloak
 
 
 @pytest.fixture(scope="function")
@@ -23,6 +24,7 @@ def mock_s3_bucket():
 
 
 def test_backup_permissions(mock_ssm_client, mock_s3_bucket):
+    populate_local_keycloak.populate()
     rs = ResourceServer()
     janedoe_user = User.parse_obj({"user_id": "janedoe", "user_type": "user"})
     rs.create_resource("okdata:dataset:test-dataset", owner=janedoe_user)

@@ -17,6 +17,10 @@ client_secret = "868d1ca9-4d94-4c1e-a2e4-9f032bd8ae08"
 create_permissions_client_id = "some-service"
 create_permissions_client_secret = "77a44253-8649-4b8c-9f24-ce06f8edca0c"
 
+# Client id and secret for a client that will be permitted to remove a team from all permissions
+remove_team_client_id = "teams-api"
+remove_team_client_secret = "a49ce819-39db-4777-b18c-de57c87a63d2"
+
 
 janedoe = "janedoe"
 homersimpson = "homersimpson"

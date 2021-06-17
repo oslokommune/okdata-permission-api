@@ -76,6 +76,21 @@ def has_resource_type_permission(permission):
     return _verify_permission
 
 
+def has_scope_permission(scope: str):
+    def _verify_permission(
+        auth_info: AuthInfo = Depends(),
+        resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
+    ):
+        """Pass through without exception if the user has access to `scope`."""
+        if not resource_authorizer.has_access(
+            auth_info.bearer_token,
+            scope,
+        ):
+            raise ErrorResponse(403, "Forbidden")
+
+    return _verify_permission
+
+
 def has_resource_permission(permission):
     def _verify_permission(
         resource_name,

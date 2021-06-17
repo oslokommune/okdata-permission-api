@@ -6,7 +6,12 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from logging_middleware import add_logging_middleware
-from resources import permissions, my_permissions, webhook_tokens
+from resources import (
+    permissions,
+    my_permissions,
+    webhook_tokens,
+    remove_team_permissions,
+)
 from resources.errors import ErrorResponse
 
 root_path = os.environ.get("ROOT_PATH", "")
@@ -29,6 +34,13 @@ app.include_router(
     my_permissions.router,
     prefix="/my_permissions",
     tags=["permissions"],
+)
+
+# This endpoint is part of a workaround for a bug in keycloak: https://confluence.oslo.kommune.no/pages/viewpage.action?pageId=162566147
+app.include_router(
+    remove_team_permissions.router,
+    prefix="/remove_team_permissions",
+    tags=["remove_team_permissions"],
 )
 
 app.include_router(webhook_tokens.router, prefix="/webhooks", tags=["webhooks"])
