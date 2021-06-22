@@ -1,21 +1,23 @@
 Okdata Permission API
-==================
+=====================
+
 API for managing permissions to okdata resources such as datasets.
 
-## Api Documentation
+## API Documentation
 
-Api documentation can be found here: [Openapi Spec](https://api.data.oslo.systems/okdata-permission-api/openapi.json)
+API documentation can be found here: [OpenAPI Spec](https://api.data.oslo.systems/okdata-permission-api/openapi.json).
 
 ## Setup
 
 In these examples, we use the default `python3` distribution on your platform.
-If you need a specific version of python you need to run the command for that
-specific version. Ie. for 3.8 run `python3.8 -m venv .venv` instead to get a
+If you need a specific version of Python you need to run the command for that
+specific version. I.e. for 3.8 run `python3.8 -m venv .venv` instead to get a
 virtualenv for that version.
 
-### Installing global python dependencies
+### Installing global Python dependencies
 
-You can either install globally. This might require you to run as root (use sudo).
+You can choose to install the Python dependencies globally. This might require
+you to run as root (use sudo).
 
 ```bash
 python3 -m pip install tox black pip-tools
@@ -31,7 +33,7 @@ python3 -m pip install --user tox black pip-tools
 ```
 
 
-### Installing local python dependencies in a virtualenv
+### Installing local Python dependencies in a virtualenv
 
 ```bash
 python3 -m venv .venv
@@ -46,8 +48,8 @@ make init
 
 ### Run application locally
 
-This command will run a local instance of keycloak, populate the local keycloak instance with necessary entities and run 
-the fastapi application on localhost.
+This command will run a local instance of Keycloak, populate the local Keycloak
+instance with necessary entities and run the FastAPI application on localhost.
 
 ```bash
 make run
