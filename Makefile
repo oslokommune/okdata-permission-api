@@ -30,7 +30,7 @@ upgrade-deps: $(BUILD_VENV)/bin/pip-compile
 	$(BUILD_VENV)/bin/pip-compile -U
 
 .PHONY: deploy
-deploy: init test login-dev
+deploy: login-dev init format test
 	@echo "\nDeploying to stage: $${STAGE:-dev}\n"
 	sls deploy --stage $${STAGE:-dev} --aws-profile $(.DEV_PROFILE)
 
@@ -40,7 +40,7 @@ download-doc:
 	sls downloadDocumentation --outputFileName swagger.yaml --stage dev --aws-profile $(.DEV_PROFILE)
 
 .PHONY: deploy-prod
-deploy-prod: init format is-git-clean test login-prod
+deploy-prod: login-prod init format is-git-clean test
 	sls deploy --stage prod --aws-profile $(.PROD_PROFILE)
 
 setup-keycloak-local: ## Run a local Keycloak instance running in docker
@@ -105,7 +105,7 @@ endif
 .PHONY: is-git-clean
 is-git-clean:
 	@status=$$(git fetch origin && git status -s -b) ;\
-	if test "$${status}" != "## master...origin/master"; then \
+	if test "$${status}" != "## main...origin/main"; then \
 		echo; \
 		echo Git working directory is dirty, aborting >&2; \
 		false; \
@@ -114,12 +114,6 @@ is-git-clean:
 .PHONY: build
 build: $(BUILD_VENV)/bin/wheel $(BUILD_VENV)/bin/twine
 	$(BUILD_PY) setup.py sdist bdist_wheel
-
-.PHONY: jenkins-bump-patch
-jenkins-bump-patch: $(BUILD_VENV)/bin/bump2version is-git-clean
-	$(BUILD_VENV)/bin/bump2version patch
-	git push origin HEAD:${BRANCH_NAME}
-
 
 ###
 # Python build dependencies
