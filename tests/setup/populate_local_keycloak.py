@@ -193,6 +193,7 @@ def initialize_keycloak_admin(timeout_seconds=30.0):
             pass
 
         time.sleep(1)
+    return None
 
 
 if __name__ == "__main__":
