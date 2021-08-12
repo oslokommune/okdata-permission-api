@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: Setup local keycloak
+      run: make setup-keycloak-local
     - name: Set up Python 3.7
       uses: actions/setup-python@v2
       with:
@@ -18,6 +20,8 @@ jobs:
       run: pip install tox
     - name: Test with tox
       run: tox -e py,flake8,black
+    - name: Tear down local keycloak
+      run: make tear-down-keycloak-local
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
