@@ -1,4 +1,4 @@
-frameworkVersion: ">=2.10.0 <3.0.0"
+frameworkVersion: ">=2.55.0 <3.0.0"
 
 service: okdata-permission-api
 
@@ -12,9 +12,9 @@ provider:
     name: ${self:custom.deploymentBucket.${self:provider.stage}, self:custom.deploymentBucket.dev}
     serverSideEncryption: AES256
   deploymentPrefix: deploy
-  rolePermissionsBoundary: !Sub "arn:aws:iam::${AWS::AccountId}:policy/oslokommune/oslokommune-boundary"
+  rolePermissionsBoundary: "arn:aws:iam::${aws:accountId}:policy/oslokommune/oslokommune-boundary"
   iamManagedPolicies:
-    - !Sub "arn:aws:iam::${AWS::AccountId}:policy/okdata-permission-api"
+    - "arn:aws:iam::${aws:accountId}:policy/okdata-permission-api"
     - "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
