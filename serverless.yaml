@@ -4,7 +4,7 @@ service: okdata-permission-api
 
 provider:
   name: aws
-  runtime: python3.7
+  runtime: python3.9
   memorySize: 1024
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
