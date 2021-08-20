@@ -1,10 +1,10 @@
-frameworkVersion: ">=2.10.0 <3.0.0"
+frameworkVersion: ">=2.55.0 <3.0.0"
 
 service: okdata-permission-api
 
 provider:
   name: aws
-  runtime: python3.7
+  runtime: python3.9
   memorySize: 1024
   region: ${opt:region, 'eu-west-1'}
   stage: ${opt:stage, 'dev'}
@@ -12,10 +12,10 @@ provider:
     name: ${self:custom.deploymentBucket.${self:provider.stage}, self:custom.deploymentBucket.dev}
     serverSideEncryption: AES256
   deploymentPrefix: deploy
-  rolePermissionsBoundary: "arn:aws:iam::#{AWS::AccountId}:policy/oslokommune/oslokommune-boundary"
+  rolePermissionsBoundary: "arn:aws:iam::${aws:accountId}:policy/oslokommune/oslokommune-boundary"
   iamManagedPolicies:
-    - "arn:aws:iam::#{AWS::AccountId}:policy/okdata-permission-api"
-    - 'arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess'
+    - "arn:aws:iam::${aws:accountId}:policy/okdata-permission-api"
+    - "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
     VERSION: ${self:custom.version}
@@ -60,7 +60,6 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-plugin-git-variables
-  - serverless-pseudo-parameters
   - serverless-es-logs
 
 resources:
@@ -85,6 +84,3 @@ custom:
   backupBucket:
     prod: ok-origo-dataplatform-backup-prod
     dev: ok-origo-dataplatform-backup-dev
-  keycloakArn:
-    prod: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:keycloak-authorizer-prod-authenticate
-    dev: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:keycloak-authorizer-dev-authenticate
