@@ -1,7 +1,7 @@
 Okdata Permission API
 =====================
 
-API for managing permissions to okdata resources such as datasets.
+API for managing permissions to okdata resources such as datasets via [Keycloak Authorization Services](https://www.keycloak.org/docs/latest/authorization_services/#_service_overview).
 
 ## API Documentation
 
