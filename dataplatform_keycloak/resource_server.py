@@ -235,16 +235,19 @@ class ResourceServer:
         The queries to Keycloak are paginated based on `MAX_ITEMS_PER_PAGE`.
         """
         url = f"{self.uma_well_known.policy_endpoint}/"
-        params["max"] = self.MAX_ITEMS_PER_PAGE
-        params["first"] = 0
+        query_params = {
+            **params,
+            "max": self.MAX_ITEMS_PER_PAGE,
+            "first": 0,
+        }
 
         while True:
-            permissions = self._get(url, params)
+            permissions = self._get(url, query_params)
 
             if permissions:
                 for permission in permissions:
                     yield permission
-                params["first"] += len(permissions)
+                query_params["first"] += len(permissions)
             else:
                 return
 
