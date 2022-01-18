@@ -1,14 +1,10 @@
-import os
-
 from setuptools import setup, find_packages
 
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-service_name = os.path.basename(os.getcwd())
-
 setup(
-    name=service_name,
+    name="okdata-permission-api",
     version="0.1.0",
     author="Origo Dataplattform",
     author_email="dataplattform@oslo.kommune.no",
@@ -22,7 +18,7 @@ setup(
         "boto3",
         "fastapi>=0.65.2",
         "mangum==0.10.0",
-        "okdata-aws>=0.4.0",
+        "okdata-aws>=1.0.0",
         "okdata-resource-auth",
         "pydantic==1.7.4",
         "pyjwt",
