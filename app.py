@@ -3,9 +3,9 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from okdata.aws.logging import add_fastapi_logging
 from pydantic import ValidationError
 
-from logging_middleware import add_logging_middleware
 from resources import (
     permissions,
     my_permissions,
@@ -22,7 +22,7 @@ app = FastAPI(
     root_path=root_path,
 )
 
-add_logging_middleware(app, "okdata-permission-api")
+add_fastapi_logging(app)
 
 app.include_router(
     permissions.router,

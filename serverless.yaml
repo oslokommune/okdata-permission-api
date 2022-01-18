@@ -42,7 +42,6 @@ package:
     - webhook_tokens/*.py
     - app.py
     - handler.py
-    - logging_middleware.py
 
 functions:
   app:
