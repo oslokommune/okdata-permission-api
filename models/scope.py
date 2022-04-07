@@ -10,13 +10,6 @@ _SCOPES = {
     "okdata:maskinporten-client": [
         "read",
         "write",
-        "delete",
-        "admin",
-    ],
-    "okdata:maskinporten-key": [
-        "read",
-        "write",
-        "delete",
         "admin",
     ],
 }

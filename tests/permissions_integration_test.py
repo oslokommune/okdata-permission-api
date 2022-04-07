@@ -38,7 +38,7 @@ class TestPermissionsEndpoints:
             "resource_name": "foo:bar:integration-test-dataset",
         }
 
-        token = get_bearer_token_for_user(kc_config.janedoe)
+        token = get_token_for_service()
 
         response = mock_client.post(
             "/permissions", json=body, headers=auth_header(token)
