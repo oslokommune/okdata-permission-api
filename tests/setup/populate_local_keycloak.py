@@ -121,13 +121,13 @@ def populate():
         keycloak_config.create_permissions_client_secret,
     )
 
-    # Create scope, policy and permission allowing another service to create
+    # Create scope, policy and permission allowing another service to administrate
     # Keycloak resources, e.g. `okdata-metadata-api`.
     create_scope_permission(
-        scope="keycloak:resource:write",
+        scope="keycloak:resource:admin",
         clients=[keycloak_config.create_permissions_client_id],
-        policy_name="create_keycloak_resource_policy",
-        permission_name="create_keycloak_resource_permission",
+        policy_name="keycloak_resource_admin_policy",
+        permission_name="keycloak_resource_admin_permission",
     )
 
     # Create service client simulating another service that will have permission to remove any team from all permissions

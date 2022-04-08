@@ -24,7 +24,7 @@ router = APIRouter()
 
 @router.post(
     "",
-    dependencies=[Depends(has_permission("keycloak:resource:write"))],
+    dependencies=[Depends(has_permission("keycloak:resource:admin"))],
     status_code=status.HTTP_201_CREATED,
     responses=error_message_models(
         status.HTTP_400_BAD_REQUEST,
