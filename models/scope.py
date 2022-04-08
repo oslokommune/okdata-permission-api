@@ -7,7 +7,7 @@ _SCOPES = {
         "update",
         "admin",
     ],
-    "okdata:maskinporten-client": [
+    "maskinporten:client": [
         "read",
         "write",
     ],
