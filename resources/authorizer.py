@@ -1,14 +1,13 @@
 import os
 import logging
 
-from fastapi import Body, Depends
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from keycloak import KeycloakOpenID
 from okdata.resource_auth import ResourceAuthorizer
 from requests.exceptions import HTTPError
 
 from dataplatform_keycloak.ssm import SsmClient
-from models import CreateResourceBody
 from resources.errors import ErrorResponse
 from resources.resource import resource_type
 
@@ -55,23 +54,28 @@ class AuthInfo:
         self.bearer_token = authorization.credentials
 
 
-def has_resource_type_permission(permission):
+def has_permission(permission: str):
     def _verify_permission(
-        body=Body(None),
         auth_info: AuthInfo = Depends(),
         resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
     ):
-        """Pass through without exception if the user has access.
+        """Pass through without exception if the user has specified `permission`."""
+        try:
+            if not resource_authorizer.has_access(
+                auth_info.bearer_token,
+                permission,
+            ):
+                raise ErrorResponse(403, "Forbidden")
+        except HTTPError as e:
+            error_response = e.response
+            if error_response.status_code == 400:
+                error_msg = error_response.json().get(
+                    "error_description", "Bad request"
+                )
+                raise ErrorResponse(400, error_msg)
 
-        Check `permission` for the resource type belonging to `resource_name`
-        from the request body (scope = "#resource-type:permission").
-        """
-        create_resource_body = CreateResourceBody.parse_obj(body)
-        if not resource_authorizer.has_access(
-            auth_info.bearer_token,
-            f"{resource_type(create_resource_body.resource_name)}:{permission}",
-        ):
-            raise ErrorResponse(403, "Forbidden")
+            logger.exception(e)
+            raise ErrorResponse(500, "Server error")
 
     return _verify_permission
 
@@ -91,7 +95,7 @@ def has_scope_permission(scope: str):
     return _verify_permission
 
 
-def has_resource_permission(permission):
+def has_resource_permission(permission: str):
     def _verify_permission(
         resource_name,
         auth_info: AuthInfo = Depends(),
