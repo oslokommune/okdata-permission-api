@@ -334,6 +334,7 @@ class ResourceServer:
         Request a urn:ietf:params:oauth:grant-type:uma-ticket rpt from resource server
         and returns a decoded value with all permissions associated with the rpt
         https://github.com/keycloak/keycloak-documentation/blob/master/authorization_services/topics/service-authorization-uma-authz-process.adoc
+        http://www.keycloak.org/docs/latest/authorization_services/index.html#_service_obtaining_permissions
         """
 
         payload = [
