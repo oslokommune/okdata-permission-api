@@ -10,7 +10,10 @@ from pydantic import BaseModel, validator
 
 from dataplatform_keycloak.groups import group_name_to_team_name
 from models.scope import all_scopes, all_scopes_for_type
-from resources.resource import resource_type, resource_name_from_permission_name
+from resources.resource import (
+    resource_type_from_resource_name,
+    resource_name_from_permission_name,
+)
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
@@ -34,7 +37,7 @@ class CreateResourceBody(BaseModel):
     @validator("resource_name")
     def check_resource_name(cls, resource_name):
         # Raises `ValueError` when the resource type is unknown.
-        all_scopes_for_type(resource_type(resource_name))
+        all_scopes_for_type(resource_type_from_resource_name(resource_name))
         return resource_name
 
 

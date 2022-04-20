@@ -9,7 +9,7 @@ from dataplatform_keycloak.resource_server import ResourceServer
 from models import MyPermissionsResponse
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
-from resources.resource import resource_type as get_resource_type
+from resources.resource import resource_type_from_resource_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
@@ -55,7 +55,8 @@ def get_my_permissions(
             user_permissions = [
                 permission
                 for permission in user_permissions
-                if get_resource_type(permission["rsname"]) == resource_type
+                if resource_type_from_resource_name(permission["rsname"])
+                == resource_type
             ]
 
         return MyPermissionsResponse.parse_obj(

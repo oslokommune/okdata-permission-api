@@ -9,7 +9,7 @@ from requests.exceptions import HTTPError
 
 from dataplatform_keycloak.ssm import SsmClient
 from resources.errors import ErrorResponse
-from resources.resource import resource_type
+from resources.resource import resource_type_from_resource_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
@@ -109,7 +109,7 @@ def has_resource_permission(permission: str):
         try:
             if not resource_authorizer.has_access(
                 auth_info.bearer_token,
-                f"{resource_type(resource_name)}:{permission}",
+                f"{resource_type_from_resource_name(resource_name)}:{permission}",
                 resource_name,
             ):
                 raise ErrorResponse(403, "Forbidden")

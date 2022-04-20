@@ -23,7 +23,7 @@ from dataplatform_keycloak.resource_server import ResourceServer
 from dataplatform_keycloak.ssm import SsmClient
 from models import User
 from models.scope import all_scopes_for_type
-from resources.resource import resource_type
+from resources.resource import resource_type_from_resource_name
 from sandbox import initialize_local_environment
 from tests.setup import populate_local_keycloak
 
@@ -113,7 +113,7 @@ def create_resource(server, name, owner, delete_first=False):
 
 
 def update_permissions(server, name, user):
-    for scope in all_scopes_for_type(resource_type(name)):
+    for scope in all_scopes_for_type(resource_type_from_resource_name(name)):
         logger.info(
             "Updating permission {} for {} ({}) on {}".format(
                 scope, user.user_id, user.user_type, name
