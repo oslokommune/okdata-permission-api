@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import Optional
 
 from fastapi import Depends, APIRouter, status
 from requests.exceptions import HTTPError
@@ -8,6 +9,7 @@ from dataplatform_keycloak.resource_server import ResourceServer
 from models import MyPermissionsResponse
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
+from resources.resource import resource_type_from_resource_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
@@ -30,6 +32,7 @@ router = APIRouter()
     ),
 )
 def get_my_permissions(
+    resource_type: Optional[str] = None,
     resource_server: ResourceServer = Depends(resource_server),
     auth_info: AuthInfo = Depends(),
 ):
@@ -46,6 +49,15 @@ def get_my_permissions(
             logger.info(f"Keycloak response status code: {e.response.status_code}")
             logger.info(f"Keycloak response body: {e.response.text}")
             raise
+
+        if resource_type:
+            # Filter permissions by (namespaced) resource type
+            user_permissions = [
+                permission
+                for permission in user_permissions
+                if resource_type_from_resource_name(permission["rsname"])
+                == resource_type
+            ]
 
         return MyPermissionsResponse.parse_obj(
             {

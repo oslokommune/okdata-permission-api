@@ -10,7 +10,6 @@ resource_authorizer = ResourceAuthorizer()
 
 
 class TestPermissionsEndpoints:
-
     # POST /permissions
 
     def test_create_resource_forbidden(self, mock_client):
@@ -361,6 +360,35 @@ class TestPermissionsEndpoints:
         response_body = response.json()
         assert set(response_body.keys()) == {resource_name}
         assert response_body[resource_name] == {"scopes": ["okdata:dataset:read"]}
+
+    def test_get_my_permissions_filtered(self, mock_client):
+        token = get_bearer_token_for_user(kc_config.homersimpson)
+
+        # Add another resource of different type
+        mock_client.post(
+            "/permissions",
+            json={
+                "owner": {"user_id": kc_config.homersimpson, "user_type": "user"},
+                "resource_name": "maskinporten:client:test-client",
+            },
+            headers=auth_header(get_token_for_service()),
+        )
+
+        def get_resources(resource_type_filter=None):
+            response = mock_client.get(
+                "/my_permissions",
+                headers=auth_header(token),
+                params={"resource_type": resource_type_filter},
+            )
+            assert response.status_code == 200
+            return set(response.json().keys())
+
+        assert get_resources("okdata:dataset") == {resource_name}
+        assert get_resources("maskinporten:client") == {
+            "maskinporten:client:test-client"
+        }
+        assert len(get_resources("foo:bar")) == 0
+        assert len(get_resources()) == 2
 
     def test_get_my_permissions_no_permissions(self, mock_client):
         token = get_bearer_token_for_user(kc_config.nopermissions)

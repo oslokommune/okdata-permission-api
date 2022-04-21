@@ -1,9 +1,12 @@
-from resources.resource import resource_id, resource_type
+from resources.resource import (
+    resource_id_from_resource_name,
+    resource_type_from_resource_name,
+)
 
 
-def test_resource_type():
-    assert resource_type("namespace:type:id") == "namespace:type"
+def test_resource_type_from_resource_name():
+    assert resource_type_from_resource_name("namespace:type:id") == "namespace:type"
 
 
-def test_resource_id():
-    assert resource_id("namespace:type:id") == "id"
+def test_resource_id_from_resource_name():
+    assert resource_id_from_resource_name("namespace:type:id") == "id"

@@ -19,7 +19,7 @@ from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
 from models import User, UserType
 from models.scope import all_scopes_for_type, scope_permission
-from resources.resource import resource_type
+from resources.resource import resource_type_from_resource_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
@@ -63,12 +63,12 @@ class ResourceServer:
         self.resource_server_token = None
 
     def create_resource(self, resource_name: str, owner: Optional[User] = None):
-        scopes = all_scopes_for_type(resource_type(resource_name))
+        scopes = all_scopes_for_type(resource_type_from_resource_name(resource_name))
 
         create_resource_response = requests.post(
             self.uma_well_known.resource_registration_endpoint,
             json={
-                "type": resource_type(resource_name),
+                "type": resource_type_from_resource_name(resource_name),
                 "name": resource_name,
                 "ownerManagedAccess": True,
                 "scopes": scopes,
@@ -334,6 +334,7 @@ class ResourceServer:
         Request a urn:ietf:params:oauth:grant-type:uma-ticket rpt from resource server
         and returns a decoded value with all permissions associated with the rpt
         https://github.com/keycloak/keycloak-documentation/blob/master/authorization_services/topics/service-authorization-uma-authz-process.adoc
+        http://www.keycloak.org/docs/latest/authorization_services/index.html#_service_obtaining_permissions
         """
 
         payload = [
