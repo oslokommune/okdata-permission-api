@@ -22,6 +22,8 @@ def mock_ssm_client(monkeypatch):
             return kc_config.resource_server_secret
         elif key == f"/dataplatform/{kc_config.client_id}/keycloak-client-secret":
             return kc_config.client_secret
+        elif key == "/dataplatform/teams-api/keycloak-teams-admin-password":
+            return kc_config.team_admin_password
         return None
 
     monkeypatch.setattr(SsmClient, "get_secret", get_secret)
