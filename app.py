@@ -7,10 +7,11 @@ from okdata.aws.logging import add_fastapi_logging
 from pydantic import ValidationError
 
 from resources import (
-    permissions,
     my_permissions,
-    webhook_tokens,
+    permissions,
     remove_team_permissions,
+    teams,
+    webhook_tokens,
 )
 from resources.errors import ErrorResponse
 
@@ -36,14 +37,16 @@ app.include_router(
     tags=["permissions"],
 )
 
-# This endpoint is part of a workaround for a bug in keycloak: https://confluence.oslo.kommune.no/pages/viewpage.action?pageId=162566147
 app.include_router(
+    # This endpoint is part of a workaround for a bug in KeyCloak:
+    # https://confluence.oslo.kommune.no/pages/viewpage.action?pageId=162566147
     remove_team_permissions.router,
     prefix="/remove_team_permissions",
     tags=["remove_team_permissions"],
 )
 
 app.include_router(webhook_tokens.router, prefix="/webhooks", tags=["webhooks"])
+app.include_router(teams.router, prefix="/teams", tags=["teams"])
 
 
 @app.exception_handler(ErrorResponse)

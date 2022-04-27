@@ -12,3 +12,7 @@ class CannotRemoveOnlyAdminException(Exception):
 
 class ConfigurationError(Exception):
     pass
+
+
+class GroupNotTeamException(Exception):
+    pass
