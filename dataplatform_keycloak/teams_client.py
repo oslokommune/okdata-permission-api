@@ -39,21 +39,16 @@ class TeamsClient:
         if not teams_admin_username:
             raise ConfigurationError("teams_admin_username is not set")
 
-        self.keycloak_server_url = keycloak_server_url
-        self.keycloak_realm = keycloak_realm
-        self.teams_admin_username = teams_admin_username
-
         if teams_admin_password is None:
             teams_admin_password = SsmClient.get_secret(
                 "/dataplatform/teams-api/keycloak-teams-admin-password"
             )
-        self.teams_admin_password = teams_admin_password
 
         self.teams_admin_client = KeycloakAdmin(
-            server_url=f"{self.keycloak_server_url}/auth/",
-            realm_name=self.keycloak_realm,
-            username=self.teams_admin_username,
-            password=self.teams_admin_password,
+            server_url=f"{keycloak_server_url}/auth/",
+            realm_name=keycloak_realm,
+            username=teams_admin_username,
+            password=teams_admin_password,
             verify=True,
         )
 
@@ -100,6 +95,8 @@ class TeamsClient:
 
         Return empty list if role does not exist.
         """
+
+        # URL_ADMIN_REALM_ROLES = "admin/realms/{realm-name}/roles"
         client_role_group_members_url = (
             URL_ADMIN_REALM_ROLES + "/{role-name}/groups"
         ).format(
