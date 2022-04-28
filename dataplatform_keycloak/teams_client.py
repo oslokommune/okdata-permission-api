@@ -1,20 +1,20 @@
-import os
-
-from typing import Optional
 import logging
+import os
+from typing import Optional
 
 from keycloak import KeycloakAdmin
 from keycloak.urls_patterns import URL_ADMIN_REALM_ROLES
 from keycloak.exceptions import (
+    KeycloakError,
     KeycloakGetError,
     raise_error_from_response,
 )
 
 from dataplatform_keycloak.exceptions import (
     ConfigurationError,
-    GroupNotTeamException,
+    TeamNotFoundError,
+    TeamsServerError,
 )
-
 from dataplatform_keycloak.groups import TEAM_GROUP_PREFIX
 from dataplatform_keycloak.ssm import SsmClient
 
@@ -58,22 +58,15 @@ class TeamsClient:
         )
 
     def list_teams(self, realm_role: Optional[str] = None):
-        if realm_role:
-            # Query groups assigned specified realm role. This is similar to
-            # `get_client_role_members` (which queries only users, not groups).
-            # https://github.com/marcospereirampj/python-keycloak/blob/master/keycloak/keycloak_admin.py#L1303
-            # https://www.keycloak.org/docs-api/15.1/rest-api/index.html#_roles_resource
-            client_role_group_members_url = (
-                URL_ADMIN_REALM_ROLES + "/{role-name}/groups"
-            ).format(
-                **{
-                    "realm-name": self.teams_admin_client.realm_name,
-                    "role-name": realm_role,
-                }
+        try:
+            groups = (
+                self._get_groups_with_realm_role(realm_role)
+                if realm_role
+                else self.teams_admin_client.get_groups()
             )
-            groups = self._get_all_raw(client_role_group_members_url)
-        else:
-            groups = self.teams_admin_client.get_groups()
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
 
         teams = [
             group for group in groups if group["name"].startswith(TEAM_GROUP_PREFIX)
@@ -82,15 +75,49 @@ class TeamsClient:
         return teams
 
     def get_team(self, team_id: str):
-        group = self.teams_admin_client.get_group(group_id=team_id)
+        try:
+            group = self.teams_admin_client.get_group(group_id=team_id)
+        except KeycloakGetError:
+            raise TeamNotFoundError
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
         if not group["name"].startswith(TEAM_GROUP_PREFIX):
-            raise GroupNotTeamException
+            raise TeamNotFoundError
         return group
 
     def get_team_members(self, team_id: str):
         team = self.get_team(team_id)
-        members = self.teams_admin_client.get_group_members(group_id=team["id"])
+        try:
+            members = self.teams_admin_client.get_group_members(group_id=team["id"])
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
         return members
+
+    def _get_groups_with_realm_role(self, role_name):
+        """Return list of groups assigned specified realm role.
+
+        This is similar to `get_client_role_members` (which queries only users, not groups).
+        https://github.com/marcospereirampj/python-keycloak/blob/master/keycloak/keycloak_admin.py#L1303
+        https://www.keycloak.org/docs-api/15.1/rest-api/index.html#_roles_resource
+
+        Return empty list if role does not exist.
+        """
+        client_role_group_members_url = (
+            URL_ADMIN_REALM_ROLES + "/{role-name}/groups"
+        ).format(
+            **{
+                "realm-name": self.teams_admin_client.realm_name,
+                "role-name": role_name,
+            }
+        )
+        try:
+            return list(self._get_all_raw(client_role_group_members_url))
+        except KeycloakGetError as e:
+            if e.response_code == 404:
+                return []
+            raise
 
     def _get_all_raw(self, url, params={}):
         """Yield all from paginated results.
@@ -119,3 +146,9 @@ class TeamsClient:
                 query_params["first"] += len(partial_results)
             else:
                 return
+
+
+def log_keycloak_error(keycloak_exception):
+    logger.info(f"Keycloak response status code: {keycloak_exception.response_code}")
+    logger.info(f"Keycloak response body: {keycloak_exception.response_body}")
+    logger.exception(keycloak_exception)

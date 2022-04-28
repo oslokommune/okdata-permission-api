@@ -64,6 +64,15 @@ class TestTeamsEndpoints:
             kc_config.internal_teams,
         )
 
+    def test_list_teams_filtered_by_unknown_role(self, mock_client):
+        response = mock_client.get(
+            "/teams",
+            headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+            params={"has_role": "foo"},
+        )
+        assert response.status_code == 200
+        assert response.json() == []
+
     # GET /teams/{team_id}
     def test_get_team(self, mock_client):
         team = TeamsClient().list_teams()[0]

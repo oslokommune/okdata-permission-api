@@ -14,5 +14,9 @@ class ConfigurationError(Exception):
     pass
 
 
-class GroupNotTeamException(Exception):
+class TeamsServerError(Exception):
+    pass
+
+
+class TeamNotFoundError(Exception):
     pass
