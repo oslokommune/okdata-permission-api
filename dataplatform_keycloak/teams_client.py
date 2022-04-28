@@ -93,10 +93,13 @@ class TeamsClient:
         return members
 
     def _get_all_raw(self, url, params={}):
-        # Get all from paginated results. Simplified re-implementation of python-keycloak
-        # internal method `__fetch_all`. TODO: Could possibly be generalized and reused for
-        # resource_server.py::ResourceServer::_get_permissions.
-        # https://github.com/marcospereirampj/python-keycloak/blob/master/keycloak/keycloak_admin.py#L209
+        """Yield all from paginated results.
+
+        Simplified re-implementation of python-keycloak internal method `__fetch_all`.
+        https://github.com/marcospereirampj/python-keycloak/blob/master/keycloak/keycloak_admin.py#L209
+
+        TODO: Could possibly be generalized and reused for resource_server.py::ResourceServer::_get_permissions.
+        """
         query_params = {
             **params,
             "max": self.MAX_ITEMS_PER_PAGE,
