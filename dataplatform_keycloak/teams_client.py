@@ -15,7 +15,7 @@ from dataplatform_keycloak.exceptions import (
     TeamNotFoundError,
     TeamsServerError,
 )
-from dataplatform_keycloak.groups import TEAM_GROUP_PREFIX
+from dataplatform_keycloak.groups import is_team_group
 from dataplatform_keycloak.ssm import SsmClient
 
 logger = logging.getLogger()
@@ -68,11 +68,7 @@ class TeamsClient:
             log_keycloak_error(e)
             raise TeamsServerError
 
-        teams = [
-            group for group in groups if group["name"].startswith(TEAM_GROUP_PREFIX)
-        ]
-
-        return teams
+        return [group for group in groups if is_team_group(group["name"])]
 
     def get_team(self, team_id: str):
         try:
@@ -82,7 +78,7 @@ class TeamsClient:
         except KeycloakError as e:
             log_keycloak_error(e)
             raise TeamsServerError
-        if not group["name"].startswith(TEAM_GROUP_PREFIX):
+        if not is_team_group(group["name"]):
             raise TeamNotFoundError
         return group
 
