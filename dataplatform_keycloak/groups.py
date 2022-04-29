@@ -5,7 +5,7 @@ TEAM_GROUP_PREFIX = "TEAM-"
 
 def group_name_to_team_name(group_name):
     """Return the team name corresponding to Keycloak's `group_name`."""
-    if group_name.startswith(TEAM_GROUP_PREFIX):
+    if is_team_group(group_name):
         return group_name[len(TEAM_GROUP_PREFIX) :]
     return group_name
 
