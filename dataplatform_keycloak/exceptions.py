@@ -12,3 +12,11 @@ class CannotRemoveOnlyAdminException(Exception):
 
 class ConfigurationError(Exception):
     pass
+
+
+class TeamsServerError(Exception):
+    pass
+
+
+class TeamNotFoundError(Exception):
+    pass

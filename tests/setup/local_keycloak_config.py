@@ -21,6 +21,19 @@ create_permissions_client_secret = "77a44253-8649-4b8c-9f24-ce06f8edca0c"
 remove_team_client_id = "teams-api"
 remove_team_client_secret = "a49ce819-39db-4777-b18c-de57c87a63d2"
 
+# Team admin user that is authorized for CRUD operations on teams (groups) in KeyCloak
+# https://github.com/oslokommune/dataplattform/blob/master/dataplattform-internt/arkitektur/utviklerportalen.md#hvordan-sette-opp-admin-bruker-for-teams-backend
+# https://github.com/oslokommune/teams/blob/master/src/test/kotlin/no/kommune/oslo/origodigi/teams/common/init_keycloak/ConfigureKeycloakForTeamsTest.kt#L105
+team_admin_username = "team-admin"
+team_admin_password = "team-admin-password"
+team_admin_client_roles = [
+    "manage-users",
+    "query-groups",
+    "query-users",
+    "view-users",
+    "view-realm",
+]
+
 
 janedoe = "janedoe"
 homersimpson = "homersimpson"
@@ -29,6 +42,7 @@ team2member = "team2member"
 
 team1 = "team1"
 team2 = "team2"
+nonteamgroup = "group1"
 
 user1 = {"username": janedoe, "groups": [team_name_to_group_name(team1)]}
 user2 = {"username": homersimpson, "groups": []}
@@ -36,3 +50,6 @@ user3 = {"username": nopermissions, "groups": []}
 user4 = {"username": team2member, "groups": [team_name_to_group_name(team2)]}
 
 users = [user1, user2, user3, user4]
+
+internal_team_realm_role = "origo-team"
+internal_teams = [team1]

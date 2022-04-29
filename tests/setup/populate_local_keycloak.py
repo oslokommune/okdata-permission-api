@@ -6,6 +6,7 @@ from typing import List
 from keycloak import KeycloakAdmin, KeycloakGetError
 from keycloak.exceptions import KeycloakConnectionError
 
+from dataplatform_keycloak.groups import group_name_to_team_name
 import tests.setup.local_keycloak_config as keycloak_config
 
 
@@ -143,6 +144,37 @@ def populate():
         permission_name="remove_team_permissions_permission",
     )
 
+    # Create team admin user
+    team_admin_user_id = keycloak_admin.create_user(
+        payload={
+            "username": keycloak_config.team_admin_username,
+            "enabled": True,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": keycloak_config.team_admin_password,
+                    "temporary": False,
+                }
+            ],
+        }
+    )
+
+    realm_management_client_id = keycloak_admin.get_client_id("realm-management")
+
+    client_roles = [
+        keycloak_admin.get_client_role(
+            client_id=realm_management_client_id,
+            role_name=role_name,
+        )
+        for role_name in keycloak_config.team_admin_client_roles
+    ]
+
+    keycloak_admin.assign_client_role(
+        user_id=team_admin_user_id,
+        client_id=realm_management_client_id,
+        roles=client_roles,
+    )
+
     # Create users and groups
     for user in keycloak_config.users:
         for group in user["groups"]:
@@ -157,6 +189,25 @@ def populate():
                 ],
             }
         )
+
+    keycloak_admin.create_group(
+        payload={"name": keycloak_config.nonteamgroup}, skip_exists=True
+    )
+    keycloak_admin.create_realm_role(
+        payload={
+            "name": keycloak_config.internal_team_realm_role,
+        },
+        skip_exists=True,
+    )
+    internal_team_realm_role = keycloak_admin.get_realm_role(
+        keycloak_config.internal_team_realm_role
+    )
+    for group in keycloak_admin.get_groups():
+        group_name = group_name_to_team_name(group["name"])
+        if group_name in keycloak_config.internal_teams:
+            keycloak_admin.assign_group_realm_roles(
+                group["id"], internal_team_realm_role
+            )
 
 
 # Method for test that will ensure that this bug does not occur: https://confluence.oslo.kommune.no/pages/viewpage.action?pageId=162566147

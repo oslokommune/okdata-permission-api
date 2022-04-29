@@ -26,6 +26,7 @@ provider:
     SERVICE_NAME: ${self:service}
     KEYCLOAK_REALM: api-catalog
     KEYCLOAK_SERVER: ${ssm:/dataplatform/shared/keycloak-server-url}
+    KEYCLOAK_TEAM_ADMIN_USERNAME: ${self:custom.teamAdminUsername.${self:provider.stage}, self:custom.teamAdminUsername.dev}
     CLIENT_ID: okdata-permission-api
     RESOURCE_SERVER_CLIENT_ID: okdata-resource-server
     ROOT_PATH: "/okdata-permission-api"
@@ -83,3 +84,6 @@ custom:
   backupBucket:
     prod: ok-origo-dataplatform-backup-prod
     dev: ok-origo-dataplatform-backup-dev
+  teamAdminUsername:
+    prod: teams-admin
+    dev: api-catalog-team-admin
