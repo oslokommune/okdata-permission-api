@@ -26,6 +26,7 @@ provider:
     SERVICE_NAME: ${self:service}
     KEYCLOAK_REALM: api-catalog
     KEYCLOAK_SERVER: ${ssm:/dataplatform/shared/keycloak-server-url}
+    KEYCLOAK_TEAM_ADMIN_SERVER: ${ssm:/dataplatform/teams-api/kong-keycloak-server-url}
     KEYCLOAK_TEAM_ADMIN_USERNAME: ${self:custom.teamAdminUsername.${self:provider.stage}, self:custom.teamAdminUsername.dev}
     CLIENT_ID: okdata-permission-api
     RESOURCE_SERVER_CLIENT_ID: okdata-resource-server

@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from keycloak import KeycloakAdmin
+from keycloak import ConnectionManager, KeycloakAdmin
 from keycloak.urls_patterns import URL_ADMIN_REALM_ROLES
 from keycloak.exceptions import (
     KeycloakError,
@@ -15,11 +15,41 @@ from dataplatform_keycloak.exceptions import (
     TeamNotFoundError,
     TeamsServerError,
 )
+from dataplatform_keycloak.jwt import generate_jwt
 from dataplatform_keycloak.groups import is_team_group
 from dataplatform_keycloak.ssm import SsmClient
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
+
+
+class TeamsKeycloakAdmin(KeycloakAdmin):
+    def __init__(self, server_url, admin_api_server_url=None, **kwargs):
+        self.admin_api_server_url = admin_api_server_url
+        super().__init__(server_url=server_url, **kwargs)
+
+    def get_token(self):
+        """Get access token for admin user and configure `ConnectionManager`.
+
+        Overrides `KeycloakAdmin::get_token()` to allow usage of another base url for
+        requests towards the Admin API, in this case a configured Kong route that acts
+        as a proxy:
+        https://github.com/oslokommune/dataplattform/blob/master/dataplattform-internt/arkitektur/utviklerportalen.md#teknisk
+        """
+        super().get_token()
+
+        if self.admin_api_server_url:
+            headers = {
+                "Authorization": "Bearer " + generate_jwt(),
+                "Keycloak-Authorization": "Bearer " + self.token.get("access_token"),
+                "Content-Type": "application/json",
+            }
+            self._connection = ConnectionManager(
+                base_url=self.admin_api_server_url,
+                headers=headers,
+                timeout=60,
+                verify=self.verify,
+            )
 
 
 class TeamsClient:
@@ -28,6 +58,7 @@ class TeamsClient:
     def __init__(
         self,
         keycloak_server_url=os.environ.get("KEYCLOAK_SERVER"),
+        keycloak_admin_api_url=os.environ.get("KEYCLOAK_TEAM_ADMIN_SERVER"),
         keycloak_realm=os.environ.get("KEYCLOAK_REALM"),
         teams_admin_username=os.environ.get("KEYCLOAK_TEAM_ADMIN_USERNAME"),
         teams_admin_password=os.environ.get("KEYCLOAK_TEAM_ADMIN_PASSWORD"),
@@ -44,8 +75,9 @@ class TeamsClient:
                 "/dataplatform/teams-api/keycloak-teams-admin-password"
             )
 
-        self.teams_admin_client = KeycloakAdmin(
+        self.teams_admin_client = TeamsKeycloakAdmin(
             server_url=f"{keycloak_server_url}/auth/",
+            admin_api_server_url=keycloak_admin_api_url,
             realm_name=keycloak_realm,
             username=teams_admin_username,
             password=teams_admin_password,
