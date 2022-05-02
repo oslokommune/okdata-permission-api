@@ -13,7 +13,7 @@ router = APIRouter(dependencies=[Depends(AuthInfo)])
 
 
 @router.get(
-    "/",
+    "",
     status_code=status.HTTP_200_OK,
     response_model=List[Team],
     responses=error_message_models(
