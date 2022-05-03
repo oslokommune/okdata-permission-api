@@ -47,7 +47,6 @@ class TeamsKeycloakAdmin(KeycloakAdmin):
             self.connection = ConnectionManager(
                 base_url=self.admin_api_server_url,
                 headers=headers,
-                timeout=60,
                 verify=self.verify,
             )
 
