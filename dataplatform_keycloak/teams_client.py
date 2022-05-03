@@ -44,7 +44,7 @@ class TeamsKeycloakAdmin(KeycloakAdmin):
                 "Keycloak-Authorization": "Bearer " + self.token.get("access_token"),
                 "Content-Type": "application/json",
             }
-            self._connection = ConnectionManager(
+            self.connection = ConnectionManager(
                 base_url=self.admin_api_server_url,
                 headers=headers,
                 timeout=60,
