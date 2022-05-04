@@ -139,27 +139,3 @@ class TestTeamsEndpoints:
 
         assert response.status_code == 404
         assert response.json()["message"] == "Team not found"
-
-    # GET /teams/{team_id}/members
-    # def test_get_team_members(self, mock_client):
-    #     team = TeamsClient().list_teams()[0]
-
-    #     response = mock_client.get(
-    #         f"/teams/{team['id']}/members",
-    #         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
-    #     )
-
-    #     assert response.status_code == 200
-    #     team_members = response.json()
-    #     assert len(team_members) == 1
-    #     assert team_members[0].keys() == {"id", "username"}
-    #     assert team_members[0]["username"] == kc_config.user1["username"]
-
-    # def test_get_team_members_for_unknown_team(self, mock_client):
-    #     response = mock_client.get(
-    #         "/teams/abc-123/members",
-    #         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
-    #     )
-
-    #     assert response.status_code == 404
-    #     assert response.json()["message"] == "Team not found"

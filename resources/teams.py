@@ -60,24 +60,3 @@ def get_team(
     if team["id"] not in group_ids(user_teams):
         raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
     return team
-
-
-@router.get(
-    "/{team_id}/members",
-    status_code=status.HTTP_200_OK,
-    response_model=List[TeamMember],
-    responses=error_message_models(
-        status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
-    ),
-)
-def get_team_members(
-    team_id: str,
-    teams_client: TeamsClient = Depends(TeamsClient),
-):
-    try:
-        return teams_client.get_team_members(team_id)
-    except TeamNotFoundError:
-        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
-    except TeamsServerError:
-        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
