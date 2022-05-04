@@ -59,9 +59,10 @@ functions:
     timeout: 30
 
 plugins:
-  - serverless-python-requirements
-  - serverless-plugin-git-variables
   - serverless-es-logs
+  - serverless-plugin-git-variables
+  - serverless-prune-plugin
+  - serverless-python-requirements
 
 resources:
   Description: |
@@ -74,6 +75,9 @@ custom:
     dockerizePip: non-linux
     slim: true
     usePoetry: false
+  prune:
+    automatic: true
+    number: 3
   esLogs:
     endpoint: ${ssm:/dataplatform/shared/logs-elasticsearch-endpoint}
     index: dataplatform-services
