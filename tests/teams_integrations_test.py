@@ -26,11 +26,7 @@ class TestTeamsEndpoints:
 
     @pytest.mark.parametrize(
         "endpoint",
-        [
-            "/teams",
-            "/teams/abc-123",
-            "/teams/abc-123/members",
-        ],
+        ["/teams", "/teams/abc-123"],
     )
     def test_endpoints_auth(self, mock_client, endpoint):
         # No bearer token

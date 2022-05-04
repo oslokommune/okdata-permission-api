@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, status
 from dataplatform_keycloak.exceptions import TeamNotFoundError, TeamsServerError
 from dataplatform_keycloak.groups import group_ids
 from dataplatform_keycloak.teams_client import TeamsClient
+from models import Team
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
-from models import Team, TeamMember
 
 
 router = APIRouter(dependencies=[Depends(AuthInfo)])
