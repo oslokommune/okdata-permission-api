@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Optional
 
 from keycloak import ConnectionManager, KeycloakAdmin
 from keycloak.urls_patterns import URL_ADMIN_REALM_ROLES
@@ -83,10 +82,10 @@ class TeamsClient:
             verify=True,
         )
 
-    def list_teams(self, realm_role: Optional[str] = None):
+    def list_teams(self, realm_role=None):
         try:
             groups = (
-                self._get_groups_with_realm_role(realm_role)
+                self._get_groups_with_realm_role(role_name=realm_role)
                 if realm_role
                 else self.teams_admin_client.get_groups()
             )
@@ -96,7 +95,16 @@ class TeamsClient:
 
         return [group for group in groups if is_team_group(group["name"])]
 
-    def get_team(self, team_id: str):
+    def list_user_teams(self, username):
+        try:
+            user_id = self.teams_admin_client.get_user_id(username)
+            user_groups = self.teams_admin_client.get_user_groups(user_id)
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
+        return [group for group in user_groups if is_team_group(group["name"])]
+
+    def get_team(self, team_id):
         try:
             group = self.teams_admin_client.get_group(group_id=team_id)
         except KeycloakGetError:
@@ -108,7 +116,7 @@ class TeamsClient:
             raise TeamNotFoundError
         return group
 
-    def get_team_members(self, team_id: str):
+    def get_team_members(self, team_id):
         team = self.get_team(team_id)
         try:
             members = self.teams_admin_client.get_group_members(group_id=team["id"])
