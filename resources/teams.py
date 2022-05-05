@@ -40,6 +40,7 @@ def get_teams(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
+        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
         status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
