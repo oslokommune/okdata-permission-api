@@ -21,3 +21,8 @@ def is_team_group(group_name):
     A team group is denoted by a special prefix defined by `TEAM_GROUP_PREFIX`.
     """
     return group_name.startswith(TEAM_GROUP_PREFIX)
+
+
+def group_ids(groups):
+    """Return list of group IDs from list of groups."""
+    return [group["id"] for group in groups]

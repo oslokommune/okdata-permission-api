@@ -1,6 +1,7 @@
 import jwt
 from keycloak import KeycloakOpenID
 
+from dataplatform_keycloak.teams_client import TeamsClient
 import tests.setup.local_keycloak_config as kc_config
 
 
@@ -33,3 +34,10 @@ def invalidate_token(token):
     decoded = jwt.decode(token, options={"verify_signature": False})
     decoded["exp"] = 1610617383
     return jwt.encode(decoded, "some-key", algorithm="HS256")
+
+
+def get_keycloak_group_by_name(group_name):
+    for group in TeamsClient().teams_admin_client.get_groups():
+        if group["name"] == group_name:
+            return group
+    return None

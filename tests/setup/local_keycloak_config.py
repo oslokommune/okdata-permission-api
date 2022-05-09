@@ -42,14 +42,27 @@ team2member = "team2member"
 
 team1 = "team1"
 team2 = "team2"
+team3 = "team3"
 nonteamgroup = "group1"
 
-user1 = {"username": janedoe, "groups": [team_name_to_group_name(team1)]}
+user1 = {
+    "username": janedoe,
+    "groups": [team_name_to_group_name(team1), team_name_to_group_name(team3)],
+}
 user2 = {"username": homersimpson, "groups": []}
 user3 = {"username": nopermissions, "groups": []}
 user4 = {"username": team2member, "groups": [team_name_to_group_name(team2)]}
+user5 = {
+    "username": "misty",
+    "groups": [
+        team_name_to_group_name(team1),
+        team_name_to_group_name(team2),
+        nonteamgroup,
+    ],
+}
 
-users = [user1, user2, user3, user4]
+
+users = [user1, user2, user3, user4, user5]
 
 internal_team_realm_role = "origo-team"
-internal_teams = [team1]
+internal_teams = [team1, team3]

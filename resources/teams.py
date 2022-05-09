@@ -3,10 +3,11 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 
 from dataplatform_keycloak.exceptions import TeamNotFoundError, TeamsServerError
+from dataplatform_keycloak.groups import group_ids
 from dataplatform_keycloak.teams_client import TeamsClient
+from models import Team
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
-from models import Team, TeamMember
 
 
 router = APIRouter(dependencies=[Depends(AuthInfo)])
@@ -22,12 +23,16 @@ router = APIRouter(dependencies=[Depends(AuthInfo)])
 )
 def get_teams(
     has_role: Optional[str] = None,
+    auth_info: AuthInfo = Depends(),
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
     try:
-        return teams_client.list_teams(realm_role=has_role)
+        user_teams = teams_client.list_user_teams(username=auth_info.principal_id)
+        teams = teams_client.list_teams(realm_role=has_role)
     except TeamsServerError:
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
+
+    return [team for team in teams if team["id"] in group_ids(user_teams)]
 
 
 @router.get(
@@ -35,38 +40,24 @@ def get_teams(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
+        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
         status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_team(
     team_id: str,
+    auth_info: AuthInfo = Depends(),
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
     try:
-        return teams_client.get_team(team_id)
+        user_teams = teams_client.list_user_teams(username=auth_info.principal_id)
+        team = teams_client.get_team(team_id)
     except TeamNotFoundError:
         raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
     except TeamsServerError:
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
 
-
-@router.get(
-    "/{team_id}/members",
-    status_code=status.HTTP_200_OK,
-    response_model=List[TeamMember],
-    responses=error_message_models(
-        status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
-    ),
-)
-def get_team_members(
-    team_id: str,
-    teams_client: TeamsClient = Depends(TeamsClient),
-):
-    try:
-        return teams_client.get_team_members(team_id)
-    except TeamNotFoundError:
-        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
-    except TeamsServerError:
-        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
+    if team["id"] not in group_ids(user_teams):
+        raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
+    return team

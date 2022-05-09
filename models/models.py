@@ -39,11 +39,6 @@ class Team(BaseModel):
         return group_name_to_team_name(v)
 
 
-class TeamMember(BaseModel):
-    id: str
-    username: str
-
-
 class CreateResourceBody(BaseModel):
     owner: User
     resource_name: str
