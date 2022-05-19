@@ -10,6 +10,7 @@ import json
 import logging
 import sys
 
+from dataplatform_keycloak.groups import team_name_to_group_name
 from models import User, UserType
 
 logger = logging.getLogger("clean_backup")
@@ -35,6 +36,18 @@ def replace_user(permissions, user, replacement_user):
         UserType.GROUP: "groups",
         UserType.CLIENT: "clients",
     }
+
+    # Prefix user ids of type group (i.e. team)
+    user.user_id = (
+        user.user_id
+        if user.user_type != UserType.GROUP
+        else "/" + team_name_to_group_name(user.user_id)
+    )
+    replacement_user.user_id = (
+        replacement_user.user_id
+        if replacement_user.user_type != UserType.GROUP
+        else "/" + team_name_to_group_name(replacement_user.user_id)
+    )
 
     for permission in permissions:
         if user.user_id in permission.get(user_list_keys[user.user_type], []):
