@@ -53,6 +53,11 @@ def replace_user(permissions, user, replacement_user):
         if user.user_id in permission.get(user_list_keys[user.user_type], []):
             permission[user_list_keys[user.user_type]].remove(user.user_id)
 
+            # Note: Keycloak seems to delete the permission if it encouters
+            # an empty user/group/client list (?).
+            if len(permission[user_list_keys[user.user_type]]) == 0:
+                del permission[user_list_keys[user.user_type]]
+
             if replacement_user.user_id not in permission.get(
                 user_list_keys[replacement_user.user_type], []
             ):
