@@ -3,7 +3,6 @@
 import argparse
 import json
 import logging
-from datetime import datetime
 
 from scripts.utils import resource_server_from_env
 
