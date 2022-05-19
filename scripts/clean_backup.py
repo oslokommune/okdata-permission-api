@@ -49,12 +49,12 @@ def replace_user(permissions, user, replacement_user, include_unchanged=True):
         else "/" + team_name_to_group_name(replacement_user.user_id)
     )
 
+    changed_permissions = []
+
     for permission in permissions:
         if user.user_id in permission.get(user_list_keys[user.user_type], []):
             permission[user_list_keys[user.user_type]].remove(user.user_id)
 
-            # Note: Keycloak seems to delete the permission if it encouters
-            # an empty user/group/client list (?).
             if len(permission[user_list_keys[user.user_type]]) == 0:
                 del permission[user_list_keys[user.user_type]]
 
@@ -75,11 +75,11 @@ def replace_user(permissions, user, replacement_user, include_unchanged=True):
                 )
             )
 
-            yield permission
+            changed_permissions.append(permission)
 
-        else:
-            if include_unchanged:
-                yield permission
+    if include_unchanged:
+        return permissions
+    return changed_permissions
 
 
 if __name__ == "__main__":
@@ -141,18 +141,16 @@ if __name__ == "__main__":
     input_permissions = read_input(args.input)
 
     if args.command == "replace-user":
-        permissions = list(
-            replace_user(
-                input_permissions,
-                User.parse_obj({"user_id": args.user_id, "user_type": args.user_type}),
-                User.parse_obj(
-                    {
-                        "user_id": args.replacement_user_id,
-                        "user_type": args.replacement_user_type,
-                    }
-                ),
-                include_unchanged=not args.changed_permissions_only,
-            )
+        permissions = replace_user(
+            input_permissions,
+            User.parse_obj({"user_id": args.user_id, "user_type": args.user_type}),
+            User.parse_obj(
+                {
+                    "user_id": args.replacement_user_id,
+                    "user_type": args.replacement_user_type,
+                }
+            ),
+            include_unchanged=not args.changed_permissions_only,
         )
 
     write_output(args.output, permissions)
