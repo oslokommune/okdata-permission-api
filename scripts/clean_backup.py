@@ -30,7 +30,7 @@ def write_output(output_path, permissions):
     logger.info(f"Wrote {len(permissions)} permissions to file")
 
 
-def replace_user(permissions, user, replacement_user):
+def replace_user(permissions, user, replacement_user, include_unchanged=True):
     user_list_keys = {
         UserType.USER: "users",
         UserType.GROUP: "groups",
@@ -75,7 +75,11 @@ def replace_user(permissions, user, replacement_user):
                 )
             )
 
-        yield permission
+            yield permission
+
+        else:
+            if include_unchanged:
+                yield permission
 
 
 if __name__ == "__main__":
@@ -106,6 +110,11 @@ if __name__ == "__main__":
         required=True,
         help="Type of replacement user",
         choices=[u.value for u in UserType],
+    )
+    remove_user_parser.add_argument(
+        "--changed-permissions-only",
+        action="store_true",
+        help="Only include changed permissions in output",
     )
 
     parser.add_argument(
@@ -142,6 +151,7 @@ if __name__ == "__main__":
                         "user_type": args.replacement_user_type,
                     }
                 ),
+                include_unchanged=not args.changed_permissions_only,
             )
         )
 
