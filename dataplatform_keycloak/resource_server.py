@@ -206,6 +206,13 @@ class ResourceServer:
             else:
                 raise e
 
+    def update_permission_raw(self, permission):
+        url = f"{self.uma_well_known.policy_endpoint}/{permission['id']}"
+        logger.info(f"PUT {url}")
+        res = requests.put(url, headers=self.request_headers(), json=permission)
+        res.raise_for_status()
+        return res
+
     def get_permission(self, permission_name):
 
         get_permission_url = (
