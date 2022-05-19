@@ -1,6 +1,7 @@
 """Script for printing a single Keycloak permission."""
 
 import argparse
+import json
 import logging
 
 from scripts.utils import resource_server_from_env
@@ -29,4 +30,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.getLevelName(args.log_level))
 
     resource_server = resource_server_from_env(args.env)
-    print(resource_server.get_permission(args.permission_name))
+    print(
+        json.dumps(
+            resource_server.get_permission(args.permission_name),
+            indent=2,
+        )
+    )
