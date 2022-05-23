@@ -135,3 +135,30 @@ class TestTeamsEndpoints:
 
         assert response.status_code == 404
         assert response.json()["message"] == "Team not found"
+
+    def test_get_team_with_role(self, mock_client):
+        team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+        response = mock_client.get(
+            f"/teams/{team['id']}",
+            params={"has_role": kc_config.internal_team_realm_role},
+            headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "id": team["id"],
+            "name": group_name_to_team_name(team["name"]),
+        }
+
+    def test_get_team_with_non_matching_role(self, mock_client):
+        team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team2))
+
+        response = mock_client.get(
+            f"/teams/{team['id']}",
+            params={"has_role": kc_config.internal_team_realm_role},
+            headers=auth_header(get_bearer_token_for_user(kc_config.misty)),
+        )
+
+        assert response.status_code == 404
+        assert response.json()["message"] == "Team not found"

@@ -104,7 +104,7 @@ class TeamsClient:
             raise TeamsServerError
         return [group for group in user_groups if is_team_group(group["name"])]
 
-    def get_team(self, team_id):
+    def get_team(self, team_id, realm_role=None):
         try:
             group = self.teams_admin_client.get_group(group_id=team_id)
         except KeycloakGetError:
@@ -112,12 +112,14 @@ class TeamsClient:
         except KeycloakError as e:
             log_keycloak_error(e)
             raise TeamsServerError
+        if realm_role and realm_role not in group["realmRoles"]:
+            raise TeamNotFoundError
         if not is_team_group(group["name"]):
             raise TeamNotFoundError
         return group
 
-    def get_team_members(self, team_id):
-        team = self.get_team(team_id)
+    def get_team_members(self, team_id, realm_role=None):
+        team = self.get_team(team_id, realm_role=realm_role)
         try:
             members = self.teams_admin_client.get_group_members(group_id=team["id"])
         except KeycloakError as e:

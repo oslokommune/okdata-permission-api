@@ -47,12 +47,13 @@ def get_teams(
 )
 def get_team(
     team_id: str,
+    has_role: Optional[str] = None,
     auth_info: AuthInfo = Depends(),
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
     try:
         user_teams = teams_client.list_user_teams(username=auth_info.principal_id)
-        team = teams_client.get_team(team_id)
+        team = teams_client.get_team(team_id, realm_role=has_role)
     except TeamNotFoundError:
         raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
     except TeamsServerError:
