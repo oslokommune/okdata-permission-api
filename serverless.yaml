@@ -1,4 +1,4 @@
-frameworkVersion: ">=2.71.0 <3.0.0"
+frameworkVersion: ">=3.18.1 <4.0.0"
 
 service: okdata-permission-api
 
@@ -6,16 +6,18 @@ provider:
   name: aws
   runtime: python3.9
   memorySize: 1024
-  region: ${opt:region, 'eu-west-1'}
+  region: eu-west-1
   stage: ${opt:stage, 'dev'}
   deploymentBucket:
     name: ${self:custom.deploymentBucket.${self:provider.stage}, self:custom.deploymentBucket.dev}
     serverSideEncryption: AES256
   deploymentPrefix: deploy
-  rolePermissionsBoundary: "arn:aws:iam::${aws:accountId}:policy/oslokommune/oslokommune-boundary"
-  iamManagedPolicies:
-    - "arn:aws:iam::${aws:accountId}:policy/okdata-permission-api"
-    - "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+  iam:
+    role:
+      permissionsBoundary: "arn:aws:iam::${aws:accountId}:policy/oslokommune/oslokommune-boundary"
+      managedPolicies:
+        - "arn:aws:iam::${aws:accountId}:policy/okdata-permission-api"
+        - "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
   tags:
     GIT_REV: ${git:branch}:${git:sha1}
     VERSION: ${self:custom.version}
@@ -33,24 +35,23 @@ provider:
     ROOT_PATH: "/okdata-permission-api"
     LOG_LEVEL: INFO
     BACKUP_BUCKET_NAME: ${self:custom.backupBucket.${self:provider.stage}, self:custom.backupBucket.dev}
+
 package:
-  exclude:
-    - '**/*'
-  include:
+    - '!**/*'
+    - app.py
+    - backup/*.py
     - dataplatform_keycloak/*.py
+    - handler.py
     - models/*.py
     - resources/*.py
-    - backup/*.py
     - webhook_tokens/*.py
-    - app.py
-    - handler.py
 
 functions:
   app:
     handler: handler.handler
     events:
       - http: ANY /
-      - http: "ANY {proxy+}"
+      - http: ANY /{any+}
     timeout: 29
   backup:
     handler: backup.handler.backup_permissions
@@ -59,7 +60,6 @@ functions:
     timeout: 30
 
 plugins:
-  - serverless-es-logs
   - serverless-plugin-git-variables
   - serverless-prune-plugin
   - serverless-python-requirements
@@ -78,10 +78,6 @@ custom:
   prune:
     automatic: true
     number: 3
-  esLogs:
-    endpoint: ${ssm:/dataplatform/shared/logs-elasticsearch-endpoint}
-    index: dataplatform-services
-    filterPattern: '{ $.function_name = "*" }'
   exportGitVariables: false
   deploymentBucket:
     prod: ok-origo-dataplatform-config-prod
