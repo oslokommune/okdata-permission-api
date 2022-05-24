@@ -9,7 +9,7 @@ from dataplatform_keycloak.resource_server import ResourceServer
 from models import MyPermissionsResponse
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
-from resources.resource import resource_type_from_resource_name
+from resources.resource_util import resource_type_from_resource_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))

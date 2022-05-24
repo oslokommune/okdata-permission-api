@@ -10,9 +10,9 @@ from pydantic import BaseModel, validator
 
 from dataplatform_keycloak.groups import group_name_to_team_name
 from models.scope import all_scopes, all_scopes_for_type
-from resources.resource import (
-    resource_type_from_resource_name,
+from resources.resource_util import (
     resource_name_from_permission_name,
+    resource_type_from_resource_name,
 )
 
 logger = logging.getLogger()

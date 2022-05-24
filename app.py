@@ -10,6 +10,7 @@ from resources import (
     my_permissions,
     permissions,
     remove_team_permissions,
+    resources,
     teams,
     webhook_tokens,
 )
@@ -27,6 +28,12 @@ add_fastapi_logging(app)
 
 app.include_router(
     permissions.router,
+    prefix="/permissions",
+    tags=["permissions"],
+)
+
+app.include_router(
+    resources.router,
     prefix="/permissions",
     tags=["permissions"],
 )

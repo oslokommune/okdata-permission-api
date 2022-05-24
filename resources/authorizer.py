@@ -9,7 +9,7 @@ from requests.exceptions import HTTPError
 
 from dataplatform_keycloak.ssm import SsmClient
 from resources.errors import ErrorResponse
-from resources.resource import resource_type_from_resource_name
+from resources.resource_util import resource_type_from_resource_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
