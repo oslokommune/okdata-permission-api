@@ -36,12 +36,13 @@ provider:
     ROOT_PATH: "/okdata-permission-api"
     LOG_LEVEL: INFO
     BACKUP_BUCKET_NAME: ${self:custom.backupBucket.${self:provider.stage}, self:custom.backupBucket.dev}
+    SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL: ${ssm:/dataplatform/slack/permission-api-slack-webhook~true}
 
 package:
   patterns:
     - '!**/*'
     - app.py
-    - backup/*.py
+    - jobs/*.py
     - dataplatform_keycloak/*.py
     - handler.py
     - models/*.py
@@ -55,10 +56,15 @@ functions:
       - http: ANY /
       - http: ANY /{any+}
     timeout: 29
-  backup:
-    handler: backup.handler.backup_permissions
+  backup-permissions:
+    handler: jobs.backup.backup_permissions
     events:
       - schedule: cron(0 0 * * ? *)
+    timeout: 30
+  check-users:
+    handler: jobs.monitor.check_users
+    events:
+      - schedule: cron(0 */1 * * ? *)
     timeout: 30
 
 plugins:
