@@ -65,7 +65,7 @@ def create_resource(
 )
 def update_permission(
     body: UpdatePermissionBody,
-    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:#-]+$"),
+    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:-]+$"),
     resource_server: ResourceServer = Depends(resource_server),
 ):
     try:
@@ -107,7 +107,7 @@ def update_permission(
     ),
 )
 def get_permissions(
-    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:#-]+$"),
+    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:-]+$"),
     resource_server: ResourceServer = Depends(resource_server),
 ):
     try:
@@ -135,7 +135,7 @@ def get_permissions(
     ),
 )
 def delete_resource(
-    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:#-]+$"),
+    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:-]+$"),
     resource_server: ResourceServer = Depends(resource_server),
 ):
     try:
