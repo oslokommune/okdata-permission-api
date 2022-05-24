@@ -1,9 +1,8 @@
 import logging
 import os
-from requests.exceptions import HTTPError
-from typing import List
 
-from fastapi import Depends, APIRouter, status
+from fastapi import APIRouter, Depends, Path, status
+from requests.exceptions import HTTPError
 
 from dataplatform_keycloak.exceptions import CannotRemoveOnlyAdminException
 from dataplatform_keycloak.resource_server import ResourceServer
@@ -65,8 +64,8 @@ def create_resource(
     ),
 )
 def update_permission(
-    resource_name: str,
     body: UpdatePermissionBody,
+    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:-]+$"),
     resource_server: ResourceServer = Depends(resource_server),
 ):
     try:
@@ -102,13 +101,13 @@ def update_permission(
     "/{resource_name}",
     dependencies=[Depends(has_resource_permission("admin"))],
     status_code=status.HTTP_200_OK,
-    response_model=List[OkdataPermission],
+    response_model=list[OkdataPermission],
     responses=error_message_models(
         status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR
     ),
 )
 def get_permissions(
-    resource_name: str,
+    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:-]+$"),
     resource_server: ResourceServer = Depends(resource_server),
 ):
     try:
@@ -122,3 +121,32 @@ def get_permissions(
         logger.info(f"Keycloak response body: {keycloak_response.text}")
         logger.exception(e)
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
+
+
+@router.delete(
+    "/{resource_name}",
+    dependencies=[Depends(has_permission("keycloak:resource:admin"))],
+    status_code=status.HTTP_200_OK,
+    responses=error_message_models(
+        status.HTTP_400_BAD_REQUEST,
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ),
+)
+def delete_resource(
+    resource_name: str = Path(..., regex=r"^[a-zA-Z0-9_:-]+$"),
+    resource_server: ResourceServer = Depends(resource_server),
+):
+    try:
+        resource_server.delete_resource(resource_name)
+    except HTTPError as e:
+        logger.info(f"Keycloak response status code: {e.response.status_code}")
+        logger.info(f"Keycloak response body: {e.response.text}")
+        logger.exception(e)
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
+
+    return {"message": "Deleted"}

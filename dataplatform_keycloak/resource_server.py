@@ -304,17 +304,12 @@ class ResourceServer:
         return resp.status_code, resp.text
 
     def delete_resource(self, resource_name):
-
         resource_id = self.get_resource_id(resource_name)
-        delete_url = (
-            f"{self.uma_well_known.resource_registration_endpoint}/{resource_id}"
-        )
-        logger.info(f"DELETE {delete_url}")
-        resp = requests.delete(
-            delete_url,
-            headers=self.request_headers(),
-        )
-        return resp.status_code, resp.text
+        url = f"{self.uma_well_known.resource_registration_endpoint}/{resource_id}"
+        logger.info(f"DELETE {url}")
+        resp = requests.delete(url, headers=self.request_headers())
+        resp.raise_for_status()
+        return resp
 
     def get_resource_id(self, resource_name):
 
