@@ -31,17 +31,27 @@ upgrade-deps: $(BUILD_VENV)/bin/pip-compile
 
 .PHONY: deploy
 deploy: login-dev init format test
-	@echo "\nDeploying to stage: $${STAGE:-dev}\n"
-	sls deploy --stage $${STAGE:-dev} --aws-profile $(.DEV_PROFILE)
+	@echo "\nDeploying to stage: dev\n"
+	sls deploy --stage dev --aws-profile $(.DEV_PROFILE)
+
+.PHONY: deploy-prod
+deploy-prod: login-prod init format is-git-clean test
+	sls deploy --stage prod --aws-profile $(.PROD_PROFILE)
+
+.PHONY: undeploy
+undeploy: login-dev init
+	@echo "\nUndeploying stage: dev\n"
+	sls remove --stage dev --aws-profile $(.DEV_PROFILE)
+
+.PHONY: undeploy-prod
+undeploy-prod: login-prod init
+	@echo "\nUndeploying stage: prod\n"
+	sls remove --stage prod --aws-profile $(.PROD_PROFILE)
 
 .PHONY: download-doc
 download-doc:
 	@echo "\nDownloading documentation\n"
 	sls downloadDocumentation --outputFileName swagger.yaml --stage dev --aws-profile $(.DEV_PROFILE)
-
-.PHONY: deploy-prod
-deploy-prod: login-prod init format is-git-clean test
-	sls deploy --stage prod --aws-profile $(.PROD_PROFILE)
 
 setup-keycloak-local: ## Run a local Keycloak instance running in docker
 	docker-compose \
@@ -76,19 +86,6 @@ run: populate-local-keycloak $(BUILD_VENV)/bin/uvicorn
 	KEYCLOAK_TEAM_ADMIN_PASSWORD=team-admin-password \
 	LOG_LEVEL=DEBUG \
 	$(BUILD_VENV)/bin/uvicorn app:app --reload
-
-ifeq ($(MAKECMDGOALS),undeploy)
-ifndef STAGE
-$(error STAGE is not set)
-endif
-ifeq ($(STAGE),dev)
-$(error Please do not undeploy dev)
-endif
-endif
-.PHONY: undeploy
-undeploy: login-dev
-	@echo "\nUndeploying stage: $(STAGE)\n"
-	sls remove --stage $(STAGE) --aws-profile $(.DEV_PROFILE)
 
 .PHONY: login-dev
 login-dev:
