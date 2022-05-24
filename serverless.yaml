@@ -37,6 +37,7 @@ provider:
     BACKUP_BUCKET_NAME: ${self:custom.backupBucket.${self:provider.stage}, self:custom.backupBucket.dev}
 
 package:
+  patterns:
     - '!**/*'
     - app.py
     - backup/*.py
