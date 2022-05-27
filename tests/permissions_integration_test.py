@@ -257,10 +257,8 @@ def test_update_permission_resource_not_exist(mock_client):
     response = mock_client.put(
         f"/permissions/{resource_name}-not-exist", headers=auth_header(token)
     )
-    assert response.status_code == 400
-    assert response.json() == {
-        "message": f"Resource with id [{resource_name}-not-exist] does not exist."
-    }
+    assert response.status_code == 403
+    assert response.json() == {"message": "Forbidden"}
 
 
 def test_update_permission_create_permission_if_deleted(mock_client):
@@ -489,4 +487,4 @@ def test_delete_resource_success(mock_client):
     get_response_after = mock_client.get(
         f"/permissions/{resource_name}", headers=auth_header(user_token)
     )
-    assert get_response_after.status_code == 400
+    assert get_response_after.status_code == 403

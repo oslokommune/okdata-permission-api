@@ -19,7 +19,7 @@ setup(
         "fastapi>=0.65.2",
         "mangum==0.10.0",
         "okdata-aws>=1.0.0",
-        "okdata-resource-auth",
+        "okdata-resource-auth>=0.1.4",
         "pydantic==1.7.4",
         "pyjwt",
         "python-keycloak",
