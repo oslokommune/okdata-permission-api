@@ -21,7 +21,7 @@ from dataplatform_keycloak.resource_server import permission_description
 from dataplatform_keycloak.groups import TEAM_GROUP_PREFIX
 from models import User, UserType
 from models.scope import all_scopes_for_type, scope_permission
-from resources.resource import (
+from resources.resource_util import (
     resource_name_from_permission_name,
     resource_type_from_resource_name,
 )

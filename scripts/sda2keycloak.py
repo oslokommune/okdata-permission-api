@@ -23,7 +23,7 @@ from dataplatform_keycloak.resource_server import ResourceServer
 from dataplatform_keycloak.ssm import SsmClient
 from models import User
 from models.scope import all_scopes_for_type
-from resources.resource import resource_type_from_resource_name
+from resources.resource_util import resource_type_from_resource_name
 from sandbox import initialize_local_environment
 from tests.setup import populate_local_keycloak
 

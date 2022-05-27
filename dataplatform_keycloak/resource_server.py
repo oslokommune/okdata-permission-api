@@ -19,7 +19,7 @@ from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
 from models import User, UserType
 from models.scope import all_scopes_for_type, scope_permission
-from resources.resource import resource_type_from_resource_name
+from resources.resource_util import resource_type_from_resource_name
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))

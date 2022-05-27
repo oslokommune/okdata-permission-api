@@ -1,4 +1,4 @@
-from resources.resource import (
+from resources.resource_util import (
     resource_id_from_resource_name,
     resource_type_from_resource_name,
 )
