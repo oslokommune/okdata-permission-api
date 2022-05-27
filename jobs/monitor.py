@@ -16,7 +16,7 @@ patch_all()
 
 
 @logging_wrapper
-@xray_recorder.capture("backup_permissions")
+@xray_recorder.capture("check_users")
 def check_users(event, context):
     """Get all users from permissions and notify about any deleted accounts.
 
