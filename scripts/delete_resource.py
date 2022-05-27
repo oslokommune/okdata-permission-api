@@ -4,6 +4,7 @@
 import argparse
 import logging
 
+from dataplatform_keycloak.exceptions import ResourceNotFoundException
 from scripts.utils import resource_server_from_env
 
 
@@ -30,10 +31,14 @@ if __name__ == "__main__":
     resource_server = resource_server_from_env(args.env)
 
     if args.apply:
-        status, message = resource_server.delete_resource(args.resource_name)
-        if status == 204:
-            print(f"Deleted resource: {args.resource_name}")
+        try:
+            resp = resource_server.delete_resource(args.resource_name)
+        except ResourceNotFoundException as e:
+            print(e)
         else:
-            print(message)
+            if resp.status_code == 204:
+                print(f"Deleted resource: {args.resource_name}")
+            else:
+                print(resp.text)
     else:
         print(f"Would have deleted resource: {args.resource_name}")
