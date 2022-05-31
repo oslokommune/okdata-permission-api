@@ -1,10 +1,10 @@
-import os
 import json
+import os
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 
 import boto3
 from aws_xray_sdk.core import patch_all, xray_recorder
+from dateutil.relativedelta import relativedelta
 from okdata.aws.logging import logging_wrapper, log_add
 
 from dataplatform_keycloak.resource_server import ResourceServer
