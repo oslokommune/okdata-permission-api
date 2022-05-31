@@ -57,7 +57,8 @@ def load_latest_backup(max_age_in_weeks=12):
     log_add(backup_object_max_age=(dt_now - max_age).isoformat())
 
     while not backup_key:
-        lookup_prefix = BACKUP_BUCKET_PREFIX + "/{}/{}/".format(
+        lookup_prefix = "{}/{}/{}/".format(
+            BACKUP_BUCKET_PREFIX,
             lookup_dt.year,
             lookup_dt.month,
         )
