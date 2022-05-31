@@ -58,12 +58,10 @@ def check_users(event, context):
 
 
 def identify_missing_users(permissions, keycloak_users):
-    permission_users = []
+    permission_users = set()
 
     for permission in permissions:
-        for user in permission.get("users", []):
-            if user not in permission_users:
-                permission_users.append(user)
+        permission_users.update(permission.get("users", []))
 
     return [user for user in permission_users if user not in keycloak_users]
 
