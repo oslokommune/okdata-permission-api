@@ -64,7 +64,7 @@ functions:
   check-users:
     handler: jobs.monitor.check_users
     events:
-      - schedule: cron(0 */1 * * ? *)
+      - schedule: cron(0 * * * ? *)
     timeout: 30
 
 plugins:
