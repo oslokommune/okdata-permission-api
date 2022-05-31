@@ -47,7 +47,7 @@ def write_to_s3(permissions_data):
 
 
 def load_latest_backup(max_age_in_weeks=12):
-    """Load last permissions backup file from S3."""
+    """Load and return the latest backed up permissions from S3."""
     s3 = boto3.client("s3", region_name=os.environ["AWS_REGION"])
     max_age = timedelta(weeks=max_age_in_weeks)
     dt_now = datetime.utcnow()
