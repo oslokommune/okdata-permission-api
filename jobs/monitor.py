@@ -25,9 +25,6 @@ def check_users(event, context):
     """
 
     keycloak_admin_client = TeamsClient().teams_admin_client
-    keycloak_users = [user["username"] for user in keycloak_admin_client.get_users()]
-
-    log_add(keycloak_users_count=len(keycloak_users))
 
     permissions = load_latest_backup()
 
@@ -42,7 +39,17 @@ def check_users(event, context):
     if len(permissions) == 0:
         return
 
-    missing_users = identify_missing_users(permissions, keycloak_users)
+    permission_users = set()
+    missing_users = set()
+
+    for permission in permissions:
+        permission_users.update(permission.get("users", []))
+
+    log_add(permission_users_count=len(permission_users))
+
+    for username in permission_users:
+        if not keycloak_admin_client.get_user_id(username):
+            missing_users.add(username)
 
     log_add(missing_users_count=len(missing_users))
 
@@ -55,15 +62,6 @@ def check_users(event, context):
             "manually by re-creating permissions for affected permissions using scripts "
             "available in the `okdata-permission-api` repo."
         )
-
-
-def identify_missing_users(permissions, keycloak_users):
-    permission_users = set()
-
-    for permission in permissions:
-        permission_users.update(permission.get("users", []))
-
-    return [user for user in permission_users if user not in keycloak_users]
 
 
 def slack_notify(message):
