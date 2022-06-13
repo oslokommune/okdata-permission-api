@@ -36,7 +36,7 @@ provider:
     ROOT_PATH: "/okdata-permission-api"
     LOG_LEVEL: INFO
     BACKUP_BUCKET_NAME: ${self:custom.backupBucket.${self:provider.stage}, self:custom.backupBucket.dev}
-    SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL: ${ssm:/dataplatform/slack/permission-api-slack-webhook~true}
+    SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL: ${ssm:/dataplatform/slack/permission-api-slack-webhook}
 
 package:
   patterns:
