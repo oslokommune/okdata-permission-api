@@ -3,6 +3,7 @@
   "description": "",
   "version": "0.1.0",
   "devDependencies": {
+    "aws-sso-creds-helper": "^1.8.15",
     "serverless": "^3.18.1",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-plugin-git-variables": "^5.2.0",
