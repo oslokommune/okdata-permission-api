@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 from typing import List
 
-from keycloak import KeycloakAdmin, KeycloakGetError
+from keycloak import KeycloakAdmin, KeycloakDeleteError
 from keycloak.exceptions import KeycloakConnectionError
 
 from dataplatform_keycloak.groups import group_name_to_team_name
@@ -17,7 +17,7 @@ def populate():
     # Clear data from previous test runs
     try:
         keycloak_admin.delete_realm(keycloak_config.realm_name)
-    except KeycloakGetError:
+    except KeycloakDeleteError:
         pass
 
     # Create new realm

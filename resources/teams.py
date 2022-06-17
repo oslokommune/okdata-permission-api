@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Union
 
 from fastapi import APIRouter, Depends, status
 
@@ -22,7 +22,7 @@ router = APIRouter(dependencies=[Depends(AuthInfo)])
     ),
 )
 def get_teams(
-    has_role: Optional[str] = None,
+    has_role: Union[str, None] = None,
     auth_info: AuthInfo = Depends(),
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
@@ -47,7 +47,7 @@ def get_teams(
 )
 def get_team(
     team_id: str,
-    has_role: Optional[str] = None,
+    has_role: Union[str, None] = None,
     auth_info: AuthInfo = Depends(),
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
