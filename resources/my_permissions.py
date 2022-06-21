@@ -1,6 +1,6 @@
 import os
 import logging
-from typing import Optional
+from typing import Union
 
 from fastapi import Depends, APIRouter, status
 from requests.exceptions import HTTPError
@@ -32,7 +32,7 @@ router = APIRouter()
     ),
 )
 def get_my_permissions(
-    resource_type: Optional[str] = None,
+    resource_type: Union[str, None] = None,
     resource_server: ResourceServer = Depends(resource_server),
     auth_info: AuthInfo = Depends(),
 ):
