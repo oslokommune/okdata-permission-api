@@ -14,14 +14,14 @@ from models import User, WebhookTokenOperation
 
 
 @dataclass
-class TestData:
+class MockData:
     webhook_token = "774d8f35-fb4b-4e06-9d7f-54d1a08589b4"
     created_by = kc_config.janedoe
     dataset_id = "webhook-integration-test-dataset"
     created_at = date_parser.parse("2020-02-29T00:00:00+00:00")
 
 
-test_data = TestData()
+test_data = MockData()
 
 
 @mock_dynamodb2
