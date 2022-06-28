@@ -15,7 +15,7 @@ from dataplatform_keycloak.exceptions import (
     TeamsServerError,
 )
 from dataplatform_keycloak.jwt import generate_jwt
-from dataplatform_keycloak.groups import is_team_group
+from dataplatform_keycloak.groups import is_team_group, team_name_to_group_name
 from dataplatform_keycloak.ssm import SsmClient
 
 logger = logging.getLogger()
@@ -117,6 +117,18 @@ class TeamsClient:
         if not is_team_group(group["name"]):
             raise TeamNotFoundError
         return group
+
+    def get_team_by_name(self, team_name, realm_role=None):
+        group_name = team_name_to_group_name(team_name)
+
+        try:
+            return next(
+                group
+                for group in self.list_teams(realm_role)
+                if group["name"] == group_name
+            )
+        except StopIteration:
+            raise TeamNotFoundError
 
     def get_team_members(self, team_id, realm_role=None):
         team = self.get_team(team_id, realm_role=realm_role)
