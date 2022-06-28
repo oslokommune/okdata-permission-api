@@ -37,7 +37,8 @@ if __name__ == "__main__":
                 print("[DRY RUN] ", end="")
 
             print(
-                f"Removed {user.user_type} '{user.user_id}' from '{p.scope}' on '{p.resource_name}"
+                f"Removed {user.user_type} '{user.user_id}' from '{p.scope}' "
+                f"on '{p.resource_name}'"
             )
     else:
         print(f"No permissions to delete for {user.user_type} '{user.user_id}'")
