@@ -54,16 +54,16 @@ class AuthInfo:
         self.bearer_token = authorization.credentials
 
 
-def has_permission(permission: str):
+def has_scope_permission(scope: str):
     def _verify_permission(
         auth_info: AuthInfo = Depends(),
         resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
     ):
-        """Pass through without exception if the user has specified `permission`."""
+        """Pass through without exception if the user has specified `scope`."""
         try:
             if not resource_authorizer.has_access(
                 auth_info.bearer_token,
-                permission,
+                scope,
             ):
                 raise ErrorResponse(403, "Forbidden")
         except HTTPError as e:
@@ -76,21 +76,6 @@ def has_permission(permission: str):
 
             logger.exception(e)
             raise ErrorResponse(500, "Server error")
-
-    return _verify_permission
-
-
-def has_scope_permission(scope: str):
-    def _verify_permission(
-        auth_info: AuthInfo = Depends(),
-        resource_authorizer: ResourceAuthorizer = Depends(resource_authorizer),
-    ):
-        """Pass through without exception if the user has access to `scope`."""
-        if not resource_authorizer.has_access(
-            auth_info.bearer_token,
-            scope,
-        ):
-            raise ErrorResponse(403, "Forbidden")
 
     return _verify_permission
 
