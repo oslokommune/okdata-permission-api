@@ -91,6 +91,11 @@ def has_resource_permission(permission: str):
         Check `permission` for `resource_name`
         (scope = "resource-name#resource-type:permission").
         """
+        if resource_authorizer.has_access(
+            auth_info.bearer_token, "keycloak:resource:admin"
+        ):
+            return
+
         try:
             if not resource_authorizer.has_access(
                 auth_info.bearer_token,
