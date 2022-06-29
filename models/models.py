@@ -1,14 +1,17 @@
-from datetime import datetime
-from uuid import UUID
-
 import logging
 import os
+from datetime import datetime
 from enum import Enum
-from typing import List, Dict
+from typing import Dict, List, Union
+from uuid import UUID
 
 from pydantic import BaseModel, validator
 
-from dataplatform_keycloak.groups import group_name_to_team_name
+from dataplatform_keycloak.groups import (
+    group_attribute_to_team_attribute,
+    group_name_to_team_name,
+    is_team_attribute,
+)
 from models.scope import all_scopes, all_scopes_for_type
 from resources.resource_util import (
     resource_name_from_permission_name,
@@ -33,10 +36,19 @@ class User(BaseModel):
 class Team(BaseModel):
     id: str
     name: str
+    attributes: Union[dict, None] = None
 
     @validator("name", pre=True)
     def clean_name(cls, v):
         return group_name_to_team_name(v)
+
+    @validator("attributes", pre=True)
+    def clean_attributes(cls, v):
+        return {
+            group_attribute_to_team_attribute(key): value
+            for key, value in v.items()
+            if is_team_attribute(key)
+        }
 
 
 class CreateResourceBody(BaseModel):
