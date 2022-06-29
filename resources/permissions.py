@@ -4,7 +4,10 @@ import os
 from fastapi import APIRouter, Depends, Path, status
 from requests.exceptions import HTTPError
 
-from dataplatform_keycloak.exceptions import CannotRemoveOnlyAdminException
+from dataplatform_keycloak.exceptions import (
+    CannotRemoveOnlyAdminException,
+    ResourceNotFoundError,
+)
 from dataplatform_keycloak.resource_server import ResourceServer
 from models import OkdataPermission, UpdatePermissionBody
 from resources.authorizer import has_resource_permission
@@ -71,7 +74,10 @@ def update_permission(
     status_code=status.HTTP_200_OK,
     response_model=list[OkdataPermission],
     responses=error_message_models(
-        status.HTTP_400_BAD_REQUEST, status.HTTP_500_INTERNAL_SERVER_ERROR
+        status.HTTP_400_BAD_REQUEST,
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_permissions(
@@ -89,3 +95,5 @@ def get_permissions(
         logger.info(f"Keycloak response body: {keycloak_response.text}")
         logger.exception(e)
         raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
+    except ResourceNotFoundError as e:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, str(e))

@@ -159,6 +159,20 @@ def test_get_permissions(mock_client):
     ]
 
 
+def test_get_permissions_resource_not_found(mock_client):
+    token = get_token_for_service(
+        kc_config.create_permissions_client_id,
+        kc_config.create_permissions_client_secret,
+    )
+    response = mock_client.get(
+        "/permissions/okdata:dataset:nil", headers=auth_header(token)
+    )
+    assert response.status_code == 404
+    assert response.json() == {
+        "message": "No resource named okdata:dataset:nil",
+    }
+
+
 ###############################################################################
 # PUT /permissions/{resource_name}
 ###############################################################################
