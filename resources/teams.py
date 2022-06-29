@@ -17,6 +17,7 @@ router = APIRouter(dependencies=[Depends(AuthInfo)])
     "",
     status_code=status.HTTP_200_OK,
     response_model=List[Team],
+    response_model_exclude_unset=True,
     responses=error_message_models(
         status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),

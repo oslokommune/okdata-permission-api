@@ -175,24 +175,27 @@ def populate():
         roles=client_roles,
     )
 
+    # Create groups
+    for group in keycloak_config.groups:
+        keycloak_admin.create_group(payload=group)
+
     # Create users and groups
     for user in keycloak_config.users:
-        for group in user["groups"]:
-            keycloak_admin.create_group(payload={"name": group}, skip_exists=True)
         keycloak_admin.create_user(
             payload={
                 "username": user["username"],
                 "groups": user["groups"],
                 "enabled": True,
                 "credentials": [
-                    {"type": "password", "value": "password", "temporary": False}
+                    {
+                        "type": "password",
+                        "value": "password",
+                        "temporary": False,
+                    },
                 ],
             }
         )
 
-    keycloak_admin.create_group(
-        payload={"name": keycloak_config.nonteamgroup}, skip_exists=True
-    )
     keycloak_admin.create_realm_role(
         payload={
             "name": keycloak_config.internal_team_realm_role,

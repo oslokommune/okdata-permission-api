@@ -1,4 +1,7 @@
-from dataplatform_keycloak.groups import team_name_to_group_name
+from dataplatform_keycloak.groups import (
+    team_attribute_to_group_attribute,
+    team_name_to_group_name,
+)
 
 server_url = "http://localhost:35789"
 server_auth_url = f"{server_url}/auth/"
@@ -64,6 +67,18 @@ user5 = {
 
 
 users = [user1, user2, user3, user4, user5]
+groups = [
+    {"name": team_name_to_group_name(team1), "attributes": {}},
+    {"name": team_name_to_group_name(team2), "attributes": {}},
+    {
+        "name": team_name_to_group_name(team3),
+        "attributes": {
+            team_attribute_to_group_attribute("email"): ["foo@example.org"],
+            "nonteamattribute": ["secret"],
+        },
+    },
+    {"name": nonteamgroup, "attributes": {}},
+]
 
 internal_team_realm_role = "origo-team"
 internal_teams = [team1, team3]

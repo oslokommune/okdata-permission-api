@@ -122,11 +122,12 @@ class TeamsClient:
         group_name = team_name_to_group_name(team_name)
 
         try:
-            return next(
+            group = next(
                 group
                 for group in self.list_teams(realm_role)
                 if group["name"] == group_name
             )
+            return self.get_team(group["id"], realm_role)
         except StopIteration:
             raise TeamNotFoundError
 

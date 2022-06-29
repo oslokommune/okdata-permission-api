@@ -103,6 +103,7 @@ class TestTeamsEndpoints:
         assert response.json() == {
             "id": team["id"],
             "name": group_name_to_team_name(team["name"]),
+            "attributes": {},
         }
 
     def test_get_team_not_member(self, mock_client):
@@ -149,6 +150,7 @@ class TestTeamsEndpoints:
         assert response.json() == {
             "id": team["id"],
             "name": group_name_to_team_name(team["name"]),
+            "attributes": {},
         }
 
     def test_get_team_with_non_matching_role(self, mock_client):
@@ -162,3 +164,19 @@ class TestTeamsEndpoints:
 
         assert response.status_code == 404
         assert response.json()["message"] == "Team not found"
+
+    def test_get_team_with_attributes(self, mock_client):
+        team = get_keycloak_group_by_name(
+            team_name_to_group_name(kc_config.team3),
+        )
+        response = mock_client.get(
+            f"/teams/{team['id']}",
+            headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "id": team["id"],
+            "name": kc_config.team3,
+            "attributes": {"email": ["foo@example.org"]},
+        }
