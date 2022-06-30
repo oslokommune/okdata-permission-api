@@ -16,8 +16,8 @@ import boto3
 from requests.exceptions import HTTPError
 
 from dataplatform_keycloak.exceptions import (
-    ResourceNotFoundException,
     PermissionNotFoundException,
+    ResourceNotFoundError,
 )
 from dataplatform_keycloak.resource_server import ResourceServer
 from dataplatform_keycloak.ssm import SsmClient
@@ -94,7 +94,7 @@ def create_resource(server, name, owner, delete_first=False):
         try:
             logger.info(f"Deleting resource {name}")
             server.delete_resource(name)
-        except ResourceNotFoundException:
+        except ResourceNotFoundError:
             pass
     try:
         if apply_changes:

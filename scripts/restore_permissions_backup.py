@@ -16,9 +16,9 @@ import sys
 import requests
 from requests.exceptions import HTTPError
 
-from dataplatform_keycloak.exceptions import ResourceNotFoundException
-from dataplatform_keycloak.resource_server import permission_description
+from dataplatform_keycloak.exceptions import ResourceNotFoundError
 from dataplatform_keycloak.groups import TEAM_GROUP_PREFIX
+from dataplatform_keycloak.resource_server import permission_description
 from models import User, UserType
 from models.scope import all_scopes_for_type, scope_permission
 from resources.resource_util import (
@@ -90,7 +90,7 @@ def restore_permissions(
         if apply_changes:
             try:
                 resource_server.delete_resource(resource_name)
-            except ResourceNotFoundException:
+            except ResourceNotFoundError:
                 if skip_deleted_resources:
                     logger.warning("Skipped previously deleted resource")
                     continue

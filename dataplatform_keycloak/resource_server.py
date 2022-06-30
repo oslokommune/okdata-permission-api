@@ -9,10 +9,10 @@ from keycloak import KeycloakOpenID
 from requests.models import PreparedRequest
 
 from dataplatform_keycloak.exceptions import (
-    PermissionNotFoundException,
-    ResourceNotFoundException,
     CannotRemoveOnlyAdminException,
     ConfigurationError,
+    PermissionNotFoundException,
+    ResourceNotFoundError,
 )
 from dataplatform_keycloak.groups import team_name_to_group_name
 from dataplatform_keycloak.ssm import SsmClient
@@ -328,7 +328,7 @@ class ResourceServer:
             ).json()
             if resource["name"] == resource_name:
                 return resource["_id"]
-        raise ResourceNotFoundException(f"No resource named {resource_name}")
+        raise ResourceNotFoundError(f"No resource named {resource_name}")
 
     def get_user_permissions(self, user_bearer_token, scope: str = None):
 
