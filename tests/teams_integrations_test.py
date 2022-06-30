@@ -215,9 +215,8 @@ def test_get_team_by_name_non_member(mock_client):
 
 def test_get_team_by_name_with_attributes(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team3))
-
     response = mock_client.get(
-        f"/teams/{team['id']}",
+        f"/teams/name/{kc_config.team3}",
         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
     )
 
