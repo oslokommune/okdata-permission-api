@@ -63,3 +63,33 @@ def get_team(
     if team["id"] not in group_ids(user_teams):
         raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
     return team
+
+
+# TODO: This is not restricted to members of the team like the other
+#       endpoints. They could also be opened like this one for symmetry.
+@router.get(
+    "/name/{team_name}",
+    status_code=status.HTTP_200_OK,
+    response_model=Team,
+    responses=error_message_models(
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ),
+)
+def get_team_by_name(
+    team_name: str,
+    has_role: Union[str, None] = None,
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    try:
+        team = teams_client.get_team_by_name(team_name)
+    except TeamNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
+    return team
