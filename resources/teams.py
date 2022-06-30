@@ -65,6 +65,8 @@ def get_team(
     return team
 
 
+# TODO: This is not restricted to members of the team like the other
+#       endpoints. They could also be opened like this one for symmetry.
 @router.get(
     "/name/{team_name}",
     status_code=status.HTTP_200_OK,
