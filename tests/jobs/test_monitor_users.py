@@ -43,7 +43,7 @@ def test_check_users(monkeypatch, mock_ssm_client, mock_resource_server, mocker)
     logger.assert_any_call(backed_up_permissions_count=len(permissions))
     logger.assert_any_call(permission_users_count=2)
     logger.assert_any_call(missing_users_count=1)
-    logger.assert_any_call(missing_users_usernames={kc_config.homersimpson})
+    logger.assert_any_call(missing_users_usernames=[kc_config.homersimpson])
     notifier.assert_called_once()
     assert notifier.call_args.args[0].startswith(
         "1 Keycloak user(s) holding resource permissions"

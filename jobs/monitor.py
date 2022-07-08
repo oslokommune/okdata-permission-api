@@ -54,7 +54,7 @@ def check_users(event, context):
     log_add(missing_users_count=len(missing_users))
 
     if len(missing_users) > 0:
-        log_add(missing_users_usernames=missing_users)
+        log_add(missing_users_usernames=list(missing_users))
 
         slack_notify(
             f"{len(missing_users)} Keycloak user(s) holding resource permissions identified "
