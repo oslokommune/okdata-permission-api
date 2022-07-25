@@ -75,6 +75,11 @@ class Team(BaseModel):
         }
 
 
+class UpdateTeamBody(BaseModel):
+    name: Union[str, None] = None
+    attributes: dict[str, Union[str, None]] = {}
+
+
 class CreateResourceBody(BaseModel):
     owner: User
     resource_name: str

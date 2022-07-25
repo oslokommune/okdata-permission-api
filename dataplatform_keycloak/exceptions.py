@@ -20,3 +20,7 @@ class TeamsServerError(Exception):
 
 class TeamNotFoundError(Exception):
     pass
+
+
+class TeamNameExistsError(Exception):
+    pass

@@ -3,6 +3,13 @@
 TEAM_GROUP_PREFIX = "TEAM-"
 TEAM_ATTRIBUTE_PREFIX = TEAM_GROUP_PREFIX
 
+# List of known team attributes. Stored in the group's attribute list with
+# `TEAM_ATTRIBUTE_PREFIX` prepended.
+TEAM_ATTRIBUTES = [
+    "email",
+    "slack-url",
+]
+
 
 def group_name_to_team_name(group_name):
     """Return the team name corresponding to Keycloak's `group_name`."""

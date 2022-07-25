@@ -2,10 +2,14 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends, status
 
-from dataplatform_keycloak.exceptions import TeamNotFoundError, TeamsServerError
+from dataplatform_keycloak.exceptions import (
+    TeamNameExistsError,
+    TeamNotFoundError,
+    TeamsServerError,
+)
 from dataplatform_keycloak.groups import group_ids
 from dataplatform_keycloak.teams_client import TeamsClient
-from models import Team, TeamMember
+from models import Team, TeamMember, UpdateTeamBody
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
 
@@ -128,3 +132,41 @@ def get_team_members(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Server error",
         )
+
+
+@router.patch(
+    "/{team_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=Team,
+    responses=error_message_models(
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_409_CONFLICT,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ),
+)
+def update_team(
+    team_id: str,
+    body: UpdateTeamBody,
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    try:
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
+        team = teams_client.get_team(team_id)
+        if team["id"] not in group_ids(user_teams):
+            raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
+        team = teams_client.update_team(team_id, body.name, body.attributes)
+        team["is_member"] = True
+    except TeamNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
+    except TeamNameExistsError:
+        raise ErrorResponse(
+            status.HTTP_409_CONFLICT, "A team with that name already exists"
+        )
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
+    return team
