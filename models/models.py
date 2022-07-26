@@ -36,6 +36,7 @@ class User(BaseModel):
 class Team(BaseModel):
     id: str
     name: str
+    is_member: bool
     attributes: Union[dict, None] = None
 
     @validator("name", pre=True)
@@ -49,6 +50,11 @@ class Team(BaseModel):
             for key, value in v.items()
             if is_team_attribute(key)
         }
+
+
+class UpdateTeamBody(BaseModel):
+    name: Union[str, None] = None
+    attributes: dict[str, Union[str, None]] = {}
 
 
 class CreateResourceBody(BaseModel):

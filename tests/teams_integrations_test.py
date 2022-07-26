@@ -1,4 +1,6 @@
 import unittest
+from itertools import groupby
+from operator import itemgetter
 
 import pytest
 
@@ -62,6 +64,32 @@ def test_list_teams(mock_client, username, expected_team_names):
     unittest.TestCase().assertCountEqual(team_names_from_response, expected_team_names)
 
 
+def test_list_all_teams(mock_client):
+    response = mock_client.get(
+        "/teams?include=all",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert {team["name"] for team in response.json()} == set(kc_config.teams)
+
+
+def test_list_teams_is_member(mock_client):
+    response = mock_client.get(
+        "/teams?include=all",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+
+    teams = {
+        name: list(team)[0]
+        for name, team in groupby(response.json(), itemgetter("name"))
+    }
+
+    assert teams["team1"]["is_member"]
+    assert not teams["team2"]["is_member"]
+    assert teams["team3"]["is_member"]
+
+
 def test_list_teams_filtered_by_role(mock_client):
     response = mock_client.get(
         "/teams",
@@ -98,11 +126,12 @@ def test_get_team(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": group_name_to_team_name(team["name"]),
+        "is_member": True,
         "attributes": {},
     }
 
 
-def test_get_team_not_member(mock_client):
+def test_get_team_non_member(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team2))
 
     response = mock_client.get(
@@ -110,8 +139,13 @@ def test_get_team_not_member(mock_client):
         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
     )
 
-    assert response.status_code == 403
-    assert response.json() == {"message": "Forbidden"}
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": team["id"],
+        "name": group_name_to_team_name(team["name"]),
+        "is_member": False,
+        "attributes": {},
+    }
 
 
 def test_get_unknown_team(mock_client):
@@ -148,6 +182,7 @@ def test_get_team_with_role(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": group_name_to_team_name(team["name"]),
+        "is_member": True,
         "attributes": {},
     }
 
@@ -163,6 +198,7 @@ def test_get_team_with_attributes(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team3,
+        "is_member": True,
         "attributes": {"email": ["foo@example.org"]},
     }
 
@@ -193,6 +229,7 @@ def test_get_team_by_name(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team1,
+        "is_member": True,
         "attributes": {},
     }
 
@@ -209,6 +246,7 @@ def test_get_team_by_name_non_member(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team2,
+        "is_member": False,
         "attributes": {},
     }
 
@@ -224,6 +262,7 @@ def test_get_team_by_name_with_attributes(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team3,
+        "is_member": True,
         "attributes": {"email": ["foo@example.org"]},
     }
 
@@ -256,4 +295,124 @@ def test_get_team_by_name_non_existent(mock_client):
 
 def test_get_team_by_name_unauthenticated(mock_client):
     response = mock_client.get(f"/teams/name/{kc_config.team1}")
+    assert response.status_code == 403
+
+
+# PUT /teams/{team_id}
+def test_update_team_rename(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "new-name"},
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["name"] == "new-name"
+
+    # Clean up
+    mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": kc_config.team1},
+    )
+
+
+def test_update_team_rename_conflict(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "team2"},
+    )
+    assert response.status_code == 409
+
+
+def test_update_team_attributes(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={
+            "attributes": {
+                "email": "foo@bar.org",
+                "slack-url": "https://foo.slack.com/abc",
+                "unknown-attr": "foo",
+            }
+        },
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["attributes"] == {
+        "email": ["foo@bar.org"],
+        "slack-url": ["https://foo.slack.com/abc"],
+    }
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"attributes": {"slack-url": None}},
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["attributes"] == {
+        "email": ["foo@bar.org"],
+    }
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"attributes": {"email": None, "unknown-attr": None}},
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["attributes"] == {}
+
+
+def test_update_team_non_existent(mock_client):
+    response = mock_client.patch(
+        "/teams/foo",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "foo"},
+    )
+    assert response.status_code == 404
+
+
+def test_update_team_unauthenticated(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    response = mock_client.patch(f"/teams/{team['id']}", json={"name": "foo"})
+    assert response.status_code == 403
+
+
+def test_update_team_non_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team2))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "foo"},
+    )
     assert response.status_code == 403
