@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import ANY
 
 import pytest
 
@@ -256,4 +257,69 @@ def test_get_team_by_name_non_existent(mock_client):
 
 def test_get_team_by_name_unauthenticated(mock_client):
     response = mock_client.get(f"/teams/name/{kc_config.team1}")
+    assert response.status_code == 403
+
+
+# GET /teams/{team_id}/members
+def test_get_team_members(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.get(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "id": ANY,
+            "username": "janedoe",
+            "name": None,
+            "email": None,
+        },
+        {
+            "id": ANY,
+            "username": "misty",
+            "name": None,
+            "email": None,
+        },
+    ]
+
+
+def test_get_team_members_non_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.get(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.homersimpson)),
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "id": ANY,
+            "username": "janedoe",
+            "name": None,
+            "email": None,
+        },
+        {
+            "id": ANY,
+            "username": "misty",
+            "name": None,
+            "email": None,
+        },
+    ]
+
+
+def test_get_team_members_non_existent(mock_client):
+    response = mock_client.get(
+        "/teams/8f8c9efad971e78b8d69/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.homersimpson)),
+    )
+    assert response.status_code == 404
+
+
+def test_get_team_members_unauthenticated(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    response = mock_client.get(f"/teams/{team['id']}/members")
     assert response.status_code == 403
