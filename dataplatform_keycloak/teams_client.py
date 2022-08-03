@@ -13,6 +13,9 @@ from dataplatform_keycloak.exceptions import (
     ConfigurationError,
     TeamNotFoundError,
     TeamsServerError,
+    UserAlreadyTeamMemberError,
+    UserNotFoundError,
+    UserNotTeamMemberError,
 )
 from dataplatform_keycloak.jwt import generate_jwt
 from dataplatform_keycloak.groups import is_team_group, team_name_to_group_name
@@ -139,6 +142,34 @@ class TeamsClient:
             log_keycloak_error(e)
             raise TeamsServerError
         return members
+
+    def add_team_member(self, team_id, username):
+        team_members = self.get_team_members(team_id)
+        user_id = self.teams_admin_client.get_user_id(username)
+        if not user_id:
+            raise UserNotFoundError
+        if user_id in [member["id"] for member in team_members]:
+            raise UserAlreadyTeamMemberError
+        try:
+            self.teams_admin_client.group_user_add(user_id, team_id)
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
+        return None
+
+    def remove_team_member(self, team_id, username):
+        team_members = self.get_team_members(team_id)
+        user_id = self.teams_admin_client.get_user_id(username)
+        if not user_id:
+            raise UserNotFoundError
+        if user_id not in [member["id"] for member in team_members]:
+            raise UserNotTeamMemberError
+        try:
+            self.teams_admin_client.group_user_remove(user_id, team_id)
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
+        return None
 
     def _get_groups_with_realm_role(self, role_name):
         """Return list of groups assigned specified realm role.

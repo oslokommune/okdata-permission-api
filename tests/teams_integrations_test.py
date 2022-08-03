@@ -323,3 +323,133 @@ def test_get_team_members_unauthenticated(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
     response = mock_client.get(f"/teams/{team['id']}/members")
     assert response.status_code == 403
+
+
+# PUT/DELETE /teams/{team_id}/members/{username}
+def test_add_team_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    user_auth_header = auth_header(get_bearer_token_for_user(kc_config.janedoe))
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members/homersimpson",
+        headers=user_auth_header,
+    )
+    assert response.status_code == 204
+
+    response = mock_client.get(
+        f"/teams/{team['id']}/members",
+        headers=user_auth_header,
+    )
+
+    assert response.status_code == 200
+    assert set(member["username"] for member in response.json()) == {
+        "homersimpson",
+        "janedoe",
+        "misty",
+    }
+
+    # Cleanup
+    mock_client.delete(
+        f"/teams/{team['id']}/members/homersimpson",
+        headers=user_auth_header,
+    )
+
+
+def test_remove_team_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    user_auth_header = auth_header(get_bearer_token_for_user(kc_config.janedoe))
+
+    response = mock_client.delete(
+        f"/teams/{team['id']}/members/misty",
+        headers=user_auth_header,
+    )
+    assert response.status_code == 204
+
+    response = mock_client.get(
+        f"/teams/{team['id']}/members",
+        headers=user_auth_header,
+    )
+
+    assert response.status_code == 200
+    assert set(member["username"] for member in response.json()) == {
+        "janedoe",
+    }
+
+    # Cleanup
+    mock_client.put(
+        f"/teams/{team['id']}/members/misty",
+        headers=user_auth_header,
+    )
+
+
+def test_add_existing_team_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members/misty",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 409
+    assert response.json() == {"message": "User is already a member of this team"}
+
+
+def test_remove_non_team_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.delete(
+        f"/teams/{team['id']}/members/homersimpson",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 404
+    assert response.json() == {"message": "User is not a member of this team"}
+
+
+@pytest.mark.parametrize("method", ["PUT", "DELETE"])
+def test_add_remove_member_non_existent_team(mock_client, method):
+    response = mock_client.request(
+        method,
+        "/teams/foo/members/homersimpson",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"message": "Team not found"}
+
+
+@pytest.mark.parametrize("method", ["PUT", "DELETE"])
+def test_add_remove_member_non_existent_user(mock_client, method):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.request(
+        method,
+        f"/teams/{team['id']}/members/foo",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"message": "User not found"}
+
+
+@pytest.mark.parametrize("method", ["PUT", "DELETE"])
+def test_add_remove_as_non_member(mock_client, method):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.request(
+        method,
+        f"/teams/{team['id']}/members/janedoe",
+        headers=auth_header(get_bearer_token_for_user(kc_config.homersimpson)),
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize("method", ["PUT", "DELETE"])
+def test_add_remove_member_unauthenticated(mock_client, method):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.request(
+        method,
+        f"/teams/{team['id']}/members/janedoe",
+    )
+
+    assert response.status_code == 403

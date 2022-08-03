@@ -6,36 +6,34 @@
 #
 anyio==3.6.1
     # via starlette
-attrs==21.4.0
+attrs==22.1.0
     # via jsonschema
-aws-xray-sdk==2.9.0
+aws-xray-sdk==2.10.0
     # via okdata-permission-api (setup.py)
-boto3==1.24.11
+boto3==1.24.44
     # via okdata-permission-api (setup.py)
-botocore==1.27.11
+botocore==1.27.44
     # via
     #   aws-xray-sdk
     #   boto3
     #   s3transfer
 certifi==2022.6.15
     # via requests
-charset-normalizer==2.0.12
+charset-normalizer==2.1.0
     # via requests
-ecdsa==0.17.0
+ecdsa==0.18.0
     # via python-jose
-fastapi==0.78.0
+fastapi==0.79.0
     # via okdata-permission-api (setup.py)
-future==0.18.2
-    # via aws-xray-sdk
 idna==3.3
     # via
     #   anyio
     #   requests
-jmespath==1.0.0
+jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-jsonschema==4.6.0
+jsonschema==4.9.0
     # via okdata-sdk
 mangum==0.15.0
     # via okdata-permission-api (setup.py)
@@ -43,7 +41,7 @@ okdata-aws==1.0.0
     # via okdata-permission-api (setup.py)
 okdata-resource-auth==0.1.4
     # via okdata-permission-api (setup.py)
-okdata-sdk==2.0.0
+okdata-sdk==2.1.0
     # via okdata-aws
 pyasn1==0.4.8
     # via
@@ -66,20 +64,20 @@ python-jose==3.3.0
     # via
     #   okdata-sdk
     #   python-keycloak
-python-keycloak==1.7.0
+python-keycloak==1.9.1
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
 pytz==2022.1
     # via okdata-permission-api (setup.py)
-requests==2.28.0
+requests==2.28.1
     # via
     #   okdata-aws
     #   okdata-permission-api (setup.py)
     #   okdata-resource-auth
     #   okdata-sdk
     #   python-keycloak
-rsa==4.8
+rsa==4.9
     # via python-jose
 s3transfer==0.6.0
     # via boto3
@@ -93,13 +91,13 @@ starlette==0.19.1
     # via
     #   fastapi
     #   okdata-aws
-structlog==21.5.0
+structlog==22.1.0
     # via okdata-aws
-typing-extensions==4.2.0
+typing-extensions==4.3.0
     # via
     #   mangum
     #   starlette
-urllib3==1.26.9
+urllib3==1.26.11
     # via
     #   botocore
     #   python-keycloak

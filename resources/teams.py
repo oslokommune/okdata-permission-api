@@ -2,7 +2,13 @@ from typing import List, Union
 
 from fastapi import APIRouter, Depends, status
 
-from dataplatform_keycloak.exceptions import TeamNotFoundError, TeamsServerError
+from dataplatform_keycloak.exceptions import (
+    TeamNotFoundError,
+    TeamsServerError,
+    UserAlreadyTeamMemberError,
+    UserNotFoundError,
+    UserNotTeamMemberError,
+)
 from dataplatform_keycloak.groups import group_ids
 from dataplatform_keycloak.teams_client import TeamsClient
 from models import Team, TeamMember
@@ -125,6 +131,81 @@ def get_team_members(
         ]
     except TeamNotFoundError:
         raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
+
+
+@router.put(
+    "/{team_id}/members/{username}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_message_models(
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_409_CONFLICT,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ),
+)
+def add_team_member(
+    team_id: str,
+    username: str,
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    try:
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
+        team = teams_client.get_team(team_id)
+        if team["id"] not in group_ids(user_teams):
+            raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
+        teams_client.add_team_member(team_id, username)
+    except TeamNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
+    except UserNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "User not found")
+    except UserAlreadyTeamMemberError:
+        raise ErrorResponse(
+            status.HTTP_409_CONFLICT,
+            "User is already a member of this team",
+        )
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
+
+
+@router.delete(
+    "/{team_id}/members/{username}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_message_models(
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ),
+)
+def remove_team_member(
+    team_id: str,
+    username: str,
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    try:
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
+        team = teams_client.get_team(team_id)
+        if team["id"] not in group_ids(user_teams):
+            raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
+        teams_client.remove_team_member(team_id, username)
+    except TeamNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
+    except UserNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "User not found")
+    except UserNotTeamMemberError:
+        raise ErrorResponse(
+            status.HTTP_404_NOT_FOUND,
+            "User is not a member of this team",
+        )
     except TeamsServerError:
         raise ErrorResponse(
             status.HTTP_500_INTERNAL_SERVER_ERROR,

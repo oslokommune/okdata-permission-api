@@ -20,3 +20,15 @@ class TeamsServerError(Exception):
 
 class TeamNotFoundError(Exception):
     pass
+
+
+class UserNotFoundError(Exception):
+    pass
+
+
+class UserAlreadyTeamMemberError(Exception):
+    pass
+
+
+class UserNotTeamMemberError(Exception):
+    pass
