@@ -1,6 +1,4 @@
 import unittest
-from itertools import groupby
-from operator import itemgetter
 
 import pytest
 
@@ -80,11 +78,7 @@ def test_list_teams_is_member(mock_client):
     )
     assert response.status_code == 200
 
-    teams = {
-        name: list(team)[0]
-        for name, team in groupby(response.json(), itemgetter("name"))
-    }
-
+    teams = {team["name"]: team for team in response.json()}
     assert teams["team1"]["is_member"]
     assert not teams["team2"]["is_member"]
     assert teams["team3"]["is_member"]
