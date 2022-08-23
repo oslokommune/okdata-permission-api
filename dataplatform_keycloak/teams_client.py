@@ -153,10 +153,12 @@ class TeamsClient:
             team["name"] = team_name_to_group_name(name)
 
         if attributes:
-            for team_attr in attributes.dict(exclude_unset=True):
+            for team_attr, value in attributes.dict(
+                by_alias=True, exclude_unset=True
+            ).items():
                 group_attr = team_attribute_to_group_attribute(team_attr)
 
-                if value := getattr(attributes, team_attr):
+                if value:
                     team["attributes"][group_attr] = value
                 elif group_attr in team["attributes"]:
                     del team["attributes"][group_attr]
