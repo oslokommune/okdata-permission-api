@@ -184,6 +184,8 @@ def populate():
         keycloak_admin.create_user(
             payload={
                 "username": user["username"],
+                "firstName": user.get("firstName"),
+                "lastName": user.get("lastName"),
                 "groups": user["groups"],
                 "enabled": True,
                 "credentials": [

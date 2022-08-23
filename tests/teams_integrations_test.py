@@ -313,7 +313,7 @@ def test_get_team_members(mock_client):
         {
             "id": ANY,
             "username": "misty",
-            "name": None,
+            "name": "Misty Williams",
             "email": None,
         },
     ]
@@ -338,7 +338,7 @@ def test_get_team_members_non_member(mock_client):
         {
             "id": ANY,
             "username": "misty",
-            "name": None,
+            "name": "Misty Williams",
             "email": None,
         },
     ]
