@@ -2,20 +2,26 @@ import logging
 import os
 
 from keycloak import ConnectionManager, KeycloakAdmin
-from keycloak.urls_patterns import URL_ADMIN_REALM_ROLES
 from keycloak.exceptions import (
     KeycloakError,
     KeycloakGetError,
+    KeycloakPutError,
     raise_error_from_response,
 )
+from keycloak.urls_patterns import URL_ADMIN_REALM_ROLES
 
 from dataplatform_keycloak.exceptions import (
     ConfigurationError,
+    TeamNameExistsError,
     TeamNotFoundError,
     TeamsServerError,
 )
+from dataplatform_keycloak.groups import (
+    is_team_group,
+    team_attribute_to_group_attribute,
+    team_name_to_group_name,
+)
 from dataplatform_keycloak.jwt import generate_jwt
-from dataplatform_keycloak.groups import is_team_group, team_name_to_group_name
 from dataplatform_keycloak.ssm import SsmClient
 
 logger = logging.getLogger()
@@ -139,6 +145,33 @@ class TeamsClient:
             log_keycloak_error(e)
             raise TeamsServerError
         return members
+
+    def update_team(self, team_id, name, attributes):
+        team = self.get_team(team_id)
+
+        if name:
+            team["name"] = team_name_to_group_name(name)
+
+        if attributes:
+            for team_attr in attributes.dict(exclude_unset=True):
+                group_attr = team_attribute_to_group_attribute(team_attr)
+
+                if value := getattr(attributes, team_attr):
+                    team["attributes"][group_attr] = value
+                elif group_attr in team["attributes"]:
+                    del team["attributes"][group_attr]
+        try:
+            self.teams_admin_client.update_group(team["id"], team)
+        except KeycloakPutError as e:
+            if e.response_code == 409:
+                raise TeamNameExistsError
+            log_keycloak_error(e)
+            raise TeamsServerError
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
+
+        return team
 
     def _get_groups_with_realm_role(self, role_name):
         """Return list of groups assigned specified realm role.

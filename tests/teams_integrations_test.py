@@ -122,7 +122,7 @@ def test_get_team(mock_client):
         "id": team["id"],
         "name": group_name_to_team_name(team["name"]),
         "is_member": True,
-        "attributes": {},
+        "attributes": {"email": [], "slack-url": []},
     }
 
 
@@ -139,7 +139,7 @@ def test_get_team_non_member(mock_client):
         "id": team["id"],
         "name": group_name_to_team_name(team["name"]),
         "is_member": False,
-        "attributes": {},
+        "attributes": {"email": [], "slack-url": []},
     }
 
 
@@ -178,7 +178,7 @@ def test_get_team_with_role(mock_client):
         "id": team["id"],
         "name": group_name_to_team_name(team["name"]),
         "is_member": True,
-        "attributes": {},
+        "attributes": {"email": [], "slack-url": []},
     }
 
 
@@ -194,7 +194,7 @@ def test_get_team_with_attributes(mock_client):
         "id": team["id"],
         "name": kc_config.team3,
         "is_member": True,
-        "attributes": {"email": ["foo@example.org"]},
+        "attributes": {"email": ["foo@example.org"], "slack-url": []},
     }
 
 
@@ -225,7 +225,7 @@ def test_get_team_by_name(mock_client):
         "id": team["id"],
         "name": kc_config.team1,
         "is_member": True,
-        "attributes": {},
+        "attributes": {"email": [], "slack-url": []},
     }
 
 
@@ -242,7 +242,7 @@ def test_get_team_by_name_non_member(mock_client):
         "id": team["id"],
         "name": kc_config.team2,
         "is_member": False,
-        "attributes": {},
+        "attributes": {"email": [], "slack-url": []},
     }
 
 
@@ -258,7 +258,7 @@ def test_get_team_by_name_with_attributes(mock_client):
         "id": team["id"],
         "name": kc_config.team3,
         "is_member": True,
-        "attributes": {"email": ["foo@example.org"]},
+        "attributes": {"email": ["foo@example.org"], "slack-url": []},
     }
 
 
@@ -352,7 +352,128 @@ def test_get_team_members_non_existent(mock_client):
     assert response.status_code == 404
 
 
+# PATCH /teams/{team_id}
+def test_update_team_rename(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "new-name"},
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["name"] == "new-name"
+
+    # Clean up
+    mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": kc_config.team1},
+    )
+
+
+def test_update_team_rename_conflict(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "team2"},
+    )
+    assert response.status_code == 409
+
+
+def test_update_team_attributes(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={
+            "attributes": {
+                "email": ["foo@bar.org"],
+                "slack-url": ["https://foo.slack.com/abc"],
+                "unknown-attr": ["foo"],
+            }
+        },
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["attributes"] == {
+        "email": ["foo@bar.org"],
+        "slack-url": ["https://foo.slack.com/abc"],
+    }
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"attributes": {"slack-url": []}},
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["attributes"] == {
+        "email": ["foo@bar.org"],
+        "slack-url": [],
+    }
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"attributes": {"email": [], "unknown-attr": []}},
+    )
+    assert response.status_code == 200
+
+    response = mock_client.get(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json()["attributes"] == {"email": [], "slack-url": []}
+
+
+def test_update_team_non_existent(mock_client):
+    response = mock_client.patch(
+        "/teams/foo",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "foo"},
+    )
+    assert response.status_code == 404
+
+
 def test_get_team_members_unauthenticated(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
     response = mock_client.get(f"/teams/{team['id']}/members")
+    assert response.status_code == 403
+
+
+def test_update_team_unauthenticated(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    response = mock_client.patch(f"/teams/{team['id']}", json={"name": "foo"})
+    assert response.status_code == 403
+
+
+def test_update_team_non_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team2))
+
+    response = mock_client.patch(
+        f"/teams/{team['id']}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json={"name": "foo"},
+    )
     assert response.status_code == 403
