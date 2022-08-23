@@ -59,6 +59,8 @@ user3 = {"username": nopermissions, "groups": []}
 user4 = {"username": team2member, "groups": [team_name_to_group_name(team2)]}
 user5 = {
     "username": misty,
+    "firstName": "Misty",
+    "lastName": "Williams",
     "groups": [
         team_name_to_group_name(team1),
         team_name_to_group_name(team2),
