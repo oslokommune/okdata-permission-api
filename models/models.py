@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Dict, List, Union
 from uuid import UUID
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, EmailStr, Field, HttpUrl, root_validator, validator
 
 from dataplatform_keycloak.groups import (
     group_attribute_to_team_attribute,
@@ -56,11 +56,19 @@ class TeamMember(BaseModel):
         allow_population_by_field_name = True
 
 
+class TeamAttributes(BaseModel):
+    email: List[EmailStr] = []
+    slack_url: List[HttpUrl] = Field([], alias="slack-url")
+
+    class Config:
+        allow_population_by_field_name = True
+
+
 class Team(BaseModel):
     id: str
     name: str
     is_member: bool
-    attributes: Union[dict, None] = None
+    attributes: Union[TeamAttributes, None] = None
 
     @validator("name", pre=True)
     def clean_name(cls, v):
@@ -77,7 +85,7 @@ class Team(BaseModel):
 
 class UpdateTeamBody(BaseModel):
     name: Union[str, None] = None
-    attributes: dict[str, Union[str, None]] = {}
+    attributes: Union[TeamAttributes, None] = None
 
 
 class CreateResourceBody(BaseModel):

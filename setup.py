@@ -20,7 +20,7 @@ setup(
         "mangum>=0.10.0",
         "okdata-aws>=1.0.0",
         "okdata-resource-auth>=0.1.4",
-        "pydantic==1.7.4",
+        "pydantic[email]==1.7.4",
         "pyjwt",
         "python-keycloak>=1.7.0",
         "pytz",

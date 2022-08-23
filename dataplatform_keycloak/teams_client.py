@@ -19,7 +19,6 @@ from dataplatform_keycloak.exceptions import (
 from dataplatform_keycloak.groups import (
     is_team_group,
     team_attribute_to_group_attribute,
-    TEAM_ATTRIBUTES,
     team_name_to_group_name,
 )
 from dataplatform_keycloak.jwt import generate_jwt
@@ -153,14 +152,14 @@ class TeamsClient:
         if name:
             team["name"] = team_name_to_group_name(name)
 
-        for team_attr in attributes.keys() & TEAM_ATTRIBUTES:
-            group_attr = team_attribute_to_group_attribute(team_attr)
+        if attributes:
+            for team_attr in attributes.dict(exclude_unset=True):
+                group_attr = team_attribute_to_group_attribute(team_attr)
 
-            if value := attributes[team_attr]:
-                team["attributes"][group_attr] = [value]
-            elif group_attr in team["attributes"]:
-                del team["attributes"][group_attr]
-
+                if value := getattr(attributes, team_attr):
+                    team["attributes"][group_attr] = value
+                elif group_attr in team["attributes"]:
+                    del team["attributes"][group_attr]
         try:
             self.teams_admin_client.update_group(team["id"], team)
         except KeycloakPutError as e:
