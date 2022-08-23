@@ -62,6 +62,28 @@ def test_list_teams(mock_client, username, expected_team_names):
     unittest.TestCase().assertCountEqual(team_names_from_response, expected_team_names)
 
 
+def test_list_all_teams(mock_client):
+    response = mock_client.get(
+        "/teams?include=all",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert {team["name"] for team in response.json()} == set(kc_config.teams)
+
+
+def test_list_teams_is_member(mock_client):
+    response = mock_client.get(
+        "/teams?include=all",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+
+    teams = {team["name"]: team for team in response.json()}
+    assert teams["team1"]["is_member"]
+    assert not teams["team2"]["is_member"]
+    assert teams["team3"]["is_member"]
+
+
 def test_list_teams_filtered_by_role(mock_client):
     response = mock_client.get(
         "/teams",
@@ -98,11 +120,12 @@ def test_get_team(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": group_name_to_team_name(team["name"]),
+        "is_member": True,
         "attributes": {},
     }
 
 
-def test_get_team_not_member(mock_client):
+def test_get_team_non_member(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team2))
 
     response = mock_client.get(
@@ -110,8 +133,13 @@ def test_get_team_not_member(mock_client):
         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
     )
 
-    assert response.status_code == 403
-    assert response.json() == {"message": "Forbidden"}
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": team["id"],
+        "name": group_name_to_team_name(team["name"]),
+        "is_member": False,
+        "attributes": {},
+    }
 
 
 def test_get_unknown_team(mock_client):
@@ -148,6 +176,7 @@ def test_get_team_with_role(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": group_name_to_team_name(team["name"]),
+        "is_member": True,
         "attributes": {},
     }
 
@@ -163,6 +192,7 @@ def test_get_team_with_attributes(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team3,
+        "is_member": True,
         "attributes": {"email": ["foo@example.org"]},
     }
 
@@ -193,6 +223,7 @@ def test_get_team_by_name(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team1,
+        "is_member": True,
         "attributes": {},
     }
 
@@ -209,6 +240,7 @@ def test_get_team_by_name_non_member(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team2,
+        "is_member": False,
         "attributes": {},
     }
 
@@ -224,6 +256,7 @@ def test_get_team_by_name_with_attributes(mock_client):
     assert response.json() == {
         "id": team["id"],
         "name": kc_config.team3,
+        "is_member": True,
         "attributes": {"email": ["foo@example.org"]},
     }
 

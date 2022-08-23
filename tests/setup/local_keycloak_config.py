@@ -47,6 +47,7 @@ team2member = "team2member"
 team1 = "team1"
 team2 = "team2"
 team3 = "team3"
+teams = [team1, team2, team3]
 nonteamgroup = "group1"
 
 user1 = {

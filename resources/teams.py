@@ -23,17 +23,25 @@ router = APIRouter(dependencies=[Depends(AuthInfo)])
     ),
 )
 def get_teams(
+    include: Union[str, None] = None,
     has_role: Union[str, None] = None,
     auth_info: AuthInfo = Depends(),
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
     try:
-        user_teams = teams_client.list_user_teams(username=auth_info.principal_id)
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
         teams = teams_client.list_teams(realm_role=has_role)
-    except TeamsServerError:
-        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
+        groups = group_ids(user_teams)
+        for team in teams:
+            team["is_member"] = team["id"] in groups
 
-    return [team for team in teams if team["id"] in group_ids(user_teams)]
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
+
+    return teams if include == "all" else [team for team in teams if team["is_member"]]
 
 
 @router.get(
@@ -53,20 +61,19 @@ def get_team(
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
     try:
-        user_teams = teams_client.list_user_teams(username=auth_info.principal_id)
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
         team = teams_client.get_team(team_id, realm_role=has_role)
+        team["is_member"] = team["id"] in group_ids(user_teams)
     except TeamNotFoundError:
         raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
     except TeamsServerError:
-        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, "Server error")
-
-    if team["id"] not in group_ids(user_teams):
-        raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
     return team
 
 
-# TODO: This is not restricted to members of the team like the other
-#       endpoints. They could also be opened like this one for symmetry.
 @router.get(
     "/name/{team_name}",
     status_code=status.HTTP_200_OK,
@@ -84,7 +91,9 @@ def get_team_by_name(
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
     try:
-        team = teams_client.get_team_by_name(team_name)
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
+        team = teams_client.get_team_by_name(team_name, realm_role=has_role)
+        team["is_member"] = team["id"] in group_ids(user_teams)
     except TeamNotFoundError:
         raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
     except TeamsServerError:
