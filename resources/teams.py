@@ -120,18 +120,7 @@ def get_team_members(
     teams_client: TeamsClient = Depends(TeamsClient),
 ):
     try:
-        return [
-            TeamMember(
-                user_id=m["id"],
-                username=m["username"],
-                name=(
-                    " ".join([m.get("firstName", ""), m.get("lastName", "")]).strip()
-                    or None
-                ),
-                email=m.get("email"),
-            )
-            for m in teams_client.get_team_members(team_id)
-        ]
+        return teams_client.get_team_members(team_id)
     except TeamNotFoundError:
         raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
     except TeamsServerError:

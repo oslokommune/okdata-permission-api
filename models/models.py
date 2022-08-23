@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Dict, List, Union
 from uuid import UUID
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, root_validator, validator
 
 from dataplatform_keycloak.groups import (
     group_attribute_to_team_attribute,
@@ -38,6 +38,19 @@ class TeamMember(BaseModel):
     username: str
     name: Union[str, None]
     email: Union[str, None]
+
+    @root_validator(pre=True)
+    def check_values(cls, values):
+        values["name"] = (
+            " ".join(
+                [
+                    values.get("firstName", ""),
+                    values.get("lastName", ""),
+                ]
+            ).strip()
+            or None
+        )
+        return values
 
     class Config:
         allow_population_by_field_name = True
