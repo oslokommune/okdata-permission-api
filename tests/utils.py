@@ -41,3 +41,18 @@ def get_keycloak_group_by_name(group_name):
         if group["name"] == group_name:
             return group
     return None
+
+
+def get_keycloak_user_id_by_username(username):
+    teams_client = TeamsClient().teams_admin_client
+    return teams_client.get_user_id(username)
+
+
+def set_keycloak_group_members(group_id, usernames):
+    teams_client = TeamsClient().teams_admin_client
+    for user in teams_client.get_group_members(group_id):
+        teams_client.group_user_remove(user["id"], group_id)
+    for username in usernames:
+        teams_client.group_user_add(
+            get_keycloak_user_id_by_username(username), group_id
+        )

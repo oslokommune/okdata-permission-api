@@ -15,7 +15,9 @@ from tests.utils import (
     auth_header,
     get_bearer_token_for_user,
     get_keycloak_group_by_name,
+    get_keycloak_user_id_by_username,
     invalidate_token,
+    set_keycloak_group_members,
 )
 
 
@@ -475,5 +477,97 @@ def test_update_team_non_member(mock_client):
         f"/teams/{team['id']}",
         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
         json={"name": "foo"},
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    "target_members",
+    [
+        [],
+        [kc_config.homersimpson],
+        [kc_config.janedoe, kc_config.misty, kc_config.homersimpson],
+        [kc_config.janedoe, kc_config.misty],
+        [kc_config.janedoe],
+    ],
+)
+def test_update_team_members(mock_client, target_members):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    target_member_ids = [
+        get_keycloak_user_id_by_username(username) for username in target_members
+    ]
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=target_member_ids,
+    )
+    assert response.status_code == 200
+    member_ids_from_response = [member["id"] for member in response.json()]
+    unittest.TestCase().assertCountEqual(member_ids_from_response, target_member_ids)
+
+    # Clean up
+    set_keycloak_group_members(
+        team["id"],
+        [
+            user["username"]
+            for user in kc_config.users
+            if team["name"] in user["groups"]
+        ],
+    )
+
+
+def test_update_team_members_duplicated_user(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    target_member_ids = [
+        get_keycloak_user_id_by_username(kc_config.janedoe),
+        get_keycloak_user_id_by_username(kc_config.misty),
+        get_keycloak_user_id_by_username(kc_config.misty),
+    ]
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=target_member_ids,
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+def test_update_team_members_non_existent_team(mock_client):
+    response = mock_client.put(
+        "/teams/foo/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=[],
+    )
+    assert response.status_code == 404
+    assert response.json()["message"] == "Team not found"
+
+
+def test_update_team_members_non_existent_user(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=["foo"],
+    )
+    assert response.status_code == 404
+    assert response.json()["message"] == "User with ID foo not found"
+
+
+def test_update_team_members_unauthenticated(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    response = mock_client.put(f"/teams/{team['id']}/members", json=[])
+    assert response.status_code == 403
+
+
+def test_update_team_members_non_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team2))
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=[],
     )
     assert response.status_code == 403
