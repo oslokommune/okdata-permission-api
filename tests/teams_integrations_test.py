@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import ANY
 
 import pytest
 
@@ -306,13 +305,11 @@ def test_get_team_members(mock_client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "id": ANY,
             "username": "janedoe",
             "name": None,
             "email": None,
         },
         {
-            "id": ANY,
             "username": "misty",
             "name": "Misty Williams",
             "email": None,
@@ -331,13 +328,11 @@ def test_get_team_members_non_member(mock_client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "id": ANY,
             "username": "janedoe",
             "name": None,
             "email": None,
         },
         {
-            "id": ANY,
             "username": "misty",
             "name": "Misty Williams",
             "email": None,
@@ -572,7 +567,6 @@ def test_get_user_by_username(mock_client):
     )
     assert response.status_code == 200
     assert response.json() == {
-        "id": ANY,
         "username": kc_config.homersimpson,
         "name": None,
         "email": None,
