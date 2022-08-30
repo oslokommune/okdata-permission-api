@@ -23,9 +23,6 @@ router = APIRouter(dependencies=[Depends(AuthInfo)])
     status_code=status.HTTP_200_OK,
     response_model=List[Team],
     response_model_exclude_unset=True,
-    responses=error_message_models(
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
-    ),
 )
 def get_teams(
     include: Union[str, None] = None,
@@ -54,9 +51,7 @@ def get_teams(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_team(
@@ -84,9 +79,7 @@ def get_team(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_team_by_name(
@@ -114,9 +107,7 @@ def get_team_by_name(
     status_code=status.HTTP_200_OK,
     response_model=List[TeamMember],
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_team_members(
@@ -140,10 +131,8 @@ def get_team_members(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
         status.HTTP_409_CONFLICT,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def update_team(
@@ -178,9 +167,7 @@ def update_team(
     status_code=status.HTTP_200_OK,
     response_model=List[TeamMember],
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def update_members(
@@ -211,9 +198,7 @@ def update_members(
     status_code=status.HTTP_200_OK,
     response_model=TeamMember,
     responses=error_message_models(
-        status.HTTP_401_UNAUTHORIZED,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_user_by_username(

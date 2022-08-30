@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from okdata.aws.logging import add_fastapi_logging
@@ -14,7 +14,7 @@ from resources import (
     teams,
     webhook_tokens,
 )
-from resources.errors import ErrorResponse
+from resources.errors import ErrorResponse, error_message_models
 
 root_path = os.environ.get("ROOT_PATH", "")
 app = FastAPI(
@@ -53,7 +53,16 @@ app.include_router(
 )
 
 app.include_router(webhook_tokens.router, prefix="/webhooks", tags=["webhooks"])
-app.include_router(teams.router, prefix="/teams", tags=["teams"])
+app.include_router(
+    teams.router,
+    prefix="/teams",
+    tags=["teams"],
+    responses=error_message_models(
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ),
+)
 
 
 @app.exception_handler(ErrorResponse)
