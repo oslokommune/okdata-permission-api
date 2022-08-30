@@ -25,7 +25,7 @@ def repopualte_keycloak():
     populate_local_keycloak.populate()
 
 
-@pytest.mark.parametrize("endpoint", ["/teams", "/teams/abc-123"])
+@pytest.mark.parametrize("endpoint", ["/teams", "/teams/abc-123", "/teams/users/foo"])
 def test_endpoints_auth(mock_client, endpoint):
     # No bearer token
     response = mock_client.get(endpoint)
@@ -563,3 +563,26 @@ def test_update_team_members_non_member(mock_client):
         json=[],
     )
     assert response.status_code == 403
+
+
+def test_get_user_by_username(mock_client):
+    response = mock_client.get(
+        f"/teams/users/{kc_config.homersimpson}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "id": ANY,
+        "username": kc_config.homersimpson,
+        "name": None,
+        "email": None,
+    }
+
+
+def test_get_user_by_username_non_existent(mock_client):
+    response = mock_client.get(
+        "/teams/users/foo",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 404
+    assert response.json()["message"] == "User not found"

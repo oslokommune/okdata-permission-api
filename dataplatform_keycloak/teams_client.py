@@ -209,6 +209,16 @@ class TeamsClient:
 
         return self.get_team_members(team_id)
 
+    def get_user_by_username(self, username):
+        try:
+            user_id = self.teams_admin_client.get_user_id(username)
+            if not user_id:
+                raise UserNotFoundError
+            return self.teams_admin_client.get_user(user_id)
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
+
     def _get_groups_with_realm_role(self, role_name):
         """Return list of groups assigned specified realm role.
 

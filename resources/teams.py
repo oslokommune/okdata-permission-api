@@ -204,3 +204,29 @@ def update_members(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Server error",
         )
+
+
+@router.get(
+    "/users/{username}",
+    status_code=status.HTTP_200_OK,
+    response_model=TeamMember,
+    responses=error_message_models(
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_404_NOT_FOUND,
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ),
+)
+def get_user_by_username(
+    username: str,
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    try:
+        return teams_client.get_user_by_username(username)
+    except UserNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "User not found")
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
