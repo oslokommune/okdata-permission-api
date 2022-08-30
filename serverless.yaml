@@ -69,7 +69,7 @@ functions:
     handler: jobs.monitor.check_users
     events:
       - schedule: cron(0 * * * ? *)
-    timeout: 30
+    timeout: 60
 
 plugins:
   - serverless-plugin-git-variables
