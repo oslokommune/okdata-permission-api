@@ -176,19 +176,22 @@ class TeamsClient:
 
         return team
 
-    def update_members(self, team_id, user_ids):
-        for user_id in user_ids:
+    def update_members(self, team_id, usernames):
+        target_member_ids = set()
+
+        for username in set(usernames):
             try:
-                self.teams_admin_client.get_user(user_id)
-            except KeycloakGetError as e:
-                if e.response_code == 404:
-                    raise UserNotFoundError(f"User with ID {user_id} not found")
+                if user_id := self.teams_admin_client.get_user_id(username):
+                    target_member_ids.add(user_id)
+                else:
+                    raise UserNotFoundError(f"User with username {username} not found")
+            except KeycloakError as e:
+                log_keycloak_error(e)
                 raise TeamsServerError
 
         current_member_ids = set(
             member["id"] for member in self.get_team_members(team_id)
         )
-        target_member_ids = set(user_ids)
 
         for user_id in target_member_ids.difference(current_member_ids):
             try:

@@ -15,7 +15,6 @@ from tests.utils import (
     auth_header,
     get_bearer_token_for_user,
     get_keycloak_group_by_name,
-    get_keycloak_user_id_by_username,
     invalidate_token,
     set_keycloak_group_members,
 )
@@ -493,18 +492,15 @@ def test_update_team_non_member(mock_client):
 )
 def test_update_team_members(mock_client, target_members):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
-    target_member_ids = [
-        get_keycloak_user_id_by_username(username) for username in target_members
-    ]
 
     response = mock_client.put(
         f"/teams/{team['id']}/members",
         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
-        json=target_member_ids,
+        json=target_members,
     )
     assert response.status_code == 200
-    member_ids_from_response = [member["id"] for member in response.json()]
-    unittest.TestCase().assertCountEqual(member_ids_from_response, target_member_ids)
+    members_from_response = [member["username"] for member in response.json()]
+    unittest.TestCase().assertCountEqual(members_from_response, target_members)
 
     # Clean up
     set_keycloak_group_members(
@@ -519,16 +515,12 @@ def test_update_team_members(mock_client, target_members):
 
 def test_update_team_members_duplicated_user(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
-    target_member_ids = [
-        get_keycloak_user_id_by_username(kc_config.janedoe),
-        get_keycloak_user_id_by_username(kc_config.misty),
-        get_keycloak_user_id_by_username(kc_config.misty),
-    ]
+    target_members = [kc_config.janedoe, kc_config.misty, kc_config.misty]
 
     response = mock_client.put(
         f"/teams/{team['id']}/members",
         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
-        json=target_member_ids,
+        json=target_members,
     )
     assert response.status_code == 200
     assert len(response.json()) == 2
@@ -553,7 +545,7 @@ def test_update_team_members_non_existent_user(mock_client):
         json=["foo"],
     )
     assert response.status_code == 404
-    assert response.json()["message"] == "User with ID foo not found"
+    assert response.json()["message"] == "User with username foo not found"
 
 
 def test_update_team_members_unauthenticated(mock_client):
