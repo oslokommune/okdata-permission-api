@@ -1,3 +1,4 @@
+import logging
 import os
 
 import requests
@@ -7,6 +8,8 @@ from okdata.aws.logging import logging_wrapper, log_add, log_exception
 from dataplatform_keycloak.teams_client import TeamsClient
 from jobs.backup import load_latest_backup
 
+logger = logging.getLogger()
+logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL = os.environ[
     "SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL"
@@ -26,6 +29,7 @@ def check_users(event, context):
 
     keycloak_admin_client = TeamsClient().teams_admin_client
 
+    logger.info("Loading the latest backup...")
     permissions = load_latest_backup()
 
     if permissions is None:
@@ -45,9 +49,12 @@ def check_users(event, context):
     for permission in permissions:
         permission_users.update(permission.get("users", []))
 
-    log_add(permission_users_count=len(permission_users))
+    num_users = len(permission_users)
+    log_add(permission_users_count=num_users)
 
-    for username in permission_users:
+    logger.info(f"Fetching {num_users} users from Keycloak...")
+    for i, username in enumerate(permission_users):
+        logger.info(f"... fetching user {i+1}/{num_users}")
         if not keycloak_admin_client.get_user_id(username):
             missing_users.add(username)
 
