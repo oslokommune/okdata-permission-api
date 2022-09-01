@@ -24,3 +24,7 @@ class TeamNotFoundError(Exception):
 
 class TeamNameExistsError(Exception):
     pass
+
+
+class UserNotFoundError(Exception):
+    pass

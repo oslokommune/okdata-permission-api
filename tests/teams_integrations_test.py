@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import ANY
 
 import pytest
 
@@ -16,6 +15,7 @@ from tests.utils import (
     get_bearer_token_for_user,
     get_keycloak_group_by_name,
     invalidate_token,
+    set_keycloak_group_members,
 )
 
 
@@ -24,7 +24,7 @@ def repopualte_keycloak():
     populate_local_keycloak.populate()
 
 
-@pytest.mark.parametrize("endpoint", ["/teams", "/teams/abc-123"])
+@pytest.mark.parametrize("endpoint", ["/teams", "/teams/abc-123", "/teams/users/foo"])
 def test_endpoints_auth(mock_client, endpoint):
     # No bearer token
     response = mock_client.get(endpoint)
@@ -305,13 +305,11 @@ def test_get_team_members(mock_client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "id": ANY,
             "username": "janedoe",
             "name": None,
             "email": None,
         },
         {
-            "id": ANY,
             "username": "misty",
             "name": "Misty Williams",
             "email": None,
@@ -330,13 +328,11 @@ def test_get_team_members_non_member(mock_client):
     assert response.status_code == 200
     assert response.json() == [
         {
-            "id": ANY,
             "username": "janedoe",
             "name": None,
             "email": None,
         },
         {
-            "id": ANY,
             "username": "misty",
             "name": "Misty Williams",
             "email": None,
@@ -477,3 +473,110 @@ def test_update_team_non_member(mock_client):
         json={"name": "foo"},
     )
     assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    "target_members",
+    [
+        [],
+        [kc_config.homersimpson],
+        [kc_config.janedoe, kc_config.misty, kc_config.homersimpson],
+        [kc_config.janedoe, kc_config.misty],
+        [kc_config.janedoe],
+    ],
+)
+def test_update_team_members(mock_client, target_members):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=target_members,
+    )
+    assert response.status_code == 200
+    members_from_response = [member["username"] for member in response.json()]
+    unittest.TestCase().assertCountEqual(members_from_response, target_members)
+
+    # Clean up
+    set_keycloak_group_members(
+        team["id"],
+        [
+            user["username"]
+            for user in kc_config.users
+            if team["name"] in user["groups"]
+        ],
+    )
+
+
+def test_update_team_members_duplicated_user(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    target_members = [kc_config.janedoe, kc_config.misty, kc_config.misty]
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=target_members,
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+def test_update_team_members_non_existent_team(mock_client):
+    response = mock_client.put(
+        "/teams/foo/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=[],
+    )
+    assert response.status_code == 404
+    assert response.json()["message"] == "Team not found"
+
+
+def test_update_team_members_non_existent_user(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=["foo"],
+    )
+    assert response.status_code == 404
+    assert response.json()["message"] == "User with username foo not found"
+
+
+def test_update_team_members_unauthenticated(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
+    response = mock_client.put(f"/teams/{team['id']}/members", json=[])
+    assert response.status_code == 403
+
+
+def test_update_team_members_non_member(mock_client):
+    team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team2))
+
+    response = mock_client.put(
+        f"/teams/{team['id']}/members",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+        json=[],
+    )
+    assert response.status_code == 403
+
+
+def test_get_user_by_username(mock_client):
+    response = mock_client.get(
+        f"/teams/users/{kc_config.homersimpson}",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "username": kc_config.homersimpson,
+        "name": None,
+        "email": None,
+    }
+
+
+def test_get_user_by_username_non_existent(mock_client):
+    response = mock_client.get(
+        "/teams/users/foo",
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert response.status_code == 404
+    assert response.json()["message"] == "User not found"

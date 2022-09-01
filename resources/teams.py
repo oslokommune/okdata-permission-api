@@ -6,6 +6,7 @@ from dataplatform_keycloak.exceptions import (
     TeamNameExistsError,
     TeamNotFoundError,
     TeamsServerError,
+    UserNotFoundError,
 )
 from dataplatform_keycloak.groups import group_ids
 from dataplatform_keycloak.teams_client import TeamsClient
@@ -22,9 +23,6 @@ router = APIRouter(dependencies=[Depends(AuthInfo)])
     status_code=status.HTTP_200_OK,
     response_model=List[Team],
     response_model_exclude_unset=True,
-    responses=error_message_models(
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
-    ),
 )
 def get_teams(
     include: Union[str, None] = None,
@@ -53,9 +51,7 @@ def get_teams(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_team(
@@ -83,9 +79,7 @@ def get_team(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_team_by_name(
@@ -113,9 +107,7 @@ def get_team_by_name(
     status_code=status.HTTP_200_OK,
     response_model=List[TeamMember],
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def get_team_members(
@@ -139,10 +131,8 @@ def get_team_members(
     status_code=status.HTTP_200_OK,
     response_model=Team,
     responses=error_message_models(
-        status.HTTP_403_FORBIDDEN,
         status.HTTP_404_NOT_FOUND,
         status.HTTP_409_CONFLICT,
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
     ),
 )
 def update_team(
@@ -170,3 +160,58 @@ def update_team(
             "Server error",
         )
     return team
+
+
+@router.put(
+    "/{team_id}/members",
+    status_code=status.HTTP_200_OK,
+    response_model=List[TeamMember],
+    responses=error_message_models(
+        status.HTTP_404_NOT_FOUND,
+    ),
+)
+def update_members(
+    team_id: str,
+    body: List[str],
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    try:
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
+        team = teams_client.get_team(team_id)
+        if team["id"] not in group_ids(user_teams):
+            raise ErrorResponse(status.HTTP_403_FORBIDDEN, "Forbidden")
+        return teams_client.update_members(team_id, body)
+    except TeamNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "Team not found")
+    except UserNotFoundError as e:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, str(e))
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )
+
+
+@router.get(
+    "/users/{username}",
+    status_code=status.HTTP_200_OK,
+    response_model=TeamMember,
+    responses=error_message_models(
+        status.HTTP_404_NOT_FOUND,
+    ),
+)
+def get_user_by_username(
+    username: str,
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    try:
+        return teams_client.get_user_by_username(username)
+    except UserNotFoundError:
+        raise ErrorResponse(status.HTTP_404_NOT_FOUND, "User not found")
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )

@@ -15,6 +15,7 @@ from dataplatform_keycloak.exceptions import (
     TeamNameExistsError,
     TeamNotFoundError,
     TeamsServerError,
+    UserNotFoundError,
 )
 from dataplatform_keycloak.groups import (
     is_team_group,
@@ -174,6 +175,49 @@ class TeamsClient:
             raise TeamsServerError
 
         return team
+
+    def update_members(self, team_id, usernames):
+        target_member_ids = set()
+
+        for username in set(usernames):
+            try:
+                if user_id := self.teams_admin_client.get_user_id(username):
+                    target_member_ids.add(user_id)
+                else:
+                    raise UserNotFoundError(f"User with username {username} not found")
+            except KeycloakError as e:
+                log_keycloak_error(e)
+                raise TeamsServerError
+
+        current_member_ids = set(
+            member["id"] for member in self.get_team_members(team_id)
+        )
+
+        for user_id in target_member_ids.difference(current_member_ids):
+            try:
+                self.teams_admin_client.group_user_add(user_id, team_id)
+            except KeycloakError as e:
+                log_keycloak_error(e)
+                raise TeamsServerError
+
+        for user_id in current_member_ids.difference(target_member_ids):
+            try:
+                self.teams_admin_client.group_user_remove(user_id, team_id)
+            except KeycloakError as e:
+                log_keycloak_error(e)
+                raise TeamsServerError
+
+        return self.get_team_members(team_id)
+
+    def get_user_by_username(self, username):
+        try:
+            user_id = self.teams_admin_client.get_user_id(username)
+            if not user_id:
+                raise UserNotFoundError
+            return self.teams_admin_client.get_user(user_id)
+        except KeycloakError as e:
+            log_keycloak_error(e)
+            raise TeamsServerError
 
     def _get_groups_with_realm_role(self, role_name):
         """Return list of groups assigned specified realm role.

@@ -34,7 +34,6 @@ class User(BaseModel):
 
 
 class TeamMember(BaseModel):
-    user_id: str = Field(alias="id")
     username: str
     name: Union[str, None]
     email: Union[str, None]
