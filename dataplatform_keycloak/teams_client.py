@@ -106,6 +106,11 @@ class TeamsClient:
         try:
             user_id = self.teams_admin_client.get_user_id(username)
             user_groups = self.teams_admin_client.get_user_groups(user_id)
+        except KeycloakGetError as e:
+            if e.response_code == 404:
+                return []
+            log_keycloak_error(e)
+            raise TeamsServerError
         except KeycloakError as e:
             log_keycloak_error(e)
             raise TeamsServerError
