@@ -6,7 +6,6 @@ from tests.utils import auth_header, get_token_for_service, get_bearer_token_for
 
 
 class TestRemoveTeamPermissions:
-
     # PUT /remove_team_permissions/{team_id}
     def test_remove_team_permissions(self, mock_client):
         populate_local_keycloak.populate()

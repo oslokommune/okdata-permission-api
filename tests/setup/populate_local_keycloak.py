@@ -11,7 +11,6 @@ import tests.setup.local_keycloak_config as keycloak_config
 
 
 def populate():
-
     keycloak_admin = initialize_keycloak_admin()
 
     # Clear data from previous test runs
@@ -77,7 +76,6 @@ def populate():
         policy_name: str,
         permission_name: str,
     ):
-
         create_scope_body = {
             "name": scope,
             "displayName": scope,

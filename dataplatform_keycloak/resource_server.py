@@ -214,7 +214,6 @@ class ResourceServer:
         return res
 
     def get_permission(self, permission_name):
-
         get_permission_url = (
             f"{self.uma_well_known.policy_endpoint}/?name={permission_name}"
         )
@@ -296,7 +295,6 @@ class ResourceServer:
         return list(permissions)
 
     def delete_permission(self, permission_name):
-
         permission_id = self.get_permission(permission_name)["id"]
         delete_url = f"{self.uma_well_known.policy_endpoint}/{permission_id}"
         logger.info(f"DELETE {delete_url}")
@@ -312,7 +310,6 @@ class ResourceServer:
         return resp
 
     def get_resource_id(self, resource_name):
-
         get_id_url = (
             f"{self.uma_well_known.resource_registration_endpoint}?name={resource_name}"
         )
@@ -331,7 +328,6 @@ class ResourceServer:
         raise ResourceNotFoundError(f"No resource named {resource_name}")
 
     def get_user_permissions(self, user_bearer_token, scope: str = None):
-
         """
         Request a urn:ietf:params:oauth:grant-type:uma-ticket rpt from resource server
         and returns a decoded value with all permissions associated with the rpt
