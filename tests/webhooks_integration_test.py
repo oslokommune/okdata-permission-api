@@ -26,11 +26,9 @@ test_data = MockData()
 
 @mock_dynamodb2
 class TestWebhooksApi:
-
     # POST /webhooks/{dataset_id}/tokens
     @freeze_time(test_data.created_at)
     def test_create_webhook_token(self, mock_client, fixed_uuid):
-
         access_token = test_utils.get_bearer_token_for_user(kc_config.janedoe)
 
         response = mock_client.post(
@@ -53,7 +51,6 @@ class TestWebhooksApi:
         }
 
     def test_create_webhook_token_forbidden(self, mock_client):
-
         access_token = test_utils.get_bearer_token_for_user(kc_config.homersimpson)
 
         response = mock_client.post(
@@ -66,7 +63,6 @@ class TestWebhooksApi:
         assert response.json() == {"message": "Forbidden"}
 
     def test_create_webhook_token_invalid_operation(self, mock_client):
-
         access_token = test_utils.get_bearer_token_for_user(kc_config.janedoe)
         response = mock_client.post(
             f"/webhooks/{test_data.dataset_id}/tokens",
@@ -87,7 +83,6 @@ class TestWebhooksApi:
         }
 
     def test_create_webhook_json_field_missing(self, mock_client):
-
         access_token = test_utils.get_bearer_token_for_user(kc_config.janedoe)
 
         invalid_body_response = mock_client.post(
@@ -110,7 +105,6 @@ class TestWebhooksApi:
     # GET /webhooks/{dataset_id}/tokens"
 
     def test_list_webhook_tokens(self, mock_client):
-
         access_token = test_utils.get_bearer_token_for_user(kc_config.janedoe)
 
         response = mock_client.get(
@@ -134,7 +128,6 @@ class TestWebhooksApi:
         ]
 
     def test_list_webhook_tokens_forbidden(self, mock_client):
-
         access_token = test_utils.get_bearer_token_for_user(kc_config.homersimpson)
 
         response = mock_client.get(
@@ -149,7 +142,6 @@ class TestWebhooksApi:
 
     @freeze_time(test_data.created_at)
     def test_authorize_webhook_token(self, mock_client):
-
         access_token = test_utils.get_token_for_service(
             kc_config.client_id,
             kc_config.client_secret,
@@ -165,7 +157,6 @@ class TestWebhooksApi:
 
     @freeze_time(test_data.created_at)
     def test_authorize_webhook_operation_unauthorized(self, mock_client):
-
         access_token = test_utils.get_token_for_service(
             kc_config.client_id,
             kc_config.client_secret,
@@ -184,7 +175,6 @@ class TestWebhooksApi:
 
     @freeze_time(test_data.created_at)
     def test_authorize_webhook_invalid_operation(self, mock_client):
-
         access_token = test_utils.get_token_for_service(
             kc_config.client_id,
             kc_config.client_secret,

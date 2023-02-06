@@ -49,7 +49,6 @@ def create_webhook_token(
     resource_authorizer=Depends(resource_authorizer),
     webhook_tokens_table=Depends(webhook_tokens_table),
 ) -> WebhookTokenItem:
-
     if not resource_authorizer.has_access(
         auth_info.bearer_token, "okdata:dataset:admin", f"okdata:dataset:{dataset_id}"
     ):
@@ -87,7 +86,6 @@ def list_webhook_tokens(
     resource_authorizer=Depends(resource_authorizer),
     webhook_tokens_table=Depends(webhook_tokens_table),
 ) -> List[WebhookTokenItem]:
-
     is_admin = resource_authorizer.has_access(
         auth_info.bearer_token, "okdata:dataset:admin", f"okdata:dataset:{dataset_id}"
     )
@@ -114,7 +112,6 @@ def delete(
     resource_authorizer=Depends(resource_authorizer),
     webhook_tokens_table=Depends(webhook_tokens_table),
 ) -> dict:
-
     is_admin = resource_authorizer.has_access(
         auth_info.bearer_token, "okdata:dataset:admin", f"okdata:dataset:{dataset_id}"
     )

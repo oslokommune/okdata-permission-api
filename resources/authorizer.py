@@ -44,7 +44,6 @@ class AuthInfo:
         authorization: HTTPAuthorizationCredentials = Depends(http_bearer),
         keycloak_client=Depends(keycloak_client),
     ):
-
         introspected = keycloak_client.introspect(authorization.credentials)
 
         if not introspected["active"]:
