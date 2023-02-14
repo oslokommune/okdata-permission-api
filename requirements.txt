@@ -94,7 +94,7 @@ six==1.16.0
     #   python-dateutil
 sniffio==1.2.0
     # via anyio
-starlette==0.19.1
+starlette==0.25.0
     # via
     #   fastapi
     #   okdata-aws
