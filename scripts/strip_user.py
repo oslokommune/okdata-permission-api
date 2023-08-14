@@ -29,16 +29,26 @@ if __name__ == "__main__":
 
     if permissions:
         for p in map(OkdataPermission.from_uma_permission, permissions):
-            if args.apply:
-                resource_server.update_permission(
-                    p.resource_name, p.scope, remove_users=[user]
-                )
-            else:
+            if not args.apply:
                 print("[DRY RUN] ", end="")
 
             print(
-                f"Removed {user.user_type} '{user.user_id}' from '{p.scope}' "
-                f"on '{p.resource_name}'"
+                f"Removing {user.user_type} '{user.user_id}' from '{p.scope}' "
+                f"on '{p.resource_name}' ... ",
+                end="",
             )
+
+            if args.apply:
+                try:
+                    resource_server.update_permission(
+                        p.resource_name, p.scope, remove_users=[user]
+                    )
+                except Exception:
+                    print("failed")
+                    raise
+                print("done")
+            else:
+                print()
+
     else:
         print(f"No permissions to delete for {user.user_type} '{user.user_id}'")
