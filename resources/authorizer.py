@@ -32,7 +32,7 @@ def resource_authorizer() -> ResourceAuthorizer:
     return ResourceAuthorizer()
 
 
-http_bearer = HTTPBearer(scheme_name="Keycloak token")
+http_bearer = HTTPBearer(scheme_name="KeycloakToken")
 
 
 class AuthInfo:
