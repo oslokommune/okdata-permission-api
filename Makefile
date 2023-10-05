@@ -48,11 +48,6 @@ undeploy-prod: login-prod init
 	@echo "\nUndeploying stage: prod\n"
 	sls remove --stage prod --aws-profile $(.PROD_PROFILE)
 
-.PHONY: download-doc
-download-doc:
-	@echo "\nDownloading documentation\n"
-	sls downloadDocumentation --outputFileName swagger.yaml --stage dev --aws-profile $(.DEV_PROFILE)
-
 setup-keycloak-local: ## Run a local Keycloak instance running in docker
 	docker-compose \
 		-f keycloak-compose.yaml \
