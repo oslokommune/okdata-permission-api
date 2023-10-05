@@ -83,7 +83,7 @@ resources:
     ${git:message}
 
 custom:
-  version: 0.1.0
+  version: 0.2.0
   pythonRequirements:
     dockerizePip: non-linux
     slim: true

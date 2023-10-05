@@ -215,3 +215,32 @@ def get_user_by_username(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Server error",
         )
+
+
+@router.get(
+    "/users/{username}/teams",
+    status_code=status.HTTP_200_OK,
+    response_model=List[Team],
+    response_model_exclude_unset=True,
+)
+def get_teams_by_username(
+    username: str,
+    auth_info: AuthInfo = Depends(),
+    teams_client: TeamsClient = Depends(TeamsClient),
+):
+    """List teams in which the user given by `username` is a member."""
+    try:
+        username_teams = teams_client.list_user_teams(username)
+        user_teams = teams_client.list_user_teams(auth_info.principal_id)
+        groups = group_ids(user_teams)
+
+        for team in username_teams:
+            team["is_member"] = team["id"] in groups
+
+        return username_teams
+
+    except TeamsServerError:
+        raise ErrorResponse(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Server error",
+        )

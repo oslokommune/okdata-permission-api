@@ -20,7 +20,7 @@ root_path = os.environ.get("ROOT_PATH", "")
 app = FastAPI(
     title="Okdata Permission API",
     description="API for managing permissions to okdata resources such as datasets",
-    version="0.1.0",
+    version="0.2.0",
     root_path=root_path,
 )
 

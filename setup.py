@@ -5,7 +5,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="okdata-permission-api",
-    version="0.1.0",
+    version="0.2.0",
     author="Origo Dataplattform",
     author_email="dataplattform@oslo.kommune.no",
     description="API for managing permissions to okdata resources",

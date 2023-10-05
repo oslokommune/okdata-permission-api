@@ -560,6 +560,7 @@ def test_update_team_members_non_member(mock_client):
     assert response.status_code == 403
 
 
+# GET /teams/users/{username}
 def test_get_user_by_username(mock_client):
     response = mock_client.get(
         f"/teams/users/{kc_config.homersimpson}",
@@ -580,3 +581,18 @@ def test_get_user_by_username_non_existent(mock_client):
     )
     assert response.status_code == 404
     assert response.json()["message"] == "User not found"
+
+
+# GET /teams/users/{username}/teams
+def test_list_teams_by_username(mock_client):
+    response = mock_client.get(
+        f"/teams/users/{kc_config.user1['username']}/teams",
+        headers=auth_header(get_bearer_token_for_user(kc_config.homersimpson)),
+    )
+
+    assert response.status_code == 200
+
+    unittest.TestCase().assertCountEqual(
+        [team_name_to_group_name(team["name"]) for team in response.json()],
+        kc_config.user1["groups"],
+    )
