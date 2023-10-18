@@ -102,7 +102,7 @@ structlog==21.5.0
     # via okdata-aws
 typing-extensions==4.2.0
     # via mangum
-urllib3==1.26.17
+urllib3==1.26.18
     # via
     #   botocore
     #   python-keycloak
