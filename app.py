@@ -9,7 +9,6 @@ from pydantic import ValidationError
 from resources import (
     my_permissions,
     permissions,
-    remove_team_permissions,
     resources,
     teams,
     webhook_tokens,
@@ -42,14 +41,6 @@ app.include_router(
     my_permissions.router,
     prefix="/my_permissions",
     tags=["permissions"],
-)
-
-app.include_router(
-    # This endpoint is part of a workaround for a bug in KeyCloak:
-    # https://confluence.oslo.kommune.no/pages/viewpage.action?pageId=162566147
-    remove_team_permissions.router,
-    prefix="/remove_team_permissions",
-    tags=["remove_team_permissions"],
 )
 
 app.include_router(webhook_tokens.router, prefix="/webhooks", tags=["webhooks"])
