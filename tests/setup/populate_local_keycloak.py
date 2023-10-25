@@ -129,19 +129,6 @@ def populate():
         permission_name="keycloak_resource_admin_permission",
     )
 
-    # Create service client simulating another service that will have permission to remove any team from all permissions
-    create_service_client(
-        keycloak_config.remove_team_client_id, keycloak_config.remove_team_client_secret
-    )
-
-    # Create scope, policy and permission allowing another service to a team from all permissions
-    create_scope_permission(
-        scope="okdata:team:admin",
-        clients=[keycloak_config.remove_team_client_id],
-        policy_name="remove_team_permissions_policy",
-        permission_name="remove_team_permissions_permission",
-    )
-
     # Create team admin user
     team_admin_user_id = keycloak_admin.create_user(
         payload={
