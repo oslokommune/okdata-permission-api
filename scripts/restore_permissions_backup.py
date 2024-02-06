@@ -40,9 +40,11 @@ def get_users_from_permission(permission):
         [User(user_id=u, user_type=UserType.USER) for u in permission.get("users", [])]
         + [
             User(
-                user_id=u[len(f"/{TEAM_GROUP_PREFIX}") :]
-                if u.startswith(f"/{TEAM_GROUP_PREFIX}")
-                else u,
+                user_id=(
+                    u[len(f"/{TEAM_GROUP_PREFIX}") :]
+                    if u.startswith(f"/{TEAM_GROUP_PREFIX}")
+                    else u
+                ),
                 user_type=UserType.GROUP,
             )
             for u in permission.get("groups", [])
