@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Union
+from typing import List, Union
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, root_validator, validator
@@ -141,11 +141,8 @@ class UpdatePermissionBody(BaseModel):
     scope: str
 
 
-class MyPermissionsResponse(BaseModel):
-    class MyPermissionScopes(BaseModel):
-        scopes: List[str]
-
-    __root__: Dict[str, MyPermissionScopes]
+class MyPermissionsScopes(BaseModel):
+    scopes: list[str]
 
 
 class WebhookTokenAuthResponse(BaseModel):

@@ -1,7 +1,7 @@
 from models.models import (
     CreateResourceBody,
     CreateWebhookTokenBody,
-    MyPermissionsResponse,
+    MyPermissionsScopes,
     OkdataPermission,
     Team,
     TeamMember,
@@ -17,7 +17,7 @@ from models.models import (
 __all__ = [
     "CreateResourceBody",
     "CreateWebhookTokenBody",
-    "MyPermissionsResponse",
+    "MyPermissionsScopes",
     "OkdataPermission",
     "Team",
     "TeamMember",
