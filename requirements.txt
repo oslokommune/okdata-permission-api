@@ -27,7 +27,7 @@ ecdsa==0.17.0
     # via python-jose
 email-validator==1.2.1
     # via pydantic
-fastapi==0.95.2
+fastapi==0.109.1
     # via okdata-permission-api (setup.py)
 future==0.18.3
     # via aws-xray-sdk
