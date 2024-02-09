@@ -16,7 +16,7 @@ setup(
     install_requires=[
         "aws-xray-sdk",
         "boto3",
-        "fastapi>=0.95.2",
+        "fastapi>=0.109.2",
         "mangum>=0.10.0",
         "okdata-aws>=1.0.1,<2.0.0",
         "okdata-resource-auth>=0.1.4",
