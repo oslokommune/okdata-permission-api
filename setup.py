@@ -18,7 +18,7 @@ setup(
         "boto3",
         "fastapi>=0.109.2",
         "mangum>=0.10.0",
-        "okdata-aws>=1.0.1,<2.0.0",
+        "okdata-aws>=2.1,<3",
         "okdata-resource-auth>=0.1.4",
         "pydantic[email]~=1.10.0",
         "pyjwt",

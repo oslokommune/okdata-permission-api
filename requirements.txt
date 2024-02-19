@@ -11,7 +11,9 @@ attrs==21.4.0
 aws-xray-sdk==2.9.0
     # via okdata-permission-api (setup.py)
 boto3==1.24.11
-    # via okdata-permission-api (setup.py)
+    # via
+    #   okdata-aws
+    #   okdata-permission-api (setup.py)
 botocore==1.27.11
     # via
     #   aws-xray-sdk
@@ -44,11 +46,11 @@ jsonschema==4.6.0
     # via okdata-sdk
 mangum==0.15.0
     # via okdata-permission-api (setup.py)
-okdata-aws==1.0.1
+okdata-aws==2.1.0
     # via okdata-permission-api (setup.py)
 okdata-resource-auth==0.1.4
     # via okdata-permission-api (setup.py)
-okdata-sdk==2.0.0
+okdata-sdk==3.1.0
     # via okdata-aws
 pyasn1==0.4.8
     # via
@@ -108,6 +110,7 @@ typing-extensions==4.9.0
 urllib3==1.26.18
     # via
     #   botocore
+    #   okdata-sdk
     #   python-keycloak
     #   requests
 wrapt==1.14.1

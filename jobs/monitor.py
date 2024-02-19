@@ -4,16 +4,13 @@ import os
 import requests
 from aws_xray_sdk.core import patch_all, xray_recorder
 from okdata.aws.logging import logging_wrapper, log_add, log_exception
+from okdata.aws.ssm import get_secret
 
 from dataplatform_keycloak.teams_client import TeamsClient
 from jobs.backup import load_latest_backup
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
-
-SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL = os.environ[
-    "SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL"
-]
 
 patch_all()
 
@@ -74,7 +71,8 @@ def check_users(event, context):
 def slack_notify(message):
     try:
         response = requests.post(
-            SLACK_PERMISSION_API_ALERTS_WEBHOOK_URL, json={"text": message}
+            get_secret("/dataplatform/slack/permission-api-slack-webhook"),
+            json={"text": message},
         )
         response.raise_for_status()
     except requests.RequestException as e:
