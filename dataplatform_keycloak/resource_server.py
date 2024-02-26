@@ -18,7 +18,7 @@ from dataplatform_keycloak.groups import team_name_to_group_name
 from dataplatform_keycloak.ssm import SsmClient
 from dataplatform_keycloak.uma_well_known import get_well_known
 from models import User, UserType
-from models.scope import all_scopes_for_type, scope_permission
+from models.scope import all_scopes_for_type, resource_type, scope_permission
 from resources.resource_util import resource_type_from_resource_name
 
 logger = logging.getLogger()
@@ -132,13 +132,17 @@ class ResourceServer:
         )
         return resp.json()
 
-    def update_permission(
+    def _update_permission(
         self,
         resource_name: str,
         scope: str,
         add_users: List[User] = [],
         remove_users: List[User] = [],
     ):
+        """Add/remove users to/from a given resource and scope.
+
+        Return the updated permission.
+        """
         permission_name = f"{resource_name}:{scope_permission(scope)}"
 
         try:
@@ -205,6 +209,29 @@ class ResourceServer:
                 )
             else:
                 raise e
+
+    def update_permission(
+        self,
+        resource_name: str,
+        scope: str,
+        add_users: List[User] = [],
+        remove_users: List[User] = [],
+    ):
+        """Add/remove users to/from a given resource and scope(s).
+
+        The special scope "__all__" will add or remove all known scopes for the
+        given resource.
+
+        Return the updated permission.
+        """
+        if scope == "__all__":
+            for _scope in all_scopes_for_type(resource_type(resource_name)):
+                updated_permission = self._update_permission(
+                    resource_name, _scope, add_users, remove_users
+                )
+            return updated_permission
+
+        return self._update_permission(resource_name, scope, add_users, remove_users)
 
     def update_permission_raw(self, permission):
         url = f"{self.uma_well_known.policy_endpoint}/{permission['id']}"

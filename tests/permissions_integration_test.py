@@ -222,6 +222,32 @@ def test_update_permission(mock_client):
     )
 
 
+def test_update_permission_all(mock_client):
+    for permission in ["admin", "update", "write"]:
+        assert not resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.homersimpson),
+            f"okdata:dataset:{permission}",
+            resource_name,
+        )
+
+    res = mock_client.put(
+        f"/permissions/{resource_name}",
+        json={
+            "add_users": [{"user_id": kc_config.homersimpson, "user_type": "user"}],
+            "scope": "__all__",
+        },
+        headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
+    )
+    assert res.status_code == 200
+
+    for permission in ["admin", "update", "write"]:
+        assert resource_authorizer.has_access(
+            get_bearer_token_for_user(kc_config.homersimpson),
+            f"okdata:dataset:{permission}",
+            resource_name,
+        )
+
+
 def test_update_permission_team(mock_client):
     assert not resource_authorizer.has_access(
         get_bearer_token_for_user(kc_config.team2member),
@@ -406,7 +432,11 @@ def test_get_my_permissions(mock_client):
     assert response.status_code == 200
     response_body = response.json()
     assert set(response_body.keys()) == {resource_name}
-    assert response_body[resource_name] == {"scopes": ["okdata:dataset:read"]}
+    assert set(response_body[resource_name]["scopes"]) == {
+        "okdata:dataset:read",
+        "okdata:dataset:update",
+        "okdata:dataset:write",
+    }
 
 
 def test_get_my_permissions_filtered(mock_client):

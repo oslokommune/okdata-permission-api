@@ -37,6 +37,14 @@ def all_scopes_for_type(resource_type):
     return [f"{resource_type}:{permission}" for permission in _SCOPES[resource_type]]
 
 
+def resource_type(resource_name):
+    """Return the namespaced resource type of `resource_name`.
+
+    I.e. "namespace:type" from "namespace:type:name".
+    """
+    return ":".join(resource_name.split(":")[:2])
+
+
 def scope_permission(scope):
     """Return the permission part of `scope`.
 
