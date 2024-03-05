@@ -2,7 +2,12 @@ from unittest.mock import patch
 
 import pytest
 
-from models.scope import all_scopes, all_scopes_for_type, scope_permission
+from models.scope import (
+    all_scopes,
+    all_scopes_for_type,
+    resource_type,
+    scope_permission,
+)
 
 
 _SCOPES = {
@@ -22,6 +27,10 @@ def test_all_scopes_for_type():
     assert all_scopes_for_type("okdata:bar") == ["okdata:bar:p3"]
     with pytest.raises(ValueError):
         all_scopes_for_type("okdata:baz")
+
+
+def test_resource_type():
+    assert resource_type("namespace:type:permission") == "namespace:type"
 
 
 def test_scope_permission():
