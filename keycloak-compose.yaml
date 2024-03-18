@@ -3,7 +3,7 @@
 version: "3"
 services:
   keycloak:
-    image: jboss/keycloak:15.1.1
+    image: quay.io/keycloak/keycloak:15.1.1
     ports:
       - "35789:8080"
     environment:
