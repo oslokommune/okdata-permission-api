@@ -9,7 +9,7 @@ server_auth_url = f"{server_url}/auth/"
 realm_name = "localtest"
 
 # Client id and secret for the resource server
-resource_server_id = "resource-server"
+resource_server_id = "okdata-resource-server"
 resource_server_secret = "8acda364-eafa-4a03-8fa6-b019a48ddafe"
 
 # Client id and secret for okdata-permission-api (self)

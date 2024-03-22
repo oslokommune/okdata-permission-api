@@ -21,8 +21,12 @@ botocore==1.27.11
     #   s3transfer
 certifi==2023.7.22
     # via requests
+cffi==1.16.0
+    # via cryptography
 charset-normalizer==2.0.12
     # via requests
+cryptography==42.0.5
+    # via okdata-permission-api (setup.py)
 dnspython==2.2.1
     # via email-validator
 ecdsa==0.17.0
@@ -56,12 +60,15 @@ pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
+pycparser==2.21
+    # via cffi
 pydantic[email]==1.10.14
     # via
     #   fastapi
     #   okdata-aws
     #   okdata-permission-api (setup.py)
-pyjwt==2.4.0
+    #   pydantic
+pyjwt==2.8.0
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
