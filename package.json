@@ -6,7 +6,6 @@
     "serverless": "^3.38.0",
     "serverless-better-credentials": "^2.0.0",
     "serverless-plugin-git-variables": "^5.2.0",
-    "serverless-prune-plugin": "^2.0.2",
-    "serverless-python-requirements": "^6.0.1"
+    "serverless-prune-plugin": "^2.0.2"
   }
 }

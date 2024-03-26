@@ -4,7 +4,11 @@ service: okdata-permission-api
 
 provider:
   name: aws
-  runtime: python3.11
+  ecr:
+    images:
+      okdata-permission-api:
+        path: ./
+        platform: linux/amd64
   memorySize: 1024
   region: eu-west-1
   endpointType: REGIONAL
@@ -54,18 +58,27 @@ package:
 
 functions:
   app:
-    handler: handler.handler
+    image:
+      name: okdata-permission-api
+      command:
+        - handler.handler
     events:
       - http: ANY /
       - http: ANY /{any+}
     timeout: 29
   backup-permissions:
-    handler: jobs.backup.backup_permissions
+    image:
+      name: okdata-permission-api
+      command:
+        - jobs.backup.backup_permissions
     events:
       - schedule: cron(0 0 * * ? *)
     timeout: 30
   check-users:
-    handler: jobs.monitor.check_users
+    image:
+      name: okdata-permission-api
+      command:
+        - jobs.monitor.check_users
     events:
       - schedule: cron(0 1 * * ? *)
     timeout: 60
@@ -74,7 +87,6 @@ plugins:
   - serverless-better-credentials # must be first
   - serverless-plugin-git-variables
   - serverless-prune-plugin
-  - serverless-python-requirements
 
 resources:
   Description: |
@@ -83,10 +95,6 @@ resources:
 
 custom:
   version: 0.2.0
-  pythonRequirements:
-    dockerizePip: non-linux
-    slim: true
-    usePoetry: false
   prune:
     automatic: true
     number: 3
