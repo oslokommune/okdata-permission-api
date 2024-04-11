@@ -20,7 +20,7 @@ def uma_permission(resource_id, scope, users, resource_type="dataset"):
         "scopes": [f"okdata:{resource_type}:{scope}"],
         "logic": "POSITIVE",
         "decisionStrategy": "AFFIRMATIVE",
-        "owner": "resource-server",
+        "owner": "okdata-resource-server",
     }
     for user in users:
         if user.user_type == UserType.USER:

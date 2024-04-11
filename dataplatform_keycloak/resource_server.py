@@ -379,10 +379,11 @@ class ResourceServer:
 
         response.raise_for_status()
         uma_ticket_access_token = response.json()["access_token"]
-        return jwt.decode(
-            uma_ticket_access_token,
-            options={"verify_signature": False, "verify_aud": False},
-        )["authorization"]["permissions"]
+        decoded_token = self._decode_jwt(
+            uma_ticket_access_token, self.resource_server_client_id
+        )
+
+        return decoded_token["authorization"]["permissions"]
 
     def request_headers(self):
         return {
@@ -396,11 +397,29 @@ class ResourceServer:
                 grant_type=["client_credentials"]
             )["access_token"]
         else:
-            if token_is_expired(self.resource_server_token):
+            if self._token_is_expired(self.resource_server_token):
                 self.resource_server_token = self.resource_server_client.token(
                     grant_type=["client_credentials"]
                 )["access_token"]
         return self.resource_server_token
+
+    def _decode_jwt(self, token, audience):
+        """Return `token` decoded by Keycloak's public signing key."""
+        jwks_client = jwt.PyJWKClient(self.uma_well_known.jwks_uri)
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+
+        return jwt.decode(
+            token, signing_key.key, algorithms=["RS256"], audience=audience
+        )
+
+    def _token_is_expired(self, token):
+        """Return true if `token` is expired or about to expire."""
+        decoded_token = self._decode_jwt(token, "account")
+        expires_at = datetime.utcfromtimestamp(decoded_token["exp"])
+        expires_in = expires_at - datetime.utcnow()
+
+        # Ensure that the token will not expire before it is used in a request
+        return expires_in.total_seconds() < 10
 
 
 def permission_description(scope, resource_name):
@@ -408,14 +427,3 @@ def permission_description(scope, resource_name):
         scope_permission(scope),
         resource_name,
     )
-
-
-def token_is_expired(token):
-    decoded_token = jwt.decode(token, options={"verify_signature": False})
-    expires_timestamp = decoded_token["exp"]
-    expires_dt = datetime.utcfromtimestamp(expires_timestamp)
-
-    difference = expires_dt - datetime.utcnow()
-
-    # Ensure that the token will not expire before it is used in a request
-    return difference.total_seconds() < 10

@@ -9,6 +9,7 @@ class UMAWellKnown:
     authorization_endpoint: str
     token_endpoint: str
     introspection_endpoint: str
+    jwks_uri: str
     resource_registration_endpoint: str
     permission_endpoint: str
     policy_endpoint: str
@@ -24,6 +25,7 @@ def get_well_known(server_url, realm) -> UMAWellKnown:
         authorization_endpoint=well_known["authorization_endpoint"],
         token_endpoint=well_known["token_endpoint"],
         introspection_endpoint=well_known["introspection_endpoint"],
+        jwks_uri=well_known["jwks_uri"],
         resource_registration_endpoint=well_known["resource_registration_endpoint"],
         permission_endpoint=well_known["permission_endpoint"],
         policy_endpoint=well_known["policy_endpoint"],

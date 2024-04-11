@@ -71,7 +71,7 @@ populate-local-keycloak: setup-keycloak-local
 # The client-secret values below are not really secret values since they are only for testing on local machines
 .PHONY: run
 run: populate-local-keycloak $(BUILD_VENV)/bin/uvicorn
-	RESOURCE_SERVER_CLIENT_ID=resource-server \
+	RESOURCE_SERVER_CLIENT_ID=okdata-resource-server \
 	RESOURCE_SERVER_CLIENT_SECRET=8acda364-eafa-4a03-8fa6-b019a48ddafe \
 	CLIENT_ID=okdata-permission-api \
 	CLIENT_SECRET=868d1ca9-4d94-4c1e-a2e4-9f032bd8ae08 \
