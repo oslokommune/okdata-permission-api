@@ -37,7 +37,7 @@ fastapi==0.109.2
     # via okdata-permission-api (setup.py)
 future==0.18.3
     # via aws-xray-sdk
-idna==3.3
+idna==3.7
     # via
     #   anyio
     #   email-validator
