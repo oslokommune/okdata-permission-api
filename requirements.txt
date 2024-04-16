@@ -27,6 +27,8 @@ charset-normalizer==2.0.12
     # via requests
 cryptography==42.0.5
     # via okdata-permission-api (setup.py)
+deprecation==2.1.0
+    # via python-keycloak
 dnspython==2.6.1
     # via email-validator
 ecdsa==0.17.0
@@ -56,6 +58,8 @@ okdata-resource-auth==0.1.4
     # via okdata-permission-api (setup.py)
 okdata-sdk==3.1.0
     # via okdata-aws
+packaging==24.0
+    # via deprecation
 pyasn1==0.4.8
     # via
     #   python-jose
@@ -67,7 +71,6 @@ pydantic[email]==1.10.14
     #   fastapi
     #   okdata-aws
     #   okdata-permission-api (setup.py)
-    #   pydantic
 pyjwt==2.8.0
     # via
     #   okdata-permission-api (setup.py)
@@ -80,7 +83,7 @@ python-jose==3.3.0
     # via
     #   okdata-sdk
     #   python-keycloak
-python-keycloak==1.7.0
+python-keycloak==2.13.2
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
@@ -93,6 +96,9 @@ requests==2.31.0
     #   okdata-resource-auth
     #   okdata-sdk
     #   python-keycloak
+    #   requests-toolbelt
+requests-toolbelt==0.10.1
+    # via python-keycloak
 rsa==4.8
     # via python-jose
 s3transfer==0.6.0

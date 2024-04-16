@@ -34,16 +34,10 @@ class TeamsKeycloakAdmin(KeycloakAdmin):
         self.admin_api_server_url = admin_api_server_url
         super().__init__(server_url=server_url, **kwargs)
 
-    def get_token(self):
-        """Get access token for admin user and configure `ConnectionManager`.
-
-        Overrides `KeycloakAdmin::get_token()` to allow usage of another base url for
-        requests towards the Admin API, in this case a configured Kong route that acts
-        as a proxy:
-        https://github.com/oslokommune/dataplattform/blob/master/dataplattform-internt/arkitektur/utviklerportalen.md#teknisk
-        """
-        super().get_token()
-
+        # Override the connection to allow usage of another base URL for
+        # requests towards the Admin API, in this case a configured Kong route
+        # that acts as a proxy:
+        # https://github.com/oslokommune/dataplattform/blob/master/dataplattform-internt/arkitektur/utviklerportalen.md#teknisk
         if self.admin_api_server_url:
             headers = {
                 "Authorization": "Bearer " + generate_jwt(),

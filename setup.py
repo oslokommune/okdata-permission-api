@@ -23,7 +23,8 @@ setup(
         "okdata-resource-auth>=0.1.4",
         "pydantic[email]~=1.10.0",
         "pyjwt>=2.5,<3",
-        "python-keycloak>=1.7.0",
+        # Error in 2.13.2, works in 2.13.1 ???
+        "python-keycloak==2.13.2",
         "pytz",
         "requests",
     ],
