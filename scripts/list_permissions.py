@@ -4,6 +4,7 @@ import argparse
 import json
 import logging
 
+from dataplatform_keycloak.exceptions import ResourceNotFoundError
 from scripts.utils import resource_server_from_env
 
 
@@ -43,6 +44,8 @@ if __name__ == "__main__":
 
     resource_server = resource_server_from_env(args.env)
 
-    permissions = resource_server.list_permissions(resource_name=args.resource_name)
-
-    print_output(permissions, args.output)
+    try:
+        permissions = resource_server.list_permissions(resource_name=args.resource_name)
+        print_output(permissions, args.output)
+    except ResourceNotFoundError as e:
+        print(e)
