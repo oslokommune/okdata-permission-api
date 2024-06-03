@@ -37,6 +37,7 @@ def populate():
     keycloak_admin.create_client(
         payload={
             "id": keycloak_config.resource_server_id,
+            "clientId": keycloak_config.resource_server_id,
             "name": keycloak_config.resource_server_id,
             "redirectUris": ["*"],
             "publicClient": False,
@@ -61,6 +62,7 @@ def populate():
         keycloak_admin.create_client(
             payload={
                 "id": client_id,
+                "clientId": client_id,
                 "name": client_id,
                 "publicClient": False,
                 "serviceAccountsEnabled": True,

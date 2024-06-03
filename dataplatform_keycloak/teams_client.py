@@ -31,27 +31,20 @@ logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 class TeamsKeycloakAdmin(KeycloakAdmin):
     def __init__(self, server_url, admin_api_server_url=None, **kwargs):
-        self.admin_api_server_url = admin_api_server_url
         super().__init__(server_url=server_url, **kwargs)
 
-    def get_token(self):
-        """Get access token for admin user and configure `ConnectionManager`.
-
-        Overrides `KeycloakAdmin::get_token()` to allow usage of another base url for
-        requests towards the Admin API, in this case a configured Kong route that acts
-        as a proxy:
-        https://github.com/oslokommune/dataplattform/blob/master/dataplattform-internt/arkitektur/utviklerportalen.md#teknisk
-        """
-        super().get_token()
-
-        if self.admin_api_server_url:
+        # Override the connection to allow usage of another base URL for
+        # requests towards the Admin API, in this case a configured Kong route
+        # that acts as a proxy:
+        # https://github.com/oslokommune/dataplattform/blob/master/dataplattform-internt/arkitektur/utviklerportalen.md#teknisk
+        if admin_api_server_url:
             headers = {
                 "Authorization": "Bearer " + generate_jwt(),
                 "Keycloak-Authorization": "Bearer " + self.token.get("access_token"),
                 "Content-Type": "application/json",
             }
             self.connection = ConnectionManager(
-                base_url=self.admin_api_server_url,
+                base_url=admin_api_server_url,
                 headers=headers,
                 verify=self.verify,
             )

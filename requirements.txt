@@ -80,7 +80,7 @@ python-jose==3.3.0
     # via
     #   okdata-sdk
     #   python-keycloak
-python-keycloak==1.7.0
+python-keycloak==2.13.1
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
@@ -93,6 +93,9 @@ requests==2.32.0
     #   okdata-resource-auth
     #   okdata-sdk
     #   python-keycloak
+    #   requests-toolbelt
+requests-toolbelt==0.10.1
+    # via python-keycloak
 rsa==4.8
     # via python-jose
 s3transfer==0.6.0
