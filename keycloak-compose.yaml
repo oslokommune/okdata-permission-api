@@ -16,6 +16,8 @@ services:
       DB_PASSWORD: password
     depends_on:
       - postgres
+    security_opt:
+      - no-new-privileges:true
 
   postgres:
     image: postgres
@@ -27,6 +29,8 @@ services:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: password
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   postgres_data:
