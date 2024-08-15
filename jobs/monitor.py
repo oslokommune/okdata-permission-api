@@ -51,7 +51,7 @@ def check_users(event, context):
 
     logger.info(f"Fetching {num_users} users from Keycloak...")
     for i, username in enumerate(permission_users):
-        logger.info(f"... fetching user {i+1}/{num_users}")
+        logger.info(f"... fetching user {i + 1}/{num_users}")
         if not keycloak_admin_client.get_user_id(username):
             missing_users.add(username)
 
