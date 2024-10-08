@@ -73,7 +73,7 @@ functions:
         - jobs.backup.backup_permissions
     events:
       - schedule: cron(0 0 * * ? *)
-    timeout: 30
+    timeout: 60
   check-users:
     image:
       name: okdata-permission-api
