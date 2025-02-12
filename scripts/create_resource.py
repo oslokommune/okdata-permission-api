@@ -1,5 +1,4 @@
-"""Script for creating a new resource in keycloak
-"""
+"""Script for creating a new resource in keycloak"""
 
 import argparse
 import json

@@ -1,5 +1,4 @@
-"""Script for deleting a resource in keycloak
-"""
+"""Script for deleting a resource in keycloak"""
 
 import argparse
 import logging
