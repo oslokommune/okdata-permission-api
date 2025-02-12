@@ -1,5 +1,4 @@
-"""Script for updating permissions in keycloak.
-"""
+"""Script for updating permissions in keycloak."""
 
 import argparse
 import json
