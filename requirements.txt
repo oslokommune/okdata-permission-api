@@ -75,7 +75,7 @@ pyrsistent==0.18.1
     # via jsonschema
 python-dateutil==2.8.2
     # via botocore
-python-jose==3.3.0
+python-jose==3.4.0
     # via
     #   okdata-sdk
     #   python-keycloak
