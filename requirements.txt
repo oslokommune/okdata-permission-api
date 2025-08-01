@@ -116,7 +116,7 @@ typing-extensions==4.14.1
     #   fastapi
     #   mangum
     #   pydantic
-urllib3==1.26.19
+urllib3==2.5.0
     # via
     #   botocore
     #   okdata-sdk
