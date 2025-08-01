@@ -1,9 +1,7 @@
 import logging
 import os
-from datetime import datetime
 from enum import Enum
 from typing import List, Union
-from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, root_validator, validator
 
@@ -143,27 +141,3 @@ class UpdatePermissionBody(BaseModel):
 
 class MyPermissionsScopes(BaseModel):
     scopes: list[str]
-
-
-class WebhookTokenAuthResponse(BaseModel):
-    access: bool
-    reason: str = None
-
-
-class WebhookTokenOperation(Enum):
-    READ = "read"
-    WRITE = "write"
-
-
-class CreateWebhookTokenBody(BaseModel):
-    operation: WebhookTokenOperation
-
-
-class WebhookTokenItem(BaseModel):
-    token: UUID
-    created_by: str
-    dataset_id: str
-    operation: WebhookTokenOperation
-    created_at: datetime
-    expires_at: datetime
-    is_active: bool = True
