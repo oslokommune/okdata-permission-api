@@ -26,7 +26,6 @@ setup(
         # Version 2.13.2 and up breaks our custom `TeamsKeycloakAdmin` class
         # and needs more work...
         "python-keycloak==2.13.1",
-        "pytz",
         "requests",
     ],
 )

@@ -4,7 +4,6 @@ COPY dataplatform_keycloak ${LAMBDA_TASK_ROOT}/dataplatform_keycloak
 COPY jobs ${LAMBDA_TASK_ROOT}/jobs
 COPY models ${LAMBDA_TASK_ROOT}/models
 COPY resources ${LAMBDA_TASK_ROOT}/resources
-COPY webhook_tokens ${LAMBDA_TASK_ROOT}/webhook_tokens
 COPY app.py ${LAMBDA_TASK_ROOT}
 COPY handler.py ${LAMBDA_TASK_ROOT}
 COPY requirements.txt ${LAMBDA_TASK_ROOT}
