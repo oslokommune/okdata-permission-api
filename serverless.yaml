@@ -45,17 +45,6 @@ provider:
     LOG_LEVEL: INFO
     BACKUP_BUCKET_NAME: ${self:custom.backupBucket.${self:provider.stage}, self:custom.backupBucket.dev}
 
-package:
-  patterns:
-    - '!**/*'
-    - app.py
-    - jobs/*.py
-    - dataplatform_keycloak/*.py
-    - handler.py
-    - models/*.py
-    - resources/*.py
-    - webhook_tokens/*.py
-
 functions:
   app:
     image:

@@ -6,13 +6,7 @@ from fastapi.responses import JSONResponse
 from okdata.aws.logging import add_fastapi_logging
 from pydantic import ValidationError
 
-from resources import (
-    my_permissions,
-    permissions,
-    resources,
-    teams,
-    webhook_tokens,
-)
+from resources import my_permissions, permissions, resources, teams
 from resources.errors import ErrorResponse, error_message_models
 
 root_path = os.environ.get("ROOT_PATH", "")
@@ -43,7 +37,6 @@ app.include_router(
     tags=["permissions"],
 )
 
-app.include_router(webhook_tokens.router, prefix="/webhooks", tags=["webhooks"])
 app.include_router(
     teams.router,
     prefix="/teams",
@@ -66,7 +59,7 @@ def abort_exception_handler(request: Request, exc: ErrorResponse):
 def abort_validation_error(request: Request, exc):
     errors = exc.errors()
     # Exclude python-specific
-    # e.g. 'ctx': {'enum_values': [<WebhookTokenOperation.READ: 'read'>, <WebhookTokenOperation.WRITE: 'write'>]}
+    # e.g. "ctx": {"enum_values": ["team", "user", "client"]}
     for error in errors:
         error.pop("ctx", None)
         error.pop("type", None)
