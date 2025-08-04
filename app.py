@@ -59,7 +59,7 @@ def abort_exception_handler(request: Request, exc: ErrorResponse):
 def abort_validation_error(request: Request, exc):
     errors = exc.errors()
     # Exclude python-specific
-    # e.g. 'ctx': {'enum_values': [<WebhookTokenOperation.READ: 'read'>, <WebhookTokenOperation.WRITE: 'write'>]}
+    # e.g. "ctx": {"enum_values": ["team", "user", "client"]}
     for error in errors:
         error.pop("ctx", None)
         error.pop("type", None)
