@@ -181,7 +181,9 @@ class ResourceServer:
             update_permission_url = (
                 f"{self.uma_well_known.policy_endpoint}/{permission['id']}"
             )
-            logger.info(f"PUT {update_permission_url}")
+            logger.info(
+                f"PUT {update_permission_url}".replace("\r\n", "").replace("\n", "")
+            )
 
             resp = requests.put(
                 update_permission_url,
@@ -244,7 +246,7 @@ class ResourceServer:
         get_permission_url = (
             f"{self.uma_well_known.policy_endpoint}/?name={permission_name}"
         )
-        logger.info(f"GET {get_permission_url}")
+        logger.info(f"GET {get_permission_url}".replace("\r\n", "").replace("\n", ""))
         resp = requests.get(get_permission_url, headers=self.request_headers())
         resp.raise_for_status()
         for permission in resp.json():
