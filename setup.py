@@ -14,7 +14,7 @@ setup(
     url="https://github.oslo.kommune.no/origo-dataplatform/okdata-permission-api",
     packages=find_packages(),
     install_requires=[
-        "aws-xray-sdk",
+        "aws-xray-sdk>=2.10",
         "boto3",
         "cryptography",
         "fastapi>=0.109.2",

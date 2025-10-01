@@ -8,7 +8,7 @@ anyio==4.9.0
     # via starlette
 attrs==21.4.0
     # via jsonschema
-aws-xray-sdk==2.9.0
+aws-xray-sdk==2.14.0
     # via okdata-permission-api (setup.py)
 boto3==1.24.11
     # via
@@ -35,8 +35,6 @@ email-validator==1.2.1
     # via pydantic
 fastapi==0.116.1
     # via okdata-permission-api (setup.py)
-future==0.18.3
-    # via aws-xray-sdk
 idna==3.7
     # via
     #   anyio
