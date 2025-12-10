@@ -4,6 +4,8 @@
 #
 #    pip-compile
 #
+annotated-doc==0.0.3
+    # via fastapi
 anyio==4.9.0
     # via starlette
 attrs==21.4.0
@@ -33,7 +35,7 @@ ecdsa==0.17.0
     # via python-jose
 email-validator==1.2.1
     # via pydantic
-fastapi==0.116.1
+fastapi==0.120.2
     # via okdata-permission-api (setup.py)
 idna==3.7
     # via
@@ -101,7 +103,7 @@ six==1.16.0
     #   python-dateutil
 sniffio==1.2.0
     # via anyio
-starlette==0.47.2
+starlette==0.49.1
     # via
     #   fastapi
     #   okdata-aws
