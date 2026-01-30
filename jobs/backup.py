@@ -9,7 +9,6 @@ from okdata.aws.logging import logging_wrapper, log_add
 
 from dataplatform_keycloak.resource_server import ResourceServer
 
-
 BACKUP_BUCKET_NAME = os.environ["BACKUP_BUCKET_NAME"]
 BACKUP_BUCKET_PREFIX = os.environ["SERVICE_NAME"]
 

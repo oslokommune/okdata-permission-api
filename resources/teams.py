@@ -14,7 +14,6 @@ from models import Team, TeamMember, UpdateTeamBody
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
 
-
 router = APIRouter(dependencies=[Depends(AuthInfo)])
 
 

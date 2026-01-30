@@ -5,7 +5,6 @@ from models import User, UserType
 from scripts.restore_permissions_backup import restore_permissions
 from tests.setup import populate_local_keycloak
 
-
 janedoe_user = User(user_id="janedoe", user_type=UserType.USER)
 homersimpson_user = User(user_id="homersimpson", user_type=UserType.USER)
 someservice_client = User(user_id="some-service", user_type=UserType.CLIENT)

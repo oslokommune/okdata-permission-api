@@ -9,7 +9,6 @@ from models.scope import (
     scope_permission,
 )
 
-
 _SCOPES = {
     "okdata:foo": ["p1", "p2"],
     "okdata:bar": ["p3"],
