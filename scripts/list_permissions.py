@@ -7,7 +7,6 @@ import logging
 from dataplatform_keycloak.exceptions import ResourceNotFoundError
 from scripts.utils import resource_server_from_env
 
-
 logger = logging.getLogger("list_permissions")
 
 

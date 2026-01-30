@@ -7,7 +7,6 @@ import logging
 from models import User, UserType
 from scripts.utils import resource_server_from_env
 
-
 logger = logging.getLogger("create_resource")
 
 
