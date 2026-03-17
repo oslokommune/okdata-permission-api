@@ -67,7 +67,7 @@ pydantic[email]==1.10.22
     #   fastapi
     #   okdata-aws
     #   okdata-permission-api (setup.py)
-pyjwt==2.8.0
+pyjwt==2.12.0
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
