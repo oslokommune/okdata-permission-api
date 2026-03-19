@@ -138,6 +138,15 @@ class UpdatePermissionBody(BaseModel):
     remove_users: List[User] = []
     scope: str
 
+    @validator("scope")
+    def check_scope(cls, scope):
+        known_scopes = all_scopes() + ["__all__"]
+        if scope not in known_scopes:
+            raise ValueError(
+                "Unknown scope: {}. Must be one of: {}".format(scope, known_scopes)
+            )
+        return scope
+
 
 class MyPermissionsScopes(BaseModel):
     scopes: list[str]

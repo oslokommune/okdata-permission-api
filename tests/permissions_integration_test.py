@@ -286,10 +286,6 @@ def test_update_permission_unknown_scope(mock_client):
         headers=auth_header(get_bearer_token_for_user(kc_config.janedoe)),
     )
     assert response.status_code == 400
-    assert (
-        "Some of the scopes [[okdata:dataset:foobar]] are not valid for resource"
-        in response.json()["message"]
-    )
 
 
 def test_update_permission_resource_not_exist(mock_client):
