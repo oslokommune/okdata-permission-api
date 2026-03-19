@@ -73,6 +73,7 @@ def slack_notify(message):
         response = requests.post(
             get_secret("/dataplatform/slack/permission-api-slack-webhook"),
             json={"text": message},
+            timeout=15,
         )
         response.raise_for_status()
     except requests.RequestException as e:

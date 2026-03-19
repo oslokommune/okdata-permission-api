@@ -74,6 +74,7 @@ class ResourceServer:
                 "scopes": scopes,
             },
             headers=self.request_headers(),
+            timeout=15,
         )
         create_resource_response.raise_for_status()
         resource = create_resource_response.json()
@@ -129,6 +130,7 @@ class ResourceServer:
             create_permission_url,
             headers=self.request_headers(),
             json=permission,
+            timeout=15,
         )
         return resp.json()
 
@@ -189,6 +191,7 @@ class ResourceServer:
                 update_permission_url,
                 headers=self.request_headers(),
                 json=permission,
+                timeout=15,
             )
             resp.raise_for_status()
 
@@ -238,7 +241,9 @@ class ResourceServer:
     def update_permission_raw(self, permission):
         url = f"{self.uma_well_known.policy_endpoint}/{permission['id']}"
         logger.info(f"PUT {url}")
-        res = requests.put(url, headers=self.request_headers(), json=permission)
+        res = requests.put(
+            url, headers=self.request_headers(), json=permission, timeout=15
+        )
         res.raise_for_status()
         return res
 
@@ -247,7 +252,9 @@ class ResourceServer:
             f"{self.uma_well_known.policy_endpoint}/?name={permission_name}"
         )
         logger.info(f"GET {get_permission_url}".replace("\r\n", "").replace("\n", ""))
-        resp = requests.get(get_permission_url, headers=self.request_headers())
+        resp = requests.get(
+            get_permission_url, headers=self.request_headers(), timeout=15
+        )
         resp.raise_for_status()
         for permission in resp.json():
             if permission["name"] == permission_name:
@@ -327,14 +334,14 @@ class ResourceServer:
         permission_id = self.get_permission(permission_name)["id"]
         delete_url = f"{self.uma_well_known.policy_endpoint}/{permission_id}"
         logger.info(f"DELETE {delete_url}")
-        resp = requests.delete(delete_url, headers=self.request_headers())
+        resp = requests.delete(delete_url, headers=self.request_headers(), timeout=15)
         return resp.status_code, resp.text
 
     def delete_resource(self, resource_name):
         resource_id = self.get_resource_id(resource_name)
         url = f"{self.uma_well_known.resource_registration_endpoint}/{resource_id}"
         logger.info(f"DELETE {url}")
-        resp = requests.delete(url, headers=self.request_headers())
+        resp = requests.delete(url, headers=self.request_headers(), timeout=15)
         resp.raise_for_status()
         return resp
 
@@ -343,14 +350,14 @@ class ResourceServer:
             f"{self.uma_well_known.resource_registration_endpoint}?name={resource_name}"
         )
         logger.info(f"GET {get_id_url}")
-        resp = requests.get(get_id_url, headers=self.request_headers())
+        resp = requests.get(get_id_url, headers=self.request_headers(), timeout=15)
         for resource_id in resp.json():
             get_resource_url = (
                 f"{self.uma_well_known.resource_registration_endpoint}/{resource_id}"
             )
             logger.info(f"GET {get_resource_url}")
             resource = requests.get(
-                get_resource_url, headers=self.request_headers()
+                get_resource_url, headers=self.request_headers(), timeout=15
             ).json()
             if resource["name"] == resource_name:
                 return resource["_id"]
@@ -376,7 +383,10 @@ class ResourceServer:
             "Content-Type": "application/x-www-form-urlencoded",
         }
         response = requests.post(
-            self.uma_well_known.token_endpoint, data=payload, headers=headers
+            self.uma_well_known.token_endpoint,
+            data=payload,
+            headers=headers,
+            timeout=15,
         )
 
         response.raise_for_status()

@@ -68,6 +68,7 @@ def create_resource(resource_server, resource_name):
             ),
         },
         headers=resource_server.request_headers(),
+        timeout=15,
     )
     create_resource_response.raise_for_status()
     return create_resource_response.json()
