@@ -5,28 +5,43 @@ import requests
 
 @dataclass
 class UMAWellKnown:
-    issuer: str
-    authorization_endpoint: str
     token_endpoint: str
-    introspection_endpoint: str
     jwks_uri: str
     resource_registration_endpoint: str
-    permission_endpoint: str
     policy_endpoint: str
 
 
-def get_well_known(server_url, realm) -> UMAWellKnown:
-    well_known_url = f"{server_url}/auth/realms/{realm}/.well-known/uma2-configuration"
-    well_known_response = requests.get(well_known_url, timeout=15)
-    well_known_response.raise_for_status()
-    well_known = well_known_response.json()
+class WellKnownConfigException(Exception):
+    pass
+
+
+def _validate(url: str, base_url: str) -> str:
+    """Validate that `url` starts with `base_url`.
+
+    Raise `WellKnownConfigException` if not.
+    """
+    if not url.startswith(base_url):
+        raise WellKnownConfigException(
+            f"Unexpected URL in `.well-known` response: '{url}'. Expected to "
+            f"start with: '{base_url}'."
+        )
+
+    return url
+
+
+def get_well_known(server_url: str, realm: str) -> UMAWellKnown:
+    url = f"{server_url}/auth/realms/{realm}/.well-known/uma2-configuration"
+
+    response = requests.get(url, timeout=15)
+    response.raise_for_status()
+
+    well_known = response.json()
+
     return UMAWellKnown(
-        issuer=well_known["token_endpoint"],
-        authorization_endpoint=well_known["authorization_endpoint"],
-        token_endpoint=well_known["token_endpoint"],
-        introspection_endpoint=well_known["introspection_endpoint"],
-        jwks_uri=well_known["jwks_uri"],
-        resource_registration_endpoint=well_known["resource_registration_endpoint"],
-        permission_endpoint=well_known["permission_endpoint"],
-        policy_endpoint=well_known["policy_endpoint"],
+        token_endpoint=_validate(well_known["token_endpoint"], server_url),
+        jwks_uri=_validate(well_known["jwks_uri"], server_url),
+        resource_registration_endpoint=_validate(
+            well_known["resource_registration_endpoint"], server_url
+        ),
+        policy_endpoint=_validate(well_known["policy_endpoint"], server_url),
     )

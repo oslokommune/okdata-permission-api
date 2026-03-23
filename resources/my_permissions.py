@@ -1,11 +1,12 @@
-import os
 import logging
+import os
 from typing import Union
 
 from fastapi import Depends, APIRouter, status
 from requests.exceptions import HTTPError
 
 from dataplatform_keycloak.resource_server import ResourceServer
+from dataplatform_keycloak.uma_well_known import WellKnownConfigException
 from models import MyPermissionsScopes
 from resources.authorizer import AuthInfo
 from resources.errors import ErrorResponse, error_message_models
@@ -16,7 +17,10 @@ logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 def resource_server():
-    return ResourceServer()
+    try:
+        return ResourceServer()
+    except WellKnownConfigException as e:
+        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
 
 router = APIRouter()
