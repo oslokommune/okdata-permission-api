@@ -9,6 +9,7 @@ from dataplatform_keycloak.exceptions import (
     ResourceNotFoundError,
 )
 from dataplatform_keycloak.resource_server import ResourceServer
+from dataplatform_keycloak.uma_well_known import WellKnownConfigException
 from models import OkdataPermission, UpdatePermissionBody
 from resources.authorizer import has_resource_permission
 from resources.errors import ErrorResponse, error_message_models
@@ -18,7 +19,10 @@ logger.setLevel(os.environ.get("LOG_LEVEL", logging.INFO))
 
 
 def resource_server():
-    return ResourceServer()
+    try:
+        return ResourceServer()
+    except WellKnownConfigException as e:
+        raise ErrorResponse(status.HTTP_500_INTERNAL_SERVER_ERROR, str(e))
 
 
 router = APIRouter()
