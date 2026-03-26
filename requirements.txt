@@ -83,7 +83,7 @@ python-keycloak==2.13.1
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
-requests==2.32.4
+requests==2.33.0
     # via
     #   okdata-aws
     #   okdata-permission-api (setup.py)
