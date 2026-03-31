@@ -31,7 +31,7 @@ def populate():
     )
 
     # Use new realm
-    keycloak_admin.realm_name = keycloak_config.realm_name
+    keycloak_admin.connection.realm_name = keycloak_config.realm_name
 
     # Create resource server
     keycloak_admin.create_client(
@@ -49,11 +49,11 @@ def populate():
         skip_exists=True,
     )
     # Delete default resource
-    for resource in keycloak_admin.raw_get(
+    for resource in keycloak_admin.connection.raw_get(
         path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/resource"
     ).json():
         resource_id = resource["_id"]
-        keycloak_admin.raw_delete(
+        keycloak_admin.connection.raw_delete(
             path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/resource/{resource_id}"
         )
 
@@ -82,7 +82,7 @@ def populate():
             "name": scope,
             "displayName": scope,
         }
-        created_scope = keycloak_admin.raw_post(
+        created_scope = keycloak_admin.connection.raw_post(
             path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/scope",
             data=json.dumps(create_scope_body),
         ).json()
@@ -94,7 +94,7 @@ def populate():
             "name": policy_name,
             "clients": clients,
         }
-        policy = keycloak_admin.raw_post(
+        policy = keycloak_admin.connection.raw_post(
             path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/policy/client",
             data=json.dumps(create_policy_body),
         ).json()
@@ -108,7 +108,7 @@ def populate():
             "scopes": [created_scope["id"]],
             "policies": [policy["id"]],
         }
-        keycloak_admin.raw_post(
+        keycloak_admin.connection.raw_post(
             path=f"admin/realms/{keycloak_config.realm_name}/clients/{keycloak_config.resource_server_id}/authz/resource-server/permission/scope",
             data=json.dumps(create_permission_body),
         )
@@ -205,7 +205,7 @@ def populate():
 # Method for test that will ensure that this bug does not occur: https://confluence.oslo.kommune.no/pages/viewpage.action?pageId=162566147
 def delete_team(team_name: str):
     keycloak_admin = initialize_keycloak_admin()
-    get_groups_response = keycloak_admin.raw_get(
+    get_groups_response = keycloak_admin.connection.raw_get(
         f"admin/realms/{keycloak_config.realm_name}/groups"
     )
     get_groups_response.raise_for_status()

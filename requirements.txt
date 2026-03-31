@@ -83,7 +83,7 @@ python-jose==3.5.0
     # via
     #   okdata-sdk
     #   python-keycloak
-python-keycloak==2.15.3
+python-keycloak==2.16.6
     # via
     #   okdata-permission-api (setup.py)
     #   okdata-sdk
@@ -95,7 +95,7 @@ requests==2.33.0
     #   okdata-sdk
     #   python-keycloak
     #   requests-toolbelt
-requests-toolbelt==0.10.1
+requests-toolbelt==1.0.0
     # via python-keycloak
 rsa==4.8
     # via python-jose
@@ -122,7 +122,6 @@ urllib3==1.26.19
     # via
     #   botocore
     #   okdata-sdk
-    #   python-keycloak
     #   requests
 wrapt==1.14.1
     # via aws-xray-sdk
