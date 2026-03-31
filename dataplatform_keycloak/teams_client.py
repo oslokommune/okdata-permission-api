@@ -228,7 +228,7 @@ class TeamsClient:
             URL_ADMIN_REALM_ROLES + "/{role-name}/groups"
         ).format(
             **{
-                "realm-name": self.teams_admin_client.realm_name,
+                "realm-name": self.teams_admin_client.connection.realm_name,
                 "role-name": role_name,
             }
         )
@@ -255,7 +255,7 @@ class TeamsClient:
 
         while True:
             partial_results = raise_error_from_response(
-                self.teams_admin_client.raw_get(url, **query_params),
+                self.teams_admin_client.connection.raw_get(url, **query_params),
                 KeycloakGetError,
             )
             if partial_results:

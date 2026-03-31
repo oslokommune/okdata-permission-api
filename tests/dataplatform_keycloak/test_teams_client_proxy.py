@@ -4,7 +4,7 @@ from dataplatform_keycloak.teams_client import TeamsClient
 def test_teams_client_no_connection_proxy():
     teams_client = TeamsClient()
     admin_client = teams_client.teams_admin_client
-    assert admin_client.server_url == admin_client.connection.base_url
+    assert admin_client.connection.server_url == admin_client.connection.base_url
 
 
 def test_teams_client_with_connection_proxy(monkeypatch):
@@ -20,5 +20,5 @@ def test_teams_client_with_connection_proxy(monkeypatch):
     assert admin_client.connection.headers["Authorization"] == f"Bearer {jwt}"
     assert (
         admin_client.connection.headers["Keycloak-Authorization"]
-        == f"Bearer {admin_client.token['access_token']}"
+        == f"Bearer {admin_client.connection.token['access_token']}"
     )
