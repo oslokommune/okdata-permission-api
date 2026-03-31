@@ -1,6 +1,5 @@
 # Only used for local development and setup for unittests
 
-version: "3"
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:15.1.1
