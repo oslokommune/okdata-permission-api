@@ -1,5 +1,3 @@
-import os
-
 from dataplatform_keycloak.teams_client import TeamsClient
 
 
@@ -18,7 +16,6 @@ def test_teams_client_with_connection_proxy(monkeypatch):
     teams_client = TeamsClient(keycloak_admin_api_url=keycloak_proxy_url)
     admin_client = teams_client.teams_admin_client
 
-    assert admin_client.server_url == os.environ["KEYCLOAK_SERVER"] + "/auth/"
     assert admin_client.connection.base_url == keycloak_proxy_url
     assert admin_client.connection.headers["Authorization"] == f"Bearer {jwt}"
     assert (

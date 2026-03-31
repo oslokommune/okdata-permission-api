@@ -1,7 +1,7 @@
 import logging
 import os
 
-from keycloak import ConnectionManager, KeycloakAdmin
+from keycloak import KeycloakAdmin
 from keycloak.exceptions import (
     KeycloakError,
     KeycloakGetError,
@@ -38,16 +38,12 @@ class TeamsKeycloakAdmin(KeycloakAdmin):
         # that acts as a proxy:
         # https://github.com/oslokommune/dataplattform/blob/master/dataplattform-internt/arkitektur/utviklerportalen.md#teknisk
         if admin_api_server_url:
-            headers = {
-                "Authorization": "Bearer " + generate_jwt(),
-                "Keycloak-Authorization": "Bearer " + self.token.get("access_token"),
+            self.connection.base_url = admin_api_server_url
+            self.connection.headers = {
+                "Authorization": f"Bearer {generate_jwt()}",
+                "Keycloak-Authorization": f"Bearer {self.connection.token.get('access_token')}",
                 "Content-Type": "application/json",
             }
-            self.connection = ConnectionManager(
-                base_url=admin_api_server_url,
-                headers=headers,
-                verify=self.verify,
-            )
 
 
 class TeamsClient:

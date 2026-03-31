@@ -23,9 +23,7 @@ setup(
         "okdata-resource-auth>=0.1.4",
         "pydantic[email]~=1.10.0",
         "pyjwt>=2.5,<3",
-        # Version 2.13.2 and up breaks our custom `TeamsKeycloakAdmin` class
-        # and needs more work...
-        "python-keycloak==2.13.1",
+        "python-keycloak==2.15.3",
         "requests",
     ],
 )
