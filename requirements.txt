@@ -27,7 +27,7 @@ cffi==2.0.0
     # via cryptography
 charset-normalizer==2.0.12
     # via requests
-cryptography==46.0.6
+cryptography==46.0.7
     # via
     #   jwcrypto
     #   okdata-permission-api (setup.py)
