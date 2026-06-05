@@ -54,7 +54,7 @@ jwcrypto==1.5.7
     # via python-keycloak
 mangum==0.15.0
     # via okdata-permission-api (setup.py)
-okdata-aws==5.0.0
+okdata-aws==6.0.0
     # via okdata-permission-api (setup.py)
 okdata-resource-auth==0.1.4
     # via okdata-permission-api (setup.py)
@@ -94,7 +94,7 @@ six==1.16.0
     # via python-dateutil
 sniffio==1.2.0
     # via anyio
-starlette==1.0.1
+starlette==0.49.3
     # via
     #   fastapi
     #   okdata-aws
