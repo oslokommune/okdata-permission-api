@@ -50,7 +50,7 @@ jmespath==1.0.0
     #   botocore
 jsonschema==4.6.0
     # via okdata-sdk
-jwcrypto==1.5.6
+jwcrypto==1.5.7
     # via python-keycloak
 mangum==0.15.0
     # via okdata-permission-api (setup.py)
