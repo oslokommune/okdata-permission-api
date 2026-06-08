@@ -19,7 +19,7 @@ setup(
         "cryptography",
         "fastapi>=0.109.2",
         "mangum>=0.10.0",
-        "okdata-aws>=5",
+        "okdata-aws>=6",
         "okdata-resource-auth>=0.1.4",
         "pydantic[email]~=1.10.0",
         "pyjwt>=2.5",
