@@ -68,7 +68,7 @@ pydantic[email]==1.10.22
     # via
     #   fastapi
     #   okdata-permission-api (setup.py)
-pyjwt==2.12.0
+pyjwt==2.13.0
     # via okdata-permission-api (setup.py)
 pyrsistent==0.18.1
     # via jsonschema
