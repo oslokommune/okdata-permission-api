@@ -143,8 +143,8 @@ if __name__ == "__main__":
     if args.command == "replace-user":
         permissions = replace_user(
             input_permissions,
-            User.parse_obj({"user_id": args.user_id, "user_type": args.user_type}),
-            User.parse_obj(
+            User.model_validate({"user_id": args.user_id, "user_type": args.user_type}),
+            User.model_validate(
                 {
                     "user_id": args.replacement_user_id,
                     "user_type": args.replacement_user_type,

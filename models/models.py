@@ -3,7 +3,15 @@ import os
 from enum import Enum
 from typing import List, Union
 
-from pydantic import BaseModel, EmailStr, Field, HttpUrl, root_validator, validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    HttpUrl,
+    field_validator,
+    model_validator,
+)
 
 from dataplatform_keycloak.groups import (
     group_attribute_to_team_attribute,
@@ -32,11 +40,14 @@ class User(BaseModel):
 
 
 class TeamMember(BaseModel):
-    username: str
-    name: Union[str, None]
-    email: Union[str, None]
+    model_config = ConfigDict(populate_by_name=True)
 
-    @root_validator(pre=True)
+    username: str
+    name: Union[str, None] = None
+    email: Union[str, None] = None
+
+    @model_validator(mode="before")
+    @classmethod
     def check_values(cls, values):
         values["name"] = (
             " ".join(
@@ -49,16 +60,12 @@ class TeamMember(BaseModel):
         )
         return values
 
-    class Config:
-        allow_population_by_field_name = True
-
 
 class TeamAttributes(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     email: List[EmailStr] = []
     slack_url: List[HttpUrl] = Field([], alias="slack-url")
-
-    class Config:
-        allow_population_by_field_name = True
 
 
 class Team(BaseModel):
@@ -67,11 +74,13 @@ class Team(BaseModel):
     is_member: bool
     attributes: Union[TeamAttributes, None] = None
 
-    @validator("name", pre=True)
+    @field_validator("name", mode="before")
+    @classmethod
     def clean_name(cls, v):
         return group_name_to_team_name(v)
 
-    @validator("attributes", pre=True)
+    @field_validator("attributes", mode="before")
+    @classmethod
     def clean_attributes(cls, v):
         return {
             group_attribute_to_team_attribute(key): value
@@ -89,7 +98,8 @@ class CreateResourceBody(BaseModel):
     owner: User
     resource_name: str
 
-    @validator("resource_name")
+    @field_validator("resource_name")
+    @classmethod
     def check_resource_name(cls, resource_name):
         # Raises `ValueError` when the resource type is unknown.
         all_scopes_for_type(resource_type_from_resource_name(resource_name))
@@ -104,7 +114,8 @@ class OkdataPermission(BaseModel):
     users: List[str]
     clients: List[str]
 
-    @validator("scope")
+    @field_validator("scope")
+    @classmethod
     def check_scope(cls, scope):
         known_scopes = all_scopes()
         if scope not in known_scopes:
@@ -138,7 +149,8 @@ class UpdatePermissionBody(BaseModel):
     remove_users: List[User] = []
     scope: str
 
-    @validator("scope")
+    @field_validator("scope")
+    @classmethod
     def check_scope(cls, scope):
         known_scopes = all_scopes() + ["__all__"]
         if scope not in known_scopes:

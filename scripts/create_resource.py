@@ -40,7 +40,9 @@ if __name__ == "__main__":
 
     resource_server = resource_server_from_env(args.env)
 
-    owner = User.parse_obj({"user_id": args.owner_id, "user_type": args.owner_type})
+    owner = User.model_validate(
+        {"user_id": args.owner_id, "user_type": args.owner_type}
+    )
 
     if args.apply:
         result = resource_server.create_resource(args.resource_name, owner)
@@ -50,5 +52,5 @@ if __name__ == "__main__":
         )
     else:
         print(
-            f"Would have created resource: {args.resource_name}, with owner: {owner.json()}"
+            f"Would have created resource: {args.resource_name}, with owner: {owner.model_dump_json()}"
         )
