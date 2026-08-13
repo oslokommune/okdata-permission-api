@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    user = User.parse_obj({"user_id": args.user_id, "user_type": args.user_type})
+    user = User.model_validate({"user_id": args.user_id, "user_type": args.user_type})
     resource_server = resource_server_from_env(args.env)
     permissions = resource_server.list_permissions(**{user.user_type: user.user_id})
 
