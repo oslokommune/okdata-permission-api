@@ -10,7 +10,7 @@ class ErrorResponse(Exception):
 
 
 class Message(BaseModel):
-    message: Optional[str]
+    message: Optional[str] = None
 
 
 # TODO Needs Python 3.8
