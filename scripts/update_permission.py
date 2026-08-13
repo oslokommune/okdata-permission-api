@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     resource_server = resource_server_from_env(args.env)
 
-    user = User.parse_obj({"user_id": args.user_id, "user_type": args.user_type})
+    user = User.model_validate({"user_id": args.user_id, "user_type": args.user_type})
     users_to_add = [user] if args.action == "add" else []
     users_to_remove = [user] if args.action == "remove" else []
 
@@ -63,5 +63,5 @@ if __name__ == "__main__":
     else:
         print(f"Resource name: {args.resource_name}")
         print(f"Scope: {args.scope}")
-        print(f"Would add users: {[u.json() for u in users_to_add]}")
-        print(f"Would remove users: {[u.json() for u in users_to_remove]}")
+        print(f"Would add users: {[u.model_dump_json() for u in users_to_add]}")
+        print(f"Would remove users: {[u.model_dump_json() for u in users_to_remove]}")

@@ -64,7 +64,7 @@ def get_my_permissions(
             ]
 
         return {
-            permission["rsname"]: MyPermissionsScopes.parse_obj(
+            permission["rsname"]: MyPermissionsScopes.model_validate(
                 {"scopes": permission["scopes"]}
             )
             for permission in user_permissions

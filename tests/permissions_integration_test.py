@@ -49,6 +49,31 @@ def test_create_resource_unknown_resource_type(mock_client):
     assert response.json()["message"] == "Bad Request"
 
 
+def test_validation_error_response_shape(mock_client):
+    body = {
+        "owner": {"user_id": kc_config.team1, "user_type": "team"},
+        "resource_name": "foo:bar:integration-test-dataset",
+    }
+    token = get_token_for_service(
+        kc_config.create_permissions_client_id,
+        kc_config.create_permissions_client_secret,
+    )
+
+    response = mock_client.post(
+        "/permissions",
+        json=body,
+        headers=auth_header(token),
+    )
+    assert response.status_code == 400
+
+    # Python-specific keys such as `ctx`, `input`, `type`, and `url` are
+    # stripped from the validation errors.
+    errors = response.json()["errors"]
+    assert len(errors) > 0
+    for error in errors:
+        assert set(error) == {"loc", "msg"}
+
+
 def test_create_resource(mock_client):
     body = {
         "owner": {"user_id": kc_config.team1, "user_type": "team"},
@@ -94,7 +119,7 @@ def test_create_resource_conflict_error(mock_client):
 
 def test_get_permissions_no_bearer_token(mock_client):
     response = mock_client.get(f"/permissions/{resource_name}")
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert response.json() == {"detail": "Not authenticated"}
 
 
@@ -484,7 +509,7 @@ def test_get_my_permissions_no_permissions(mock_client):
 
 def test_delete_resource_no_bearer_token(mock_client):
     response = mock_client.delete(f"/permissions/{resource_name}")
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert response.json() == {"detail": "Not authenticated"}
 
 
