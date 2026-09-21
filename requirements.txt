@@ -6,7 +6,7 @@
 #
 annotated-doc==0.0.3
     # via fastapi
-anyio==4.9.0
+anyio==4.14.2
     # via starlette
 attrs==21.4.0
     # via jsonschema
