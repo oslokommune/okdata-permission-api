@@ -62,7 +62,9 @@ def abort_validation_error(request: Request, exc):
     # e.g. "ctx": {"enum_values": ["team", "user", "client"]}
     for error in errors:
         error.pop("ctx", None)
+        error.pop("input", None)
         error.pop("type", None)
+        error.pop("url", None)
     return JSONResponse(
         status_code=400,
         content={"message": "Bad Request", "errors": errors},

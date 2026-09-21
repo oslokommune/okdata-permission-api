@@ -28,7 +28,7 @@ def repopualte_keycloak():
 def test_endpoints_auth(mock_client, endpoint):
     # No bearer token
     response = mock_client.get(endpoint)
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert response.json() == {"detail": "Not authenticated"}
 
     # Invalid token
@@ -290,7 +290,7 @@ def test_get_team_by_name_non_existent(mock_client):
 
 def test_get_team_by_name_unauthenticated(mock_client):
     response = mock_client.get(f"/teams/name/{kc_config.team1}")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 # GET /teams/{team_id}/members
@@ -455,13 +455,13 @@ def test_update_team_non_existent(mock_client):
 def test_get_team_members_unauthenticated(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
     response = mock_client.get(f"/teams/{team['id']}/members")
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_update_team_unauthenticated(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
     response = mock_client.patch(f"/teams/{team['id']}", json={"name": "foo"})
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_update_team_non_member(mock_client):
@@ -546,7 +546,7 @@ def test_update_team_members_non_existent_user(mock_client):
 def test_update_team_members_unauthenticated(mock_client):
     team = get_keycloak_group_by_name(team_name_to_group_name(kc_config.team1))
     response = mock_client.put(f"/teams/{team['id']}/members", json=[])
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_update_team_members_non_member(mock_client):
