@@ -15,8 +15,10 @@ def mock_resource_server(mock_ssm_client):
     populate_local_keycloak.populate()
 
     resource_server = ResourceServer()
-    janedoe = User.parse_obj({"user_id": kc_config.janedoe, "user_type": "user"})
-    homer = User.parse_obj({"user_id": kc_config.homersimpson, "user_type": "user"})
+    janedoe = User.model_validate({"user_id": kc_config.janedoe, "user_type": "user"})
+    homer = User.model_validate(
+        {"user_id": kc_config.homersimpson, "user_type": "user"}
+    )
     resource_server.create_resource("okdata:dataset:foo", owner=janedoe)
     resource_server.create_resource("okdata:dataset:bar", owner=homer)
     resource_server.update_permission(

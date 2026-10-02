@@ -148,8 +148,8 @@ class TeamsClient:
             team["name"] = team_name_to_group_name(name)
 
         if attributes:
-            for team_attr, value in attributes.dict(
-                by_alias=True, exclude_unset=True
+            for team_attr, value in attributes.model_dump(
+                mode="json", by_alias=True, exclude_unset=True
             ).items():
                 group_attr = team_attribute_to_group_attribute(team_attr)
 
