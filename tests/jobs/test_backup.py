@@ -57,7 +57,7 @@ def test_backup_permissions(mock_ssm_client):
     _mock_s3()
     populate_local_keycloak.populate()
     rs = ResourceServer()
-    janedoe_user = User.parse_obj({"user_id": "janedoe", "user_type": "user"})
+    janedoe_user = User.model_validate({"user_id": "janedoe", "user_type": "user"})
     rs.create_resource("okdata:dataset:test-dataset", owner=janedoe_user)
     rs.create_resource("okdata:dataset:test-dataset2", owner=janedoe_user)
 
