@@ -1,0 +1,168 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  API for managing permissions to okdata resources such as datasets via
+  Keycloak Authorization Services.
+
+Parameters:
+  Stage:
+    Type: String
+    AllowedValues: [dev, prod]
+    Default: dev
+  GitRev:
+    Type: String
+    Description: >-
+      Deployed Git revision, formatted as "branch:short-sha".
+    Default: unknown
+  Version:
+    Type: String
+    Default: 0.2.0
+
+Conditions:
+  IsProd: !Equals [!Ref Stage, prod]
+
+Globals:
+  Function:
+    MemorySize: 1024
+    Tracing: Active
+    Tags:
+      GIT_REV: !Ref GitRev
+      VERSION: !Ref Version
+    Environment:
+      Variables:
+        GIT_REV: !Ref GitRev
+        STAGE: !Ref Stage
+        VERSION: !Ref Version
+        SERVICE_NAME: okdata-permission-api
+        KEYCLOAK_REALM: api-catalog
+        # Resolved from SSM by CloudFormation on every deploy.
+        KEYCLOAK_SERVER: "{{resolve:ssm:/dataplatform/shared/keycloak-server-url}}"
+        KEYCLOAK_TEAM_ADMIN_SERVER: "{{resolve:ssm:/dataplatform/teams-api/kong-keycloak-server-url}}"
+        KEYCLOAK_TEAM_ADMIN_USERNAME: !If [IsProd, teams-admin, api-catalog-team-admin]
+        CLIENT_ID: okdata-permission-api
+        RESOURCE_SERVER_CLIENT_ID: okdata-resource-server
+        ROOT_PATH: /okdata-permission-api
+        LOG_LEVEL: INFO
+        BACKUP_BUCKET_NAME: !Sub ok-origo-dataplatform-backup-${Stage}
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub okdata-permission-api-${Stage}-${AWS::Region}-lambdaRole
+      PermissionsBoundary: !Sub arn:aws:iam::${AWS::AccountId}:policy/oslokommune/oslokommune-boundary
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - !Sub arn:aws:iam::${AWS::AccountId}:policy/okdata-permission-api
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${Stage}-okdata-permission-api
+      StageName: !Ref Stage
+      OpenApiVersion: "3.0.1"
+      EndpointConfiguration:
+        Type: REGIONAL
+      TracingEnabled: true
+      Tags:
+        GIT_REV: !Ref GitRev
+        VERSION: !Ref Version
+
+  AppLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/okdata-permission-api-${Stage}-app
+      RetentionInDays: 90
+
+  AppFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+    Properties:
+      FunctionName: !Sub okdata-permission-api-${Stage}-app
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - handler.handler
+      Timeout: 29
+      Role: !GetAtt LambdaExecutionRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref AppLogGroup
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /
+            Method: any
+        Proxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /{proxy+}
+            Method: any
+
+  BackupPermissionsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/okdata-permission-api-${Stage}-backup-permissions
+      RetentionInDays: 90
+
+  BackupPermissionsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+    Properties:
+      FunctionName: !Sub okdata-permission-api-${Stage}-backup-permissions
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - jobs.backup.backup_permissions
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref BackupPermissionsLogGroup
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            # Every day at midnight.
+            Schedule: cron(0 0 * * ? *)
+
+  CheckUsersLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/okdata-permission-api-${Stage}-check-users
+      RetentionInDays: 90
+
+  CheckUsersFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+    Properties:
+      FunctionName: !Sub okdata-permission-api-${Stage}-check-users
+      PackageType: Image
+      ImageConfig:
+        Command:
+          - jobs.monitor.check_users
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      LoggingConfig:
+        LogGroup: !Ref CheckUsersLogGroup
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            # Every day at 01:00.
+            Schedule: cron(0 1 * * ? *)
