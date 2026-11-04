@@ -421,7 +421,11 @@ class ResourceServer:
         signing_key = jwks_client.get_signing_key_from_jwt(token)
 
         return jwt.decode(
-            token, signing_key.key, algorithms=["RS256"], audience=audience
+            token,
+            signing_key.key,
+            algorithms=["RS256"],
+            audience=audience,
+            leeway=5,
         )
 
     def _token_is_expired(self, token):
